@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<petabi_rules>
+  <rule name="test1" >
+    <traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any"
+      handshake="True" teardown="True" synch="True" ip="4" out_of_order="true" >
+      <pkt dir="to server" content="/abcdefghijk/i" fragment="0" times="4"
+          ack="true" />
+    </traffic_stream>
+    <traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any"
+      handshake="True" teardown="True" synch="True" ip="4" packet_loss="33" >
+      <pkt dir="to server" content="/zxywvutsr/i" fragment="0" times="3"
+          ack="true" />
+    </traffic_stream>
+    <traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any"
+      handshake="True" teardown="True" synch="True" ip="4" out_of_order="true"
+      packet_loss="30" >
+      <pkt dir="to server" content="/123456/i" fragment="0" times="4"
+          ack="true" />
+    </traffic_stream>
+  </rule>
+</petabi_rules>

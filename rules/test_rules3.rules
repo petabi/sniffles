@@ -1,0 +1,2 @@
+#test rule file 3
+alert tcp $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (msg:”test3-1"; flow:to_server,established; content:"Cookie|3A| =|0D 0A 0D 0A|"; pcre:"/abc(def|hij|klm)/"; sid:1;)

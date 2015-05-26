@@ -1,0 +1,99 @@
+# Configuration File for Sniffles
+# This file is just a replacement for the cmd line.
+# provide the -F option with this file name and then all other options you
+# like in this file.  Note, values can be set in the command line and in
+# this file at the same time.  For competing values, the last one set
+# is the winner.  Values are set in order from first to last.
+
+# All key=value pairs must have the equal sign even if the value is left empty.
+# Everything preceded with a # symbol is ignored (i.e. a comment)
+
+# Turn on TCP ACK--does not need a value
+#-a=
+# Turn on Bi-directional data--does not need a value
+#-b=
+# Number of streams to generate.
+#-c=10
+# Scan Reply Chance.  The chance from 0 to 100, that a scan packet will have a 
+# reply in the pcap.
+#-C=
+# Duration of traffic generation in seconds if using duration to generate 
+# packets. Keep in mind that the default "time-lapse" (i.e. interarrival time)
+# between
+# packets is 1 microsecond.
+# Thus, if you do not increase the time lapse, 1 second of traffic will 
+# generate 1,000,000 packets.
+#-D=
+# Single rule file for traffic content generation.
+#-f=
+# Eval.  Create a pcap where there is exactly one packet matching each rule 
+# in order of the rules. Does not need a value.
+#-e=
+# Full evaluation.  Attempts to make a packet for each possible for all 
+# regex in a rule set. Does not need a value.
+#-E=
+# Home addresses for IPv4.  Values should be a comma-separated list.
+#-h=
+# Home addresses for IPv6.  Values should be a comma-separated list.
+#-H=
+# Percentage of traffic that will be IPv6 (from 0 to 100)
+#-i=
+# Scan intensity (i.e. number of scan packets per second.)
+# -I
+# Fixed data length from 0 to 1514.
+#-l=
+# Time lapse (inter-arrival time) between packets in pcap (in microseconds).
+# The value provided should be the desired mean.  Actual times are randomly
+# determined if this value is greater than 1.
+#-L=
+# Completely match to a rule.  Does not need a value.
+#-m=
+# Designate a specific output file.  Will overwrite.
+#-o=
+# Designate a specific start offset for a scan attack (in seconds).  Scan 
+# attack will start at that point.
+#-O=
+# Designate the maximaum data-bearing packets per stream.  If one, then exactly
+# one data-bearing packet will be generated per stream.  If more than one,
+# a random number of packets will be generated.s
+#-p=
+# Target port or ports for a scan attack.  Should be a single value from 0 to 
+# 65535 or a comma-separated list of values.
+#-P=
+# Generate random traffic.  Does not need a value.
+#-r=
+# Generate random scan attacks.  Will randomly insert scan attacks into pcap.
+#-R=
+# Generate a scan attack against the following CIDR IPv4 ranges.
+# IP ranges should be in a comma-separated list.
+#-s=
+# Designate a specific scan type 0 = SYN scan, 1 = Connection scan.
+#-S=
+# Turn on TCP handshakes.  Does not need a value.
+#-t
+# Turn on TCP Teardown.  Does not need a value.
+# Scan window (duration).
+#-W
+
+# The following example will generate 10 streams, with a maximum of 5
+# data-bearing packets per stream.  TCP Handshakes and teardowns will
+# be present and data will go in both directions.
+# Will use the rule file rules/test_rules1.rules.
+# Packets will be fixed at a length of 30.
+# Time lapse between packets will average 50 microseconds.
+# Will use the provide home addresses for IPv4 and IPv6.
+# 10% of traffic will be IPv6.
+# The pcap will be named myout.pcap.
+-b=
+-c=10
+-f=rules/test_rules1.rules
+-p=5
+-t=
+-T=
+-a=
+-l=30
+-L=50
+-h=192.168.1,192.168.2
+-H=2001:8888:8888,2001:8888:8888:1100
+-i=10
+-o=myout.pcap

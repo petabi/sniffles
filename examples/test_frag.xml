@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<petabi_rules>
+  <rule name="test1" >
+    <traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any"
+      ack="True" handshake="True" teardown="True" synch="True" ip="4">
+      <pkt dir="to server" content="/abcdefghijk/i" fragment="3" times="1" ack="True" />
+      <pkt dir="to client" content="/zxywvutsrqp/i" fragment="5" times="1"
+      out_of_order="true" ack="True" />
+      <pkt dir="to client" content="/1234567890abcdefghijklmnopqrstuvwxyz/i"
+      fragment="2" times="1" ack="True" />
+    </traffic_stream>
+  </rule>
+  <rule name="test_udp" >
+    <traffic_stream proto="udp" src="any" dst="any" sport="any" dport="any"
+    ip="4">
+      <pkt dir="to server" content="/abcdefghijk/i" fragment="3" times="1" />
+      <pkt dir="to client" content="/zxywvutsrqp/i" fragment="5" times="1" />
+      <pkt dir="to client" content="/1234567890abcdefghijklmnopqrstuvwxyz/i"
+      fragment="2" times="1" />
+    </traffic_stream>
+  </rule>
+</petabi_rules>
