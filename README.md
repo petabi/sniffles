@@ -365,7 +365,8 @@ The Sniffles rule format is as follows:
 
   `<rule name="test1" >`
 
-    `<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True" ip="4">`
+    `<traffic_stream proto="tcp" src="any" dst="any" sport="any"`
+    `dport="any" handshake="True" teardown="True" synch="True" ip="4">`
 
       `<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
 
@@ -373,7 +374,8 @@ The Sniffles rule format is as follows:
 
     `</traffic_stream>`
 
-    `<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">`
+    `<traffic_stream proto="tcp" src="any" dst="any" sport="any"`
+    `dport="any" handshake="True" teardown="True" synch="True">`
 
       `<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
 
@@ -385,14 +387,16 @@ The Sniffles rule format is as follows:
 
   `<rule name="test2" >`
 
-    `<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">`
+    `<traffic_stream proto="tcp" src="any" dst="any" sport="any"`
+    `dport="any" handshake="True" teardown="True" synch="True">`
 
       `<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
 
       `<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
     `</traffic_stream>`
 
-    `<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">`
+    `<traffic_stream proto="tcp" src="any" dst="any" sport="any"`
+    `dport="any" handshake="True" teardown="True" synch="True">`
 
       `<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
 
