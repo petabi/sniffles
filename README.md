@@ -359,54 +359,54 @@ by designating the rule file with the -f option (i.e. sniffles -f rules.xml)
 
 The Sniffles rule format is as follows:
 
-`<?xml version="1.0" encoding="utf-8"?>`
+<?xml version="1.0" encoding="utf-8"?>
 
-`<petabi_rules>`
+<petabi_rules>
 
-  `<rule name="test1" >`
+  <rule name="test1" >
 
-    `<traffic_stream proto="tcp" src="any" dst="any" sport="any"`
-    `dport="any" handshake="True" teardown="True" synch="True" ip="4">`
+    <traffic_stream proto="tcp" src="any" dst="any" sport="any"
+    dport="any" handshake="True" teardown="True" synch="True" ip="4">
 
-      `<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
+      <pkt dir="to server" content="/abc/i" fragment="0" times="1" />
 
-      `<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
+      <pkt dir="to client" content="/def/i" fragment="0" times="1" />
 
-    `</traffic_stream>`
+    </traffic_stream>
 
-    `<traffic_stream proto="tcp" src="any" dst="any" sport="any"`
-    `dport="any" handshake="True" teardown="True" synch="True">`
+    <traffic_stream proto="tcp" src="any" dst="any" sport="any"
+    dport="any" handshake="True" teardown="True" synch="True">
 
-      `<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
+      <pkt dir="to server" content="/abc/i" fragment="0" times="1" />
 
-      `<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
+      <pkt dir="to client" content="/def/i" fragment="0" times="1" />
 
-      `</traffic_stream>`
+      </traffic_stream>
 
-  `</rule>`
+  </rule>
 
-  `<rule name="test2" >`
+  <rule name="test2" >
 
-    `<traffic_stream proto="tcp" src="any" dst="any" sport="any"`
-    `dport="any" handshake="True" teardown="True" synch="True">`
+    <traffic_stream proto="tcp" src="any" dst="any" sport="any"
+    dport="any" handshake="True" teardown="True" synch="True">
 
-      `<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
+      <pkt dir="to server" content="/abc/i" fragment="0" times="1" />
 
-      `<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
-    `</traffic_stream>`
+      <pkt dir="to client" content="/def/i" fragment="0" times="1" />
+    </traffic_stream>
 
-    `<traffic_stream proto="tcp" src="any" dst="any" sport="any"`
-    `dport="any" handshake="True" teardown="True" synch="True">`
+    <traffic_stream proto="tcp" src="any" dst="any" sport="any"
+    dport="any" handshake="True" teardown="True" synch="True">
 
-      `<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
+      <pkt dir="to server" content="/abc/i" fragment="0" times="1" />
 
-      `<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
+      <pkt dir="to client" content="/def/i" fragment="0" times="1" />
 
-    `</traffic_stream>`
+    </traffic_stream>
 
-  `</rule>`
+  </rule>
 
-`</petabi_rules>`
+</petabi_rules>
 
 In detail, the tags work as follows:
 
