@@ -95,6 +95,7 @@ Supported Formats:
   packet will be generated meeting those values.  If Home and External
   network address spaces are used then the correct space will be used
   for the respective $HOME_NET and $EXTERNAL_NET variables.  Example:
+
     alert tcp $EXTERNAL_NET any -> $HOME_NET 8080 \
     (msg:"SERVER-APACHE Apache Tomcat UNIX platform directory traversal"; \
     flow:to_server; content:"/..|5C|/"; content:"/..|5C|/"; http_raw_uri;
@@ -357,64 +358,64 @@ be found in the examples directory.  These rule files are used simply
 by designating the rule file with the -f option (i.e. sniffles -f rules.xml)
 
 The Sniffles rule format is as follows:
-`<?xml version="1.0" encoding="utf-8"?>  
-<petabi_rules>
 
-	<rule name="test1" >
+`<?xml version="1.0" encoding="utf-8"?>`
 
-		<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any"
-      handshake="True" teardown="True" synch="True" ip="4">
+`<petabi_rules>`
 
-			<pkt dir="to server" content="/abc/i" fragment="0" times="1" />
+	`<rule name="test1" >`
 
-			<pkt dir="to client" content="/def/i" fragment="0" times="1" />
+		`<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True" ip="4">`
 
-		</traffic_stream>
+			`<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
 
-		<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any"
-      handshake="True" teardown="True" synch="True">
+			`<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
 
-			<pkt dir="to server" content="/abc/i" fragment="0" times="1" />
+		`</traffic_stream>`
 
-			<pkt dir="to client" content="/def/i" fragment="0" times="1" />
+		`<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">`
 
-		</traffic_stream>
+			`<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
 
-	</rule>
+			`<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
 
-  <rule name="test2" >
+		`</traffic_stream>`
 
-		<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">
+	`</rule>`
 
-			<pkt dir="to server" content="/abc/i" fragment="0" times="1" />
+  `<rule name="test2" >`
 
-			<pkt dir="to client" content="/def/i" fragment="0" times="1" />
+		`<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">`
 
-		</traffic_stream>
+			`<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
 
-		<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">
+			`<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
 
-			<pkt dir="to server" content="/abc/i" fragment="0" times="1" />
+		`</traffic_stream>`
 
-			<pkt dir="to client" content="/def/i" fragment="0" times="1" />
+		`<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">`
 
-		</traffic_stream>
+			`<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
 
-	</rule>
+			`<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
 
-</petabi_rules>`
+		`</traffic_stream>`
+
+	`</rule>`
+
+`</petabi_rules>`
 
 In detail, the tags work as follows:
-<petabi_rules> </petabi_rules>:  This defines all of the rules for this rules file.
+`<petabi_rules> </petabi_rules>`:  This defines all of the rules for this rules file.
 There should only be one set of these tags opening and closing all of the
 designated traffic streams.
 
-<rule > </rule>: Designates a single rule.  A single rule can generate an arbitrary
+`<rule > </rule>`: Designates a single rule.  A single rule can generate an arbitrary
 number of traffic streams or packets, as will be illustrated later.
 Options:
   name: The name for this rule.  Mostly for documentation, no real function.
 
-  <traffic_stream> </traffic_stream> A traffic stream defines traffic between two
+  `<traffic_stream> </traffic_stream>`: A traffic stream defines traffic between two
   endpoints.  All pkts designated within a single traffic stream will share the
   same endpoints.  Any number of traffic streams can be designatted for a given
   rule.
@@ -464,7 +465,7 @@ Options:
                  Note, the packet drop only happens on data-bearing packets, not
                  on the acks.
 
-    <pkt > </pkt>  This directive designates either an individual packet or a series of
+    `<pkt > </pkt>`:  This directive designates either an individual packet or a series of
     packets.  The times feature can be used to have one <pkt> </pkt> directive generate
     several packets.  Otherwise, it is necessary to explicitly designate each packet
     in each direction.
