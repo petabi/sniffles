@@ -363,49 +363,49 @@ The Sniffles rule format is as follows:
 
 `<petabi_rules>`
 
-	`<rule name=\"test1\" >`
+  `<rule name=\"test1\" >`
 
-		`<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True" ip="4">`
+    `<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True" ip="4">`
 
-			`<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
+      `<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
 
-			`<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
+      `<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
 
-		`</traffic_stream>`
+    `</traffic_stream>`
 
-		`<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">`
+    `<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">`
 
-			`<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
+      `<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
 
-			`<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
+      `<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
 
-		`</traffic_stream>`
+      `</traffic_stream>`
 
-	`</rule>`
+  `</rule>`
 
   `<rule name="test2" >`
 
-		`<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">`
+    `<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">`
 
-			`<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
+      `<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
 
-			`<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
+      `<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
+    `</traffic_stream>`
 
-		`</traffic_stream>`
+    `<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">`
 
-		`<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">`
+      `<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
 
-			`<pkt dir="to server" content="/abc/i" fragment="0" times="1" />`
+      `<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
 
-			`<pkt dir="to client" content="/def/i" fragment="0" times="1" />`
+    `</traffic_stream>`
 
-		`</traffic_stream>`
-
-	`</rule>`
+  `</rule>`
 
 `</petabi_rules>`
 
 In detail, the tags work as follows:
+
 `<petabi_rules> </petabi_rules>`:  This defines all of the rules for this rules file.
 There should only be one set of these tags opening and closing all of the
 designated traffic streams.
@@ -419,34 +419,45 @@ Options:
   endpoints.  All pkts designated within a single traffic stream will share the
   same endpoints.  Any number of traffic streams can be designatted for a given
   rule.
+  
   Options:
+
     proto: Designates the protocol of this traffic stream.  Should be TCP or
            or UDP or ICMP (not tested).
+
     src: Source IP address.  May be an address in xxx.xxx.xxx.xxx format,
          $EXTERNAL_NET (for an external address--assumes a home network has been
          designated), $HOME_NET, or any (randomly selects IP address).
     dst: Destination IP Address.  Same as Source IP Address.
-         sport: Source port (assumes TCP or UDP).  Can use snort port formatting
+
+    sport: Source port (assumes TCP or UDP).  Can use snort port formatting
          which can be a comma separated list in brackets (i.e. [80,88,89]),
          a range (i.e. [10:1000]), or any (i.e. random pick from 0-65535).
+
     dport: Destination Port as per sport.
+
     handshake: Will generate a TCP Handshake at the start of the stream.  If
                excluded, there will be no handshake.  Valid values are true
                or false.  Default is false.
+
     teardown: Will close the stream when all traffic has been sent by appending
               the TCP teardown at the end of the traffic stream.  Valid values are
               true or false.  Default is false.
+
     synch: Traffic streams are synchronous or not.  When true, one traffic stream
            must finish prior to the next traffic stream starting.  When false,
            all contiguous streams that are false (i.e. asynchronous) will
            execute at the same time.  Currently, this feature is not implemented
            but will be included in future versions.
+
     ip: Designate IPv4 or IPv6.  Valid options are 4, or 6.  Default is 4.
+
     out_of_order: Randomly have packets arrive out-of-order.  Note, this only
                   works with packets that use the 'times' option.  Further, this
                   option should also be used with ack so that the proper
                   duplicate acks will appear in the traffic trace.  Valid values
                   are true or false.  Default is false.
+
     out_of_order_prob: Set the probability that packets will arrive out-of-order.
                        for example, 10 would mean that there is a 10% chance
                        for each packet to arrive out of order.  Out-of-order
@@ -457,6 +468,7 @@ Options:
                        (slots 9 and 10) and will be in an arbitrary order
                        (i.e. 5 may come before 2 or vice versa).  The value
                        for this must be between 1 and 99.  Default is 50.
+
     packet_loss: Randomly have packets be dropped (i.e. not arrive).  This
                  only works with the 'times' option.  Further, this option should
                  also be used with the ack option set to true so that
@@ -469,22 +481,29 @@ Options:
     packets.  The times feature can be used to have one <pkt> </pkt> directive generate
     several packets.  Otherwise, it is necessary to explicitly designate each packet
     in each direction.
+
     Options:
+
       dir: The direction of the packet.  Valid values are to server or to client.
            The inititial src IP is considered the client, and the intitial dst IP
            the server.  Thus 'to server' sends a packet from client to server and
            'to client' send a packet from server to client.  Default is to server.
+
       content: Regular expression designating the content for this packet.  Size
                of the packet will depend on the regular expression.
+
       fragment: Whether or not to fragment this packet.  Only works with ipv4.
                 Should have a value larger than 2.  Will create as many fragments
                 as are valid or as designated (whichever is smaller).  Default
                 value is 0 meaning no fragments.
+
       ack: Send an ack to this packet or not.  Valid values are true or false.
            Default is false.
+
       split: Split the content among the designated number of packets.  By default
              all content is sent in a single packet (fragments are a small exception
              to this rule).
+
       times: Send this packet x times.  Default value is 1, a positive value
              will send exactly x packets (possibly with acks if ack is true),
              while a negative number will send a random number of packets
@@ -501,7 +520,7 @@ Credits:
 
     This application has been brought to you by Petabi, Inc where we make Reliable, Realistic, and Real-fast security solutions.
 
-   Authors:
+    Authors:
 
      Victor C. Valgenti
 
@@ -517,7 +536,7 @@ New Features:
    traffic write call. Reformatted and enabled usage.  Finally, added
    unit tests for traffobot and XML parsing.
 
-	 02/03/2015: Version 2.0.  Completely rewrote how streams work in order to reduce
+   02/03/2015: Version 2.0.  Completely rewrote how streams work in order to reduce
    memory requirments when generating large streams using special rules.  Currently,
    can handle around 2-3 million concurrent flows before things bog down.  I have
    added some features to try and help for when creating large flows.  First,
