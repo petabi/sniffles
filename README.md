@@ -363,7 +363,7 @@ The Sniffles rule format is as follows:
 
 `<petabi_rules>`
 
-  `<rule name=\"test1\" >`
+  `<rule name="test1" >`
 
     `<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True" ip="4">`
 
@@ -422,43 +422,43 @@ Options:
   
   Options:
 
-    proto: Designates the protocol of this traffic stream.  Should be TCP or
+  - proto: Designates the protocol of this traffic stream.  Should be TCP or
            or UDP or ICMP (not tested).
 
-    src: Source IP address.  May be an address in xxx.xxx.xxx.xxx format,
+  - src: Source IP address.  May be an address in xxx.xxx.xxx.xxx format,
          $EXTERNAL_NET (for an external address--assumes a home network has been
          designated), $HOME_NET, or any (randomly selects IP address).
-    dst: Destination IP Address.  Same as Source IP Address.
+  - dst: Destination IP Address.  Same as Source IP Address.
 
-    sport: Source port (assumes TCP or UDP).  Can use snort port formatting
+  - sport: Source port (assumes TCP or UDP).  Can use snort port formatting
          which can be a comma separated list in brackets (i.e. [80,88,89]),
          a range (i.e. [10:1000]), or any (i.e. random pick from 0-65535).
 
-    dport: Destination Port as per sport.
+  - dport: Destination Port as per sport.
 
-    handshake: Will generate a TCP Handshake at the start of the stream.  If
+  - handshake: Will generate a TCP Handshake at the start of the stream.  If
                excluded, there will be no handshake.  Valid values are true
                or false.  Default is false.
 
-    teardown: Will close the stream when all traffic has been sent by appending
+  - teardown: Will close the stream when all traffic has been sent by appending
               the TCP teardown at the end of the traffic stream.  Valid values are
               true or false.  Default is false.
 
-    synch: Traffic streams are synchronous or not.  When true, one traffic stream
+  - synch: Traffic streams are synchronous or not.  When true, one traffic stream
            must finish prior to the next traffic stream starting.  When false,
            all contiguous streams that are false (i.e. asynchronous) will
            execute at the same time.  Currently, this feature is not implemented
            but will be included in future versions.
 
-    ip: Designate IPv4 or IPv6.  Valid options are 4, or 6.  Default is 4.
+  - ip: Designate IPv4 or IPv6.  Valid options are 4, or 6.  Default is 4.
 
-    out_of_order: Randomly have packets arrive out-of-order.  Note, this only
+  - out_of_order: Randomly have packets arrive out-of-order.  Note, this only
                   works with packets that use the 'times' option.  Further, this
                   option should also be used with ack so that the proper
                   duplicate acks will appear in the traffic trace.  Valid values
                   are true or false.  Default is false.
 
-    out_of_order_prob: Set the probability that packets will arrive out-of-order.
+  - out_of_order_prob: Set the probability that packets will arrive out-of-order.
                        for example, 10 would mean that there is a 10% chance
                        for each packet to arrive out of order.  Out-of-order
                        packets arrive after all of the in-order packets.
@@ -469,7 +469,7 @@ Options:
                        (i.e. 5 may come before 2 or vice versa).  The value
                        for this must be between 1 and 99.  Default is 50.
 
-    packet_loss: Randomly have packets be dropped (i.e. not arrive).  This
+  - packet_loss: Randomly have packets be dropped (i.e. not arrive).  This
                  only works with the 'times' option.  Further, this option should
                  also be used with the ack option set to true so that
                  duplicate acks will appear in the traffic trace.  Valid values
@@ -484,27 +484,27 @@ Options:
 
     Options:
 
-      dir: The direction of the packet.  Valid values are to server or to client.
+    - dir: The direction of the packet.  Valid values are to server or to client.
            The inititial src IP is considered the client, and the intitial dst IP
            the server.  Thus 'to server' sends a packet from client to server and
            'to client' send a packet from server to client.  Default is to server.
 
-      content: Regular expression designating the content for this packet.  Size
+    - content: Regular expression designating the content for this packet.  Size
                of the packet will depend on the regular expression.
 
-      fragment: Whether or not to fragment this packet.  Only works with ipv4.
+    - fragment: Whether or not to fragment this packet.  Only works with ipv4.
                 Should have a value larger than 2.  Will create as many fragments
                 as are valid or as designated (whichever is smaller).  Default
                 value is 0 meaning no fragments.
 
-      ack: Send an ack to this packet or not.  Valid values are true or false.
+    - ack: Send an ack to this packet or not.  Valid values are true or false.
            Default is false.
 
-      split: Split the content among the designated number of packets.  By default
+    - split: Split the content among the designated number of packets.  By default
              all content is sent in a single packet (fragments are a small exception
              to this rule).
 
-      times: Send this packet x times.  Default value is 1, a positive value
+    - times: Send this packet x times.  Default value is 1, a positive value
              will send exactly x packets (possibly with acks if ack is true),
              while a negative number will send a random number of packets
              between 1 and abs(-x).
