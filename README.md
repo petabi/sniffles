@@ -363,7 +363,7 @@ The Sniffles rule format is as follows:
 
 `<petabi_rules>`
 
-	`<rule name="test1" >`
+	`<rule name=\"test1\" >`
 
 		`<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True" ip="4">`
 
@@ -502,6 +502,7 @@ Credits:
     This application has been brought to you by Petabi, Inc where we make Reliable, Realistic, and Real-fast security solutions.
 
    Authors:
+
      Victor C. Valgenti
 
      Min Sik Kim
@@ -510,7 +511,11 @@ Credits:
 New Features:
 =============
 
-   11/21/2014: Version 1.4.0 Added traffic splitting and traffobot for bi-directional traffic generation.  Fixed bug where an exception was thrown when the amount of traffic generated could fit in a single traffic write call. Reformatted and enabled usage.  Finally, added unit tests for traffobot and XML parsing.
+   11/21/2014: Version 1.4.0 Added traffic splitting and traffobot for 
+   bi-directional traffic generation.  Fixed bug where an exception was
+   thrown when the amount of traffic generated could fit in a single
+   traffic write call. Reformatted and enabled usage.  Finally, added
+   unit tests for traffobot and XML parsing.
 
 	 02/03/2015: Version 2.0.  Completely rewrote how streams work in order to reduce
    memory requirments when generating large streams using special rules.  Currently,
