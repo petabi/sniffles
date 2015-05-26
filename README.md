@@ -381,7 +381,7 @@ The Sniffles rule format is as follows:
 
       <pkt dir="to client" content="/def/i" fragment="0" times="1" />
 
-      </traffic_stream>
+    </traffic_stream>
 
   </rule>
 
