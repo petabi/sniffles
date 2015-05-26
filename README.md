@@ -54,9 +54,12 @@ and IP network addresses can be defined by Home and External address
 spaces.  In addition, it is possible to simulate scans within a
 traffic capture.
 
-Sniffles requires python 3 to run.  Further, it require the remerge
-library as well.  Sniffles consists of the following files:
+Install
+=======
 
+REQUIRES: Python 3.3+  
+
+Sniffles consists of the following files:
 - sniffles.py: The main program managing the process.
 - sniffles_config.py: handles command line input and options for Sniffles.
 - rulereader.py: The parser for rules.
@@ -68,6 +71,15 @@ library as well.  Sniffles consists of the following files:
   than just randomly mashed together octets.
 - vendor_mac_definition.txt: Optional file for defining the
   distribution of partial or full MAC addresses.
+
+To install:
+  1. Go to the Top-level directory.
+  2. Type `python3.x setup.py install`
+  3. This will install the application to your system.
+
+Install Notes:
+  1. This has not been tested with Windows nor has it been tested on Linux.  It has been tested on FreeBSD and Mac OS X.
+  2. Use `python3.x setup.py build` to build locally, then go to the library directory, find the lib and use `python3.4 -c "from sniffles import sniffles; sniffles.main()"` to run locally.
 
 Supported Formats:
 ==================
@@ -345,8 +357,7 @@ be found in the examples directory.  These rule files are used simply
 by designating the rule file with the -f option (i.e. sniffles -f rules.xml)
 
 The Sniffles rule format is as follows:
-`<?xml version="1.0" encoding="utf-8"?>
-
+`<?xml version="1.0" encoding="utf-8"?>  
 <petabi_rules>
 
 	<rule name="test1" >
@@ -373,8 +384,7 @@ The Sniffles rule format is as follows:
 
   <rule name="test2" >
 
-		<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any"
-      handshake="True" teardown="True" synch="True">
+		<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">
 
 			<pkt dir="to server" content="/abc/i" fragment="0" times="1" />
 
@@ -382,8 +392,7 @@ The Sniffles rule format is as follows:
 
 		</traffic_stream>
 
-		<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any"
-      handshake="True" teardown="True" synch="True">
+		<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any" handshake="True" teardown="True" synch="True">
 
 			<pkt dir="to server" content="/abc/i" fragment="0" times="1" />
 
@@ -396,11 +405,11 @@ The Sniffles rule format is as follows:
 </petabi_rules>`
 
 In detail, the tags work as follows:
-<petabi_rules> </petabi_rules>  This defines all of the rules for this rules file.
+<petabi_rules> </petabi_rules>:  This defines all of the rules for this rules file.
 There should only be one set of these tags opening and closing all of the
 designated traffic streams.
 
-<rule > </rule> Designates a single rule.  A single rule can generate an arbitrary
+<rule > </rule>: Designates a single rule.  A single rule can generate an arbitrary
 number of traffic streams or packets, as will be illustrated later.
 Options:
   name: The name for this rule.  Mostly for documentation, no real function.
@@ -489,8 +498,7 @@ desired features.
 Credits:
 ========
 
-    This application has been brought to you by Petabi, Inc where we make Reliable,
-    Realistic, and Real-fast security solutions.
+    This application has been brought to you by Petabi, Inc where we make Reliable, Realistic, and Real-fast security solutions.
 
    Authors:
      Victor C. Valgenti
@@ -501,11 +509,7 @@ Credits:
 New Features:
 =============
 
-   11/21/2014: Version 1.4.0 Added traffic splitting and traffobot for
-   bi-directional traffic generation.  Fixed bug where an exception was thrown
-   when the amount of traffic generated could fit in a single traffic write call.
-   Reformatted and enabled usage.  Finally, added unit tests for traffobot and
-   XML parsing.
+   11/21/2014: Version 1.4.0 Added traffic splitting and traffobot for bi-directional traffic generation.  Fixed bug where an exception was thrown when the amount of traffic generated could fit in a single traffic write call. Reformatted and enabled usage.  Finally, added unit tests for traffobot and XML parsing.
 
 	 02/03/2015: Version 2.0.  Completely rewrote how streams work in order to reduce
    memory requirments when generating large streams using special rules.  Currently,
