@@ -257,55 +257,55 @@ NOTE: all examples assume you have installed the sniffles package.
 To generate a pcap from a single file of regular expressions with 10
 streams where every packet matches a rule
 
-  `sniffles.py -c 10 -f myre.re -m`
+  `sniffles -c 10 -f myre.re -m`
 
 To generate a pcap from a single snort rule file where every packet
 almost matches a rule
 
-  `sniffles.py -c 10 -f myrules.rules`
+  `sniffles -c 10 -f myrules.rules`
 
 To generate a pcap from multiple snort rule files in a single
 directory where every packet matches a rule.
 
-  `sniffles.py -c 10 -d myrulesdir -m`
+  `sniffles -c 10 -d myrulesdir -m`
 
 To generate the same pcap as above, using the same rules, but with
 random content (Content is random, headers will still follow the
 rules--doesn't work with regular expressions):
 
-  `sniffles.py -c 10 -d myrulesdir -r`
+  `sniffles -c 10 -d myrulesdir -r`
 
 To generate a pcap with 10 streams (1 packet each) and with random
 data:
 
-  `sniffles.py -c 10`
+  `sniffles -c 10`
 
 To generate a pcap with 10 streams, each stream with 5 packets, with
 ACKs and handshake and teardown as well as a fixed length of 50 for
 the data in each data-bearing packet:
 
-  `sniffles.py -c 10 -p 5 -l 50 -t -T -a`
+  `sniffles -c 10 -p 5 -l 50 -t -T -a`
 
 To generate a pcap with 20 random streams with a home network of
 192.168.1-2.x:
 
-  `sniffles.py -c 20 -h 192.168.1,192.168.2`
+  `sniffles -c 20 -h 192.168.1,192.168.2`
 
 To generate a pcap with 20 random streams with a home network of
 192.168.x.x for IPv4 and 2001:8888:8888 for IPv6 with 50% of traffic
 IPv6:
 
-  `sniffles.py -c 20 -h 192.168.1 -H 2001:8888:8888 -i 50`
+  `sniffles -c 20 -h 192.168.1 -H 2001:8888:8888 -i 50`
 
 To generate a 5 second packet capture of random packets with an
 average lapse between packets of 100 microseconds:
 
-  `sniffles.py -D 5 -L 100`
+  `sniffles -D 5 -L 100`
 
 To generate a pcap that will create one packet matching each rule in a
 rule file (or regex file) in sequence:
 
-  `sniffles.py -f myrules.rules -e`
+  `sniffles -f myrules.rules -e`
 
 To generate a pcap that will create a packet for every possible branch
 of a regex for each regex in a set of regex and then save that file to
@@ -314,21 +314,21 @@ can run in exponential time if the regex has a large amount of
 min-max couning so it may take a long time to run.  Further,
 all other options except the two illustrated below are ignored.
 
-  `sniffles.py -f myrules.rules -o everything.pcap -E`
+  `sniffles -f myrules.rules -o everything.pcap -E`
 
 To generate random traffic with a scan attack occuring 2 seconds in
 and lasting for 2 seconds with 1000 scan packets per second and with
 the entire capture a duration of 5 seconds and lapse time of 50us and
 with starting port 80 (sequentially searching ports from 80):
 
-  `sniffles.py -D 5 -O 2 -W 2 -I 1000 -L 50 -s 192.168.1.2 -P 80`
+  `sniffles -D 5 -O 2 -W 2 -I 1000 -L 50 -s 192.168.1.2 -P 80`
 
 Similar to above, but will create multiple scan attacks, each with
 duration of 1 second, and an average offset between attacks of 2
 seconds.  Further, only scans the designate ports.  Also targets IP
 address in range 192.168.1.0-255 randomly.
 
-  `sniffles.py -D 8 -O 2 -W 1 -I 10 -L 50 -s 192.168.1 \
+  `sniffles -D 8 -O 2 -W 1 -I 10 -L 50 -s 192.168.1 \
   -P 80,8080,8000,8001,8002,8008`
 
 
@@ -346,31 +346,53 @@ by designating the rule file with the -f option (i.e. sniffles -f rules.xml)
 
 The Sniffles rule format is as follows:
 `<?xml version="1.0" encoding="utf-8"?>
+
 <petabi_rules>
+
 	<rule name="test1" >
+
 		<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any"
       handshake="True" teardown="True" synch="True" ip="4">
+
 			<pkt dir="to server" content="/abc/i" fragment="0" times="1" />
+
 			<pkt dir="to client" content="/def/i" fragment="0" times="1" />
+
 		</traffic_stream>
+
 		<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any"
       handshake="True" teardown="True" synch="True">
+
 			<pkt dir="to server" content="/abc/i" fragment="0" times="1" />
+
 			<pkt dir="to client" content="/def/i" fragment="0" times="1" />
+
 		</traffic_stream>
+
 	</rule>
+
   <rule name="test2" >
+
 		<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any"
       handshake="True" teardown="True" synch="True">
+
 			<pkt dir="to server" content="/abc/i" fragment="0" times="1" />
+
 			<pkt dir="to client" content="/def/i" fragment="0" times="1" />
+
 		</traffic_stream>
+
 		<traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any"
       handshake="True" teardown="True" synch="True">
+
 			<pkt dir="to server" content="/abc/i" fragment="0" times="1" />
+
 			<pkt dir="to client" content="/def/i" fragment="0" times="1" />
+
 		</traffic_stream>
+
 	</rule>
+
 </petabi_rules>`
 
 In detail, the tags work as follows:
@@ -472,6 +494,7 @@ Credits:
 
    Authors:
      Victor C. Valgenti
+
      Min Sik Kim
 
 
