@@ -395,34 +395,34 @@ single file.
   rule.  Different traffic streams within the same rule may have different
   end-points or not depending on the settings below.
     - Options:
-      - proto: Designates the protocol of this traffic stream.  Should be TCP or
+        - proto: Designates the protocol of this traffic stream.  Should be TCP or
            or UDP or ICMP (not tested).
-      - src: Source IP address.  May be an address in xxx.xxx.xxx.xxx format,
+        - src: Source IP address.  May be an address in xxx.xxx.xxx.xxx format,
          $EXTERNAL_NET (for an external address--assumes a home network has been
          designated), $HOME_NET, or any (randomly selects IP address).
-      - dst: Destination IP Address.  Same as Source IP Address.
-      - sport: Source port (assumes TCP or UDP).  Can use snort port formatting
+        - dst: Destination IP Address.  Same as Source IP Address.
+        - sport: Source port (assumes TCP or UDP).  Can use snort port formatting
          which can be a comma separated list in brackets (i.e. [80,88,89]),
          a range (i.e. [10:1000]), or any (i.e. random pick from 0-65535).
-      - dport: Destination Port as per sport.
-      - handshake: Will generate a TCP Handshake at the start of the stream.  If
+        - dport: Destination Port as per sport.
+        - handshake: Will generate a TCP Handshake at the start of the stream.  If
                excluded, there will be no handshake.  Valid values are true
                or false.  Default is false.
-      - teardown: Will close the stream when all traffic has been sent by appending
+        - teardown: Will close the stream when all traffic has been sent by appending
               the TCP teardown at the end of the traffic stream.  Valid values are
               true or false.  Default is false.
-      - synch: Traffic streams are synchronous or not.  When true, one traffic stream
+        - synch: Traffic streams are synchronous or not.  When true, one traffic stream
            must finish prior to the next traffic stream starting.  When false,
            all contiguous streams that are false (i.e. asynchronous) will
            execute at the same time.  Currently, this feature is not implemented
            but will be included in future versions.
-      - ip: Designate IPv4 or IPv6.  Valid options are 4, or 6.  Default is 4.
-      - out_of_order: Randomly have packets arrive out-of-order.  Note, this only
+        - ip: Designate IPv4 or IPv6.  Valid options are 4, or 6.  Default is 4.
+        - out_of_order: Randomly have packets arrive out-of-order.  Note, this only
                   works with packets that use the 'times' option.  Further, this
                   option should also be used with ack so that the proper
                   duplicate acks will appear in the traffic trace.  Valid values
                   are true or false.  Default is false.
-      - out_of_order_prob: Set the probability that packets will arrive out-of-order.
+        - out_of_order_prob: Set the probability that packets will arrive out-of-order.
                        for example, 10 would mean that there is a 10% chance
                        for each packet to arrive out of order.  Out-of-order
                        packets arrive after all of the in-order packets.
@@ -432,7 +432,7 @@ single file.
                        (slots 9 and 10) and will be in an arbitrary order
                        (i.e. 5 may come before 2 or vice versa).  The value
                        for this must be between 1 and 99.  Default is 50.
-      - packet_loss: Randomly have packets be dropped (i.e. not arrive).  This
+        - packet_loss: Randomly have packets be dropped (i.e. not arrive).  This
                  only works with the 'times' option.  Further, this option should
                  also be used with the ack option set to true so that
                  duplicate acks will appear in the traffic trace.  Valid values
@@ -485,13 +485,13 @@ Credits:
 New Features:
 -------------
 
-   11/21/2014: Version 1.4.0 Added traffic splitting and traffobot for 
+- 11/21/2014: Version 1.4.0 Added traffic splitting and traffobot for 
    bi-directional traffic generation.  Fixed bug where an exception was
    thrown when the amount of traffic generated could fit in a single
    traffic write call. Reformatted and enabled usage.  Finally, added
    unit tests for traffobot and XML parsing.
 
-   02/03/2015: Version 2.0.  Completely rewrote how streams work in order to reduce
+- 02/03/2015: Version 2.0.  Completely rewrote how streams work in order to reduce
    memory requirments when generating large streams using special rules.  Currently,
    can handle around 2-3 million concurrent flows before things bog down.  I have
    added some features to try and help for when creating large flows.  First,
@@ -503,18 +503,18 @@ New Features:
    memory.  The only other solution is to get a beefier machine with more RAM.
    This version also contains a variety of fixes.
 
-   02/11/2015: Added probability to out-of-order packets to allow the frequency
+- 02/11/2015: Added probability to out-of-order packets to allow the frequency
    of out of order packets to be tuned.
 
-   03/05/2015: Changed TCP teardown to standard teardown sequence.
+- 03/05/2015: Changed TCP teardown to standard teardown sequence.
    Now allow content to be spread across multiple packets without using fragments.
 
-   04/09/2015: Fixed scan traffic, it was partially broken during one of the previous
+- 04/09/2015: Fixed scan traffic, it was partially broken during one of the previous
    changes.  The pcap starting timestamp now defaults to the current time and can
    be set with the -g option.  Finally, the 3rd packet in the 3-way tcp handshake
    will now be data-bearing if the client is to send data first.
 
-   05/22/2015: Rewrote rule-parsing to simplify the ability to extend rule
+- 05/22/2015: Rewrote rule-parsing to simplify the ability to extend rule
    the rule parser to accomodate more formats.  Embedded nfa traversal and
    pcre directly into sniffles.  Cleaned up code and prepared it for the
    public.
