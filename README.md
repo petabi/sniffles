@@ -341,8 +341,7 @@ duration of 1 second, and an average offset between attacks of 2
 seconds.  Further, only scans the designate ports.  Also targets IP
 address in range 192.168.1.0-255 randomly.
 
-  `sniffles -D 8 -O 2 -W 1 -I 10 -L 50 -s 192.168.1 \
-  -P 80,8080,8000,8001,8002,8008`
+  `sniffles -D 8 -O 2 -W 1 -I 10 -L 50 -s 192.168.1 -P 80,8080,8000,8001`
 
 
 Sniffles Rule Format:
