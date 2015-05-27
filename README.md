@@ -732,7 +732,7 @@ Generic Feature Attributes:
                    rule.  From 0 to 100.  Defaults to 0.
 - ambiguity_list: A list of possible ambiguous notations.
                   Comma-separated list using python formatting
-                  (i.e. ['a', 'b', 'c']).
+                  (i.e. [a, b, c]).
 - toString(): Prints out an instance of a rule given this particular
               feature set.
 
@@ -745,11 +745,8 @@ Content Feature -- Inherits from Feature:
 
 Protocol Feature -- Inherits from Feature:
 - protocol_list: Defines the list of possible protocols,
-                 as a comma-separated list (i.e ['TCP',
-                 'UDP']).
-- ambiguouity_list: Defines a list of Ambigous notation,
-                    if available.  Used only if the rule
-                    is determined to be complex.
+                 as a comma-separated list (i.e [TCP,
+                 UDP]).
 
 IP Feature -- Inherits from Feature:
 - version: 4 for IP version 4, 6 for IP version 6.
