@@ -544,14 +544,15 @@ Will be automatically installed with the rest of Sniffles.
 Options
 -------
 
-regex_generator--Random Regular Expression Generator.
+regex_gen--Random Regular Expression Generator.
+
     usage: regex_gen [-C char distribution] [-c number regex]
     [-D class distribution] [-f output re file]
     [-l lambda for length generation] [-n negation probability]
     [-o options chance] [-R repetition chance] [-r repetition distribution]
     [-t re structural type distribution] [-?] [-g]
 
--    -C \t Character Distribution: This sets the possibility of seeing
+-    -C Character Distribution: This sets the possibility of seeing
     particular constructs or characters.  See a brief explanation of
     distibutions below for examples on how to use this.  By default
     this distribution is an equal distribution.  This distribution
@@ -562,37 +563,37 @@ regex_generator--Random Regular Expression Generator.
     20% binary, 10% letters, etc.  One Caveat is that ASCII chars that
     might cause problems with regular expressions (like `[' or '{')
     are converted to hex representation (\x3b for example).
--    -c \t number of regular expression to generate.  Default is one.
--    -D \t Class Distribution: There are only two slots in the class
+-    -c number of regular expression to generate.  Default is one.
+-    -D Class Distribution: There are only two slots in the class
     distribution.  The first slot is the probability that the class is
     comprised of some number of randomly generated character.  The
     second slot is the probability that the class is comprised of
     ranges (like a-z).
--    -f \t output file name.  This sets the name of the file where the
+-    -f output file name.  This sets the name of the file where the
     regular expressions are stored.  The default is a file named rand.re
     in the current working directory.
--    -g \t Groups: All regular expressions will have a common prefix with
+-    -g Groups: All regular expressions will have a common prefix with
     at least one or more other regular expressions (as long as there are
     more than one regex.)  A common prefix is just a regular expression
     that is the same for some set of regular expressions.  The total
     number of possible common prefixes is from 1 to 1/2 the size of the
     total regular expressions to generate.  The default value for this
     is false.  This option takes no parameters.
--    -l \t lambda for length:  This is the mean length for an exponentional
+-    -l lambda for length:  This is the mean length for an exponentional
     distribution of regular expression lengths.  The default value is 10.
--    -n \t negation probability: The probability that a character class will
+-    -n negation probability: The probability that a character class will
     be a negation class ([^xyz]) rather than a normal character class ([xyz]).
     Default probability is 50%.
--    -o \t option chance:  This is the chance for an option to be appended
+-    -o option chance:  This is the chance for an option to be appended
     to the regular expression.  Current options are 'i', 'm', and 's'.
     A random number of options are added to the list with those options
     chose through a uniform distribution.
--    -R \t repetition chance: The chance of repetition occuring after
+-    -R repetition chance: The chance of repetition occuring after
     any structural component has been added to the regular expression.
--    -r \t repetion distribution: The distribution of repetition structures.
+-    -r repetion distribution: The distribution of repetition structures.
     The slots are: Zero to one (?), Zero to many (*), one to many (+), and
     counting ({x,y}).
--    -t \t Re structural type distribution: The distribution for the
+-    -t Re structural type distribution: The distribution for the
     primary structural components of the regular expression.  These
     are comprised of three slots, or categories: characters, classes,
     and alternation.  Note, alternation will simply generate a smaller
@@ -601,7 +602,7 @@ regex_generator--Random Regular Expression Generator.
     regular expressions being joined into the overall regular expression.
     The alternation uses the exact same methodology in creating those
     smaller regular expressions.
--    -? \t print this help.
+-    -? print this help.
 
     This generator will create random regular expressions.  It is possible
     to tune the structures within the regular expressions to a prbability
@@ -648,7 +649,8 @@ Options
 -------
 
 Random Rule Generator
-usage: rand_rule_gen -c <number of rules -f <feature set> -o <outfile> -[s]
+
+usage: rule_gen -c <number of rules -f <feature set> -o <outfile> -[s]
 
 - -c  Number of rules: The number of rules to generate.
       Default is one.
@@ -707,7 +709,8 @@ for a range, [x,y] for a list with maximum of 10
 or just * for a wildcard or similar single option.
 
 Example:
-```type=protocol; name=proto; proto_list=[IP,TCP,UDP,ICMP]; complexity_prob=0;ambiguity_list=None;
+```
+type=protocol; name=proto; proto_list=[IP,TCP,UDP,ICMP]; complexity_prob=0;ambiguity_list=None;
 type=ip; name=sip; version=4; complexity_prob=100
 ```
 the above defines two features, a protocol features and a source
