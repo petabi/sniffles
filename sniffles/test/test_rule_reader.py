@@ -82,8 +82,9 @@ class TestRuleReader(TestCase):
         self.assertEqual(myrpkt.getLength(), 500)
 
     def test_traffic_stream_rule(self):
-        mytsrule = TrafficStreamRule('tcp', '1100:0011', '2200:0022', '[100:200]',
-                                     '[10,20,30,40,50]', -1, 6, False, True, True)
+        mytsrule = TrafficStreamRule('tcp', '1100:0011', '2200:0022',
+                                     '[100:200]', '[10,20,30,40,50]', -1, 6,
+                                     False, True, True)
         mytsrule.addPktRule(RulePkt("to server", "/xyz/i"))
         mytsrule.addPktRule(RulePkt("to client", "/123/"))
         self.assertEqual(mytsrule.getSynch(), False)
@@ -93,7 +94,8 @@ class TestRuleReader(TestCase):
         mypkts = mytsrule.getPkts()
         self.assertEqual(len(mypkts), 2)
         self.assertEqual(mypkts[0].getDir(), "to server")
-        self.assertEqual(mypkts[0].getContent()[0].getContentString(), "/xyz/i")
+        self.assertEqual(mypkts[0].getContent()[0].getContentString(),
+                         "/xyz/i")
         self.assertEqual(mypkts[1].getDir(), "to client")
         self.assertEqual(mypkts[1].getContent()[0].getContentString(), "/123/")
 
@@ -169,11 +171,10 @@ class TestRuleReader(TestCase):
         self.assertEqual(len(rules), 9)
         conrule1 = rules[0]
         self.assertEqual(conrule1.getRuleName(), "Snort")
-        self.assertEqual(
-            conrule1.getTS()[0].getPkts()[0].getContent()[0].getType(), "content")
-        self.assertEqual(
-            conrule1.getTS()[0].getPkts()[0].getContent()[0].getContentString(),
-            "Cookie|3A| =|0D 0A 0D 0A|")
+        content0 = conrule1.getTS()[0].getPkts()[0].getContent()[0]
+        self.assertEqual(content0.getType(), "content")
+        self.assertEqual(content0.getContentString(),
+                         "Cookie|3A| =|0D 0A 0D 0A|")
         conrule1 = rules[8]
         self.assertEqual(conrule1.getRuleName(), "Snort")
         self.assertEqual(conrule1.getTS()[0].getDport(), '8080')
@@ -185,23 +186,19 @@ class TestRuleReader(TestCase):
         self.assertEqual(len(rules), 19)
         conrule1 = rules[0]
         self.assertEqual(conrule1.getRuleName(), "Snort")
-        self.assertEqual(
-            conrule1.getTS()[0].getPkts()[0].getContent()[0].getType(), "content")
-        self.assertEqual(
-            conrule1.getTS()[0].getPkts()[0].getContent()[0].getContentString(),
-            "work.Method.denyExecution")
+        content0 = conrule1.getTS()[0].getPkts()[0].getContent()[0]
+        self.assertEqual(content0.getType(), "content")
+        self.assertEqual(content0.getContentString(),
+                         "work.Method.denyExecution")
         conrule1 = rules[18]
         self.assertEqual(conrule1.getRuleName(), "Snort")
-        self.assertEqual(
-            conrule1.getTS()[0].getPkts()[0].getContent()[0].getType(), "content")
-        self.assertEqual(
-            conrule1.getTS()[0].getPkts()[0].getContent()[0].getContentString(),
-            "Cookie|3A| =|0D 0A 0D 0A|")
-        self.assertEqual(
-            conrule1.getTS()[0].getPkts()[0].getContent()[1].getType(), "pcre")
-        self.assertEqual(
-            conrule1.getTS()[0].getPkts()[0].getContent()[1].getContentString(),
-            "/abc(def|hij|klm)/")
+        content0 = conrule1.getTS()[0].getPkts()[0].getContent()[0]
+        self.assertEqual(content0.getType(), "content")
+        self.assertEqual(content0.getContentString(),
+                         "Cookie|3A| =|0D 0A 0D 0A|")
+        content1 = conrule1.getTS()[0].getPkts()[0].getContent()[1]
+        self.assertEqual(content1.getType(), "pcre")
+        self.assertEqual(content1.getContentString(), "/abc(def|hij|klm)/")
 
     def test_read_petabi_rule_file(self):
         myrulelist = RuleList()

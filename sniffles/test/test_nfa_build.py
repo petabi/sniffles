@@ -1,11 +1,13 @@
 from unittest import *
 from sniffles.nfa import *
 
+
 class TestNFABuild(TestCase):
     def test_arg_type(self):
         self.assertRaises(TypeError, pcre2nfa, None)
         a = pcre2nfa('')
         self.assertEqual(NFA, type(a))
+
 
 class TestOpAny(TestCase):
     def test_any(self):
@@ -17,6 +19,7 @@ class TestOpAny(TestCase):
     def test_dotall(self):
         a = pcre2nfa('/./s')
         self.assertTrue(a.match("\n"))
+
 
 class TestOpBra(TestCase):
     def test_empty(self):
@@ -30,6 +33,7 @@ class TestOpBra(TestCase):
         self.assertTrue(a.match('b'))
         self.assertFalse(a.match('c'))
 
+
 class TestOpBraZero(TestCase):
     def test_brazero(self):
         a = pcre2nfa('x(0|1){0,2}y')
@@ -42,14 +46,14 @@ class TestOpBraZero(TestCase):
         self.assertFalse(a.match('x110y'))
 
     def test_brazero_any(self):
-        a = pcre2nfa('a(b|c)*d');
+        a = pcre2nfa('a(b|c)*d')
         self.assertTrue(a.match('abd'))
         self.assertTrue(a.match('ad'))
         self.assertTrue(a.match('acd'))
         self.assertTrue(a.match('abbbbd'))
         self.assertFalse(a.match('aed'))
 
-        a = pcre2nfa('a(b*|cd)*e');
+        a = pcre2nfa('a(b*|cd)*e')
         self.assertTrue(a.match('abe'))
         self.assertTrue(a.match('ae'))
         self.assertTrue(a.match('acde'))
@@ -58,12 +62,14 @@ class TestOpBraZero(TestCase):
         self.assertTrue(a.match('acdbcde'))
         self.assertFalse(a.match('abcbde'))
 
+
 class TestOpCbra(TestCase):
     def test_cbra(self):
         a = pcre2nfa('a(b|c)z')
         self.assertTrue(a.match('abz'))
         self.assertTrue(a.match('acz'))
         self.assertFalse(a.match('adz'))
+
 
 class TestOpChar(TestCase):
     def test_char(self):
@@ -88,6 +94,7 @@ class TestOpChar(TestCase):
         self.assertTrue(a.match('nohelloworld'))
         self.assertFalse(a.match('helium'))
 
+
 class TestOpCirc(TestCase):
     def test_circ(self):
         a = pcre2nfa('^a')
@@ -100,6 +107,7 @@ class TestOpCirc(TestCase):
         self.assertTrue(a.match(' abc'))
         self.assertTrue(a.match('       abcxyz'))
         self.assertFalse(a.match('ababc'))
+
 
 class TestOpClass(TestCase):
     def test_crminplus(self):
@@ -190,6 +198,7 @@ class TestOpDigit(TestCase):
         self.assertTrue(a.match('a2a'))
         self.assertFalse(a.match('a09a'))
 
+
 class TestOpExact(TestCase):
     def test_exact(self):
         a = pcre2nfa('a0{2}a')
@@ -198,10 +207,12 @@ class TestOpExact(TestCase):
         self.assertFalse(a.match('a000a'))
         self.assertFalse(a.match('a00b'))
 
+
 class TestOpKetRMax(TestCase):
     def test_nonzero_ketrmax(self):
         a = pcre2nfa('/(0*|E)+/s')
         self.assertTrue(a.match(' a?.d!A]_X:E>'))
+
 
 class TestOpNot(TestCase):
     def test_not(self):
@@ -231,6 +242,7 @@ class TestOpNot(TestCase):
         for c in range(32, 57):
             self.assertTrue(a.match('a' + chr(c) + 'b'))
 
+
 class TestOpNotDigit(TestCase):
     def test_not_digit(self):
         a = pcre2nfa('a\Db')
@@ -239,12 +251,14 @@ class TestOpNotDigit(TestCase):
         self.assertFalse(a.match('a123b'))
         self.assertTrue(a.match('a ba:b'))
 
+
 class TestOpNotExact(TestCase):
     def test_notexact(self):
         a = pcre2nfa('a[^x]{2}b')
         self.assertTrue(a.match('accb'))
         self.assertFalse(a.match('acb'))
         self.assertFalse(a.match('acccb'))
+
 
 class TestOpNotPlus(TestCase):
     def test_notplus(self):
@@ -263,6 +277,7 @@ class TestOpNotPlus(TestCase):
         self.assertTrue(a.match('acdefx'))
         self.assertFalse(a.match('axx'))
         self.assertFalse(a.match('ax'))
+
 
 class TestOpNotStar(TestCase):
     def test_notminstar(self):
@@ -285,6 +300,7 @@ class TestOpNotStar(TestCase):
         self.assertTrue(a.match('acb'))
         self.assertTrue(a.match('acdb'))
         self.assertFalse(a.match('axb'))
+
 
 class TestOpNotUpTo(TestCase):
     def test_notposupto(self):
@@ -315,6 +331,7 @@ class TestOpNotUpTo(TestCase):
         self.assertFalse(a.match('XabCZ'))
         self.assertFalse(a.match('xYz'))
 
+
 class TestOpNotWhitespace(TestCase):
     def test_notwhitespace(self):
         a = pcre2nfa('\S')
@@ -328,6 +345,7 @@ class TestOpNotWhitespace(TestCase):
         self.assertTrue(a.match('aab'))
         self.assertFalse(a.match('\t\n'))
         self.assertFalse(a.match('a b'))
+
 
 class TestOpNotWordchar(TestCase):
     def test_notwordchar(self):
@@ -344,6 +362,7 @@ class TestOpNotWordchar(TestCase):
         self.assertFalse(a.match('aab'))
         self.assertFalse(a.match('  '))
         self.assertTrue(a.match('a b'))
+
 
 class TestOpPlus(TestCase):
     def test_plus(self):
@@ -370,6 +389,7 @@ class TestOpPlus(TestCase):
         self.assertFalse(a.match('ab'))
         self.assertFalse(a.match('axxxxxb'))
 
+
 class TestOpQuery(TestCase):
     def test_query(self):
         a = pcre2nfa('xa?x')
@@ -388,6 +408,7 @@ class TestOpQuery(TestCase):
         self.assertTrue(a.match('ACd'))
         self.assertTrue(a.match('aCcD'))
         self.assertFalse(a.match('aBcd'))
+
 
 class TestOpStar(TestCase):
     def test_posstar(self):
@@ -419,6 +440,7 @@ class TestOpStar(TestCase):
         self.assertTrue(a.match('ab'))
         self.assertTrue(a.match('aaaaaaaabaaaabaaaab'))
         self.assertFalse(a.match('xx'))
+
 
 class TestOpTypeExact(TestCase):
     def test_any(self):
@@ -526,6 +548,7 @@ class TestOpTypePlus(TestCase):
         self.assertTrue(a.match(':#$%:'))
         self.assertFalse(a.match(':abc:'))
 
+
 class TestOpTypeQuery(TestCase):
     def test_digit(self):
         a = pcre2nfa('a\d{2,3}b')
@@ -534,6 +557,7 @@ class TestOpTypeQuery(TestCase):
         self.assertFalse(a.match('a1b'))
         self.assertFalse(a.match('ab'))
         self.assertFalse(a.match('a1234b'))
+
 
 class TestOpTypeStar(TestCase):
     def test_any(self):
@@ -582,6 +606,7 @@ class TestOpTypeStar(TestCase):
         self.assertTrue(a.match('ab'))
         self.assertTrue(a.match('a*#@b'))
         self.assertFalse(a.match('axyzb'))
+
 
 class TestOpTypeUpTo(TestCase):
     def test_any(self):
@@ -655,6 +680,7 @@ class TestOpTypeUpTo(TestCase):
         self.assertFalse(a.match('ac'))
         self.assertFalse(a.match('abbbbbbc'))
 
+
 class TestOpUpTo(TestCase):
     def test_upto(self):
         a = pcre2nfa('/a{1,2}b/i')
@@ -666,6 +692,7 @@ class TestOpUpTo(TestCase):
         self.assertTrue(a.match('aaaaab'))
         self.assertFalse(a.match('aaaaaa'))
 
+
 class TestOpWhitespace(TestCase):
     def test_whitespace(self):
         a = pcre2nfa('\s')
@@ -674,6 +701,7 @@ class TestOpWhitespace(TestCase):
         self.assertTrue(a.match('\n'))
         self.assertTrue(a.match('\t'))
         self.assertFalse(a.match('a'))
+
 
 class TestOpWordchar(TestCase):
     def test_wordchar(self):
@@ -686,6 +714,7 @@ class TestOpWordchar(TestCase):
         self.assertTrue(a.match('z'))
         self.assertFalse(a.match('\n'))
 
+
 class TestOpNotStarI(TestCase):
     def test_op_star_not_i(self):
         a = pcre2nfa('/ab[^c]*d/i')
@@ -693,6 +722,7 @@ class TestOpNotStarI(TestCase):
         self.assertTrue(a.match('ABxxXXD'))
         self.assertTrue(a.match('AbXyZd'))
         self.assertFalse(a.match('abcD'))
+
 
 class TestRegexOptions(TestCase):
     def test_case_insensitive(self):
@@ -725,6 +755,10 @@ class TestRegexOptions(TestCase):
         self.assertTrue(a.match('abc\nef'))
 
     def test_actual(self):
-        a = pcre2nfa('/clsid\s*\x3a\s*\x7B?\s*EC5D5118-9FDE-4A3E-84F3-C2B711740E70(\x22)?.*DownloadCertificateExt\(/is')
-        self.assertTrue(a.match('clsid:EC5D5118-9FDE-4A3E-84F3-C2B711740E70DownloadCertificateExt('))
-        self.assertTrue(a.match('CLSID : { EC5D5118-9FDE-4A3E-84F3-C2B711740E70xxxxxxDownloadCertificateExt('))
+        a = pcre2nfa('/clsid\s*\x3a\s*\x7B?\s*'
+                     'EC5D5118-9FDE-4A3E-84F3-C2B711740E70(\x22)?.*'
+                     'DownloadCertificateExt\(/is')
+        self.assertTrue(a.match('clsid:EC5D5118-9FDE-4A3E-84F3-C2B711740E70'
+                                'DownloadCertificateExt('))
+        self.assertTrue(a.match('CLSID : { EC5D5118-9FDE-4A3E-84F3-'
+                                'C2B711740E70xxxxxxDownloadCertificateExt('))

@@ -246,18 +246,20 @@ def build_eval_pcap(rules, num_rules, traffic_writer, sconf):
 
 def printRegEx(rules=None):
     """
-        This is a utility function to print out all of the regular expressions
+        This is a utility function to print out all of the content strings
         currently in memory (i.e. read in from rules).
     """
     fd = None
     try:
-        fd = open("allre.re", 'w')
+        fd = open("all.re", 'w')
     except:
         print("Could not open file to write out regex.")
     for r in rules:
-        if r.getRule().getRE():
-            fd.write(r.getRule().getRE())
-            fd.write("\n")
+        for ts in r.getTS():
+            for p in ts.getPkts():
+                for c in p.getContent():
+                    fd.write(c.getContentString())
+                    fd.write("\n")
     if fd:
         fd.close()
     return [0, 0, 0]

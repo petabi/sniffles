@@ -1,5 +1,6 @@
 import unittest
 
+
 class TestPcreComp(unittest.TestCase):
     def test_args(self):
         import sniffles.pcrecomp

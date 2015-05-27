@@ -26,7 +26,8 @@ class TestXMLRuleReader(TestCase):
             pkts = tsrules[0].getPkts()
             self.assertEqual(len(pkts), 2)
             self.assertEqual('to server', pkts[0].getDir())
-            self.assertEqual('/abc/i', pkts[0].getContent()[0].getContentString())
+            self.assertEqual('/abc/i',
+                             pkts[0].getContent()[0].getContentString())
             self.assertEqual(0, pkts[0].getFragment())
             self.assertEqual(False, pkts[0].getOutOfOrder())
             self.assertEqual(1, pkts[0].getTimes())

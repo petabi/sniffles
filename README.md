@@ -250,7 +250,7 @@ Command Line Options:
 
   - -v Verbosity: Increase the level of output messages.
 
-  - -w write re: Write the re to the a file called 'allre.re'
+  - -w write content: Write the content strings to a file called 'all.re'
 
   - -W Window: The window, or duration, in seconds of a scan attack.
 

@@ -80,10 +80,11 @@ class TestExamples(TestCase):
         self.assertEqual(ooo, True)
 
     def test_udp_stream_frags_loss(self):
-        myrpkt = RulePkt("to server", RuleContent("pcre", "/my udp4/"), 3, 2, 250)
+        myrpkt = RulePkt("to server", RuleContent("pcre", "/my udp4/"), 3, 2,
+                         250)
         mytsrule = TrafficStreamRule('udp', '1.2.3.6', '9.8.7.6', '9005',
-                                     '105', -1, 4, False, False, False, False, 0,
-                                     95)
+                                     '105', -1, 4, False, False, False, False,
+                                     0, 95)
         mytsrule.addPktRule(myrpkt)
         myts = TrafficStream(mytsrule, 250, 0, len(mytsrule.getPkts()),
                              None, False, mytsrule.getHandshake(),

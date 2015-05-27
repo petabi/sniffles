@@ -146,6 +146,7 @@ class RuleParser(object):
             print("Error reading Basic rule file: Could not open: ",
                   filename)
             print("Error: ", err)
+            return None
         line = self.fd.readline()
         while line:
             line = line.strip()
@@ -190,8 +191,7 @@ class RuleContent(object):
         return self.type
 
     def setContentString(self, content=None):
-        if content:
-            self.content = content
+        self.content = content
 
     def setType(self, type=None):
         self.type = type
@@ -893,16 +893,16 @@ class SnortRuleParser(RuleParser):
             "\\s*(alert|log|pass|activate|dynamic|reject|drop|sdrop)" +
             "\\s+\\w+\\s+[\\w$]+\\s+[\\w$]+\\s+<?->\\s+[\\w$]+\\s+[\\w$]+" +
             "\\s*\\([^)]+\\)")
-        self.openSnortFile(filename)
-        line = self.fd.readline()
-        while line:
-            line = line.strip()
-            if len(line) > 0 and line[0] != '#':
-                if snort_rule_sig.match(line):
-                    is_snort_rule_file = True
-                    break
+        if self.openSnortFile(filename):
             line = self.fd.readline()
-        self.fd.close()
+            while line:
+                line = line.strip()
+                if len(line) > 0 and line[0] != '#':
+                    if snort_rule_sig.match(line):
+                        is_snort_rule_file = True
+                        break
+                line = self.fd.readline()
+            self.fd.close()
         return is_snort_rule_file
 
     def openSnortFile(self, filename):

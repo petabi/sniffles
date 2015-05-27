@@ -271,7 +271,8 @@ class SnifflesConfig(object):
         return self.write_reg_ex
 
     def parse_cmd(self, cmd):
-        cmd_options = "abc:C:d:D:eEf:F:g:h:H:i:I:l:L:mM:o:O:p:P:rRs:S:tTvwW:x:zZ:?"
+        cmd_options = "abc:C:d:D:eEf:F:g:h:H:i:I:l:L:" + \
+                      "mM:o:O:p:P:rRs:S:tTvwW:x:zZ:?"
         try:
             options, args = getopt.getopt(cmd, cmd_options, [])
         except getopt.GetoptError as err:
@@ -516,7 +517,8 @@ class SnifflesConfig(object):
         print("-T TCP Teardown: Include a TCP teardown in all TCP")
         print("   streams.  Off by default.")
         print("-v Verbosity: Increase the level of output messages.")
-        print("-w write re: Write the re to the a file called \'allre.re\'.")
+        print("-w write content: Write the content strings to a file")
+        print("   called \'all.re\'.")
         print("-W Window: The window, or duration, of a scan attack.")
         print("-x Split a pcap into two meta-files for use with traffobot.")
         print("   no other options are valid if this is used.  This will")

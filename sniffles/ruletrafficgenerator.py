@@ -94,23 +94,30 @@ class Conversation(object):
         if con:
             tsrules = con.getTS()
         else:
-            tsrules = [TrafficStreamRule()]
-        ipv6_percent = 0
+            tsrules = [None]
         while tsrules:
+            hs = handshake
+            td = teardown
+            ooo = False
+            synch = False
             myrule = tsrules.pop(0)
-            mypkts = myrule.getPkts()
-            if myrule.getIPV() == "6":
+            mypkts = [RulePkt()]
+            if myrule:
+                mypkts = myrule.getPkts()
+                hs = myrule.getHandshake()
+                td = myrule.getTeardown()
+                ooo = myrule.getOutOfOrder()
+                synch = myrule.getSynch()
+            if myrule and myrule.getIPV() == "6":
                 ipv6_percent = 100
             cur_len = pkt_length
-            if myrule.getLength() < 0 and pkt_length >= 0:
-                cur_len = myrule.getLen()
+            if myrule and myrule.getLength() < 0 and pkt_length >= 0:
+                cur_len = myrule.getLength()
             myts = TrafficStream(myrule, cur_len, ipv6_percent,
                                  len(mypkts), mac_def_file, tcp_ack,
-                                 myrule.getHandshake(),
-                                 myrule.getTeardown(), rand, full_match,
-                                 full_eval, bi, myrule.getOutOfOrder(),
-                                 myrule.getSynch(), mypkts)
-            if myrule.getSynch():
+                                 hs, td, rand, full_match,
+                                 full_eval, bi, ooo, synch, mypkts)
+            if synch:
                 if len(self.ts_active) == 0:
                     self.ts_active.append(myts)
                 else:
@@ -127,7 +134,7 @@ class Conversation(object):
             self.started = True
             for ts in self.ts_active:
                 pkts.extend(ts.getNextPacket())
-            self.updateStreams()
+        self.updateStreams()
         return pkts
 
     def getNextTS(self):
@@ -458,20 +465,27 @@ class TrafficStream(object):
                 pkt = self.handleFragPacket(p)
 
             # Out of order packet-level
-            elif (p.getOutOfOrder() or self.stream_ooo) and self.proto == 'tcp':
+            elif ((
+                p.getOutOfOrder() or self.stream_ooo) and self.proto == 'tcp'
+            ):
                 pkt = self.handleOOOPacket(p)
 
-            elif self.rule.getPacketLoss() > 0:
+            elif self.rule and self.rule.getPacketLoss() > 0:
                 pkt = self.handleLostPacket(p)
 
             # Just a normal packet
             else:
                 pkt = self.createNormalPacket(p.getDir(), False, p)
-                self.updateSequence(p.getDir(), pkt.content.get_size())
-                self.p_count -= 1
+                if type(pkt) is list:
+                    self.packets_in_stream = 0
+                    self.header = 0
+                    self.footer = 0
+                else:
+                        self.updateSequence(p.getDir(), pkt.content.get_size())
+                        self.p_count -= 1
 
             # If p_count is zero, then we have finished with this pkt rule.
-            if self.p_count == 0:
+            if self.p_count <= 0:
                 self.packets_in_stream -= 1
                 if len(self.myp) > 0:
                     self.myp.pop(0)
@@ -527,7 +541,10 @@ class TrafficStream(object):
         else:
             pass
             # Nothing left.
-        return [pkt]
+        if type(pkt) is not list:
+            return [pkt]
+        else:
+            return pkt
 
     def getNextTeardownPacket(self):
         pkt = None
@@ -559,7 +576,7 @@ class TrafficStream(object):
             self.createFragments(p.getDir(), mycontent, p.getFragment())
 
         # If a fragment is lost just consume the next frag.
-        if self.rule.getPacketLoss() > 0:
+        if self.rule and self.rule.getPacketLoss() > 0:
             pick = random.randint(0, 100)
             if pick < self.rule.getPacketLoss():
                 off, frag = self.fragments.pop(0)
@@ -1304,7 +1321,10 @@ class ContentGenerator:
                         http_method = self.generate_from_regex(
                             rule.getContentString())
 
-                elif rule.getHttpUri() is not None or rule.getHttpRawUri() is not None:
+                elif (
+                    rule.getHttpUri() is not None or
+                    rule.getHttpRawUri() is not None
+                ):
                     if rule.getType() == 'content':
                         http_uri = self.generate_from_content_strings(
                             rule.getContentString()
@@ -1312,7 +1332,10 @@ class ContentGenerator:
                     else:
                         http_uri = self.generate_from_regex(
                             rule.getContentString())
-                elif rule.getHttpHeader() is not None or rule.getHttpRawHeader() is not None:
+                elif (
+                    rule.getHttpHeader() is not None or
+                    rule.getHttpRawHeader() is not None
+                ):
                     if rule.getType() == 'content':
                         http_header = self.generate_from_content_strings(
                             rule.getContentString()
