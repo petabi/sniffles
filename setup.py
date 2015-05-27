@@ -13,6 +13,8 @@ setup(name='sniffles',
       entry_points={
           'console_scripts': [
               'sniffles = sniffles.sniffles:main',
+              'rule_gen = sniffles.rand_rule_gen:main',
+              'regex_gen = sniffles.regex_generator:main'
           ],
           'gui_scripts': [
           ],
@@ -24,7 +26,11 @@ setup(name='sniffles',
             'examples/rules.xml',
             'examples/sniffles_example_config.txt',
             'examples/test_frag.xml',
-            'examples/test_out_of_order_n_loss.xml']),
+            'examples/test_out_of_order_n_loss.xml',
+            'example_features/hdr_features_complex.txt',
+            'example_features/hdr_features_simple.txt',
+            'example_features/re_features_complex.txt',
+            'example_features/re_features_simple.txt']),
       ],
       ext_modules=[Extension('sniffles.pcrecomp',
                              sources=['sniffles/pcrecomp.c',

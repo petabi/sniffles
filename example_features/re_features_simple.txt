@@ -1,0 +1,1 @@
+type=content; name=content; regex=True; complexity_prob=0; len=10;

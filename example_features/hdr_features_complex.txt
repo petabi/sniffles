@@ -1,0 +1,6 @@
+type=protocol; name=proto; proto_list=[IP,TCP,UDP,ICMP]; complexity_prob=0;ambiguity_list=None;
+type=ip; name=sip; version=4; complexity_prob=100
+type=feature; name=sport; lower_bound=0; upper_bound=65535; complexity_prob=100; ambiguity_list=[any, [1024:65535], [1024,65535]];
+type=ip; name=dip; version=4; complexity_prob=100;
+type=feature; name=dport; lower_bound=0; upper_bound=65535; complexity_prob=100; ambiguity_list=[any, [1024:65535], [1024,65535]];
+type=content; name=content; regex=True; complexity_prob=0; len=5;
