@@ -74,7 +74,7 @@ Sniffles consists of the following files:
 
 To install:
   1. Go to the Top-level directory.
-  2. Type `python3.x setup.py install`
+  2. Type `python3.x setup.py install`.
   3. This will install the application to your system.
 
 Install Notes:
@@ -363,7 +363,7 @@ The Sniffles rule format is as follows:
 
 <petabi_rules>
 
-  <rule name="test1" >
+  <rule name="test" >
 
     <traffic_stream proto="tcp" src="any" dst="any" sport="any"
     dport="any" handshake="True" teardown="True" synch="True" ip="4">
@@ -372,27 +372,6 @@ The Sniffles rule format is as follows:
 
       <pkt dir="to client" content="/def/i" fragment="0" times="1" />
 
-    </traffic_stream>
-
-    <traffic_stream proto="tcp" src="any" dst="any" sport="any"
-    dport="any" handshake="True" teardown="True" synch="True">
-
-      <pkt dir="to server" content="/abc/i" fragment="0" times="1" />
-
-      <pkt dir="to client" content="/def/i" fragment="0" times="1" />
-
-    </traffic_stream>
-
-  </rule>
-
-  <rule name="test2" >
-
-    <traffic_stream proto="tcp" src="any" dst="any" sport="any"
-    dport="any" handshake="True" teardown="True" synch="True">
-
-      <pkt dir="to server" content="/abc/i" fragment="0" times="1" />
-
-      <pkt dir="to client" content="/def/i" fragment="0" times="1" />
     </traffic_stream>
 
     <traffic_stream proto="tcp" src="any" dst="any" sport="any"
