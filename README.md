@@ -358,12 +358,12 @@ be found in the examples directory.  These rule files are used simply
 by designating the rule file with the -f option (i.e. sniffles -f rules.xml)
 
 The Sniffles rule format is as follows:
-
+```xml
 <?xml version="1.0" encoding="utf-8"?>
 
-`<petabi_rules>`
+<petabi_rules>
 
-  `<rule name="test" >`
+  <rule name="test" >
 
     <traffic_stream proto="tcp" src="any" dst="any" sport="any"
     dport="any" handshake="True" teardown="True" synch="True" ip="4">
@@ -383,10 +383,10 @@ The Sniffles rule format is as follows:
 
     </traffic_stream>
 
-  `</rule>`
+  </rule>
 
-`</petabi_rules>`
-
+</petabi_rules>
+```
 
 In detail, the tags work as follows:
 
@@ -450,7 +450,7 @@ single file.
                  are 1 to 99 representing the chance that a packet will be dropped.
                  Note, the packet drop only happens on data-bearing packets, not
                  on the acks.
-      - `<pkt > </pkt>`:  This directive designates either an individual packet or a series of
+    - `<pkt > </pkt>`:  This directive designates either an individual packet or a series of
     packets.  The times feature can be used to have one <pkt> </pkt> directive generate
     several packets.  Otherwise, it is necessary to explicitly designate each packet
     in each direction.
