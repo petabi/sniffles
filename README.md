@@ -1,5 +1,5 @@
 Sniffles--Packet Capture Generator for IDS and Regular Expression Evaluation
-----------------------------------------------------------------------------
+============================================================================
 
 Sniffles is a tool for creating packet captures that will test IDS
 that use fixed patterns or regular expressions for detecting
@@ -55,7 +55,7 @@ spaces.  In addition, it is possible to simulate scans within a
 traffic capture.
 
 Install
-=======
+-------
 
 REQUIRES: Python 3.3+  
 
@@ -82,7 +82,7 @@ Install Notes:
   2. Use `python3.x setup.py build` to build locally, then go to the library directory, find the lib and use `python3.4 -c "from sniffles import sniffles; sniffles.main()"` to run locally.
 
 Supported Formats:
-==================
+-----------------
 - Snort: Snort alert rules (rule should begin with the Alert
   directive).  Content tags are recognized and parsed correctly. PCRE
   tags are likewise correctly parsed. HTTP tags are processed
@@ -109,7 +109,7 @@ Supported Formats:
 - Sniffles Rule Format described below.
 
 Command Line Options:
-=====================
+--------------------
 
   -a TCP Ack: Send a TCP acknowledgment for every data packet sent.
      Off by default.  Acknowledgement packets have no data by default.
@@ -263,7 +263,7 @@ Command Line Options:
 
 
 Examples:
-=========
+---------
 
 NOTE: all examples assume you have installed the sniffles package.
 
@@ -346,7 +346,7 @@ address in range 192.168.1.0-255 randomly.
 
 
 Sniffles Rule Format:
-=====================
+---------------------
 
 Sniffles supports several rule formats.  First, Sniffles can parse Snort
 rules, and regular expressions (at one per line).
@@ -520,7 +520,7 @@ desired features.
 
 
 Credits:
-========
+--------
 
     This application has been brought to you by Petabi, Inc where we make Reliable, Realistic, and Real-fast security solutions.
 
@@ -532,7 +532,7 @@ Credits:
 
 
 New Features:
-=============
+-------------
 
    11/21/2014: Version 1.4.0 Added traffic splitting and traffobot for 
    bi-directional traffic generation.  Fixed bug where an exception was
