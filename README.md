@@ -602,7 +602,7 @@ regex_gen--Random Regular Expression Generator.
     regular expressions being joined into the overall regular expression.
     The alternation uses the exact same methodology in creating those
     smaller regular expressions.
--    -? print this help.
+-   -? print this help.
 
     This generator will create random regular expressions.  It is possible
     to tune the structures within the regular expressions to a prbability
@@ -650,7 +650,8 @@ Options
 
 Random Rule Generator
 
-usage: rule_gen -c <number of rules -f <feature set> -o <outfile> -[s]
+usage: rule_gen -c [number of rules] -f [feature set]
+        -o [outfile] [-s]
 
 - -c  Number of rules: The number of rules to generate.
       Default is one.
@@ -711,7 +712,7 @@ or just * for a wildcard or similar single option.
 Example:
 ```
 type=protocol; name=proto; proto_list=[IP,TCP,UDP,ICMP]; complexity_prob=0;ambiguity_list=None;
-type=ip; name=sip; version=4; complexity_prob=100
+type=ip; name=sip; version=4; complexity_prob=100;
 ```
 the above defines two features, a protocol features and a source
 IP feature.  The protocol is named proto, which is important
@@ -730,6 +731,15 @@ Generic Feature Attributes:
 - uppder_bound: Opposite of lower_bound.
 - complexity_prob: The probability of using complex features for a
                    rule.  From 0 to 100.  Defaults to 0.
+                   When complex features are used, an ambigous notation
+                   is randomly selected from the ambiguity list, or
+                   if the feature defines a specific ambiguity (like
+                   IP addresses) then that is used.  When complex
+                   features are not used, a value is generated using
+                   the boundaries, or, in the case of Content,
+                   using a set of distribution values that will
+                   restrict the generated string to a series
+                   of ASCII characters.
 - ambiguity_list: A list of possible ambiguous notations.
                   Comma-separated list using python formatting
                   (i.e. [a, b, c]).
