@@ -73,13 +73,15 @@ Sniffles consists of the following files:
   distribution of partial or full MAC addresses.
 
 To install:
-  1. Go to the Top-level directory.
-  2. Type `python3.x setup.py install`.
-  3. This will install the application to your system.
+
+1. Go to the Top-level directory.
+2. Type `python3.x setup.py install`.
+3. This will install the application to your system.
 
 Install Notes:
-  1. This has not been tested with Windows nor has it been tested on Linux.  It has been tested on FreeBSD and Mac OS X.
-  2. Use `python3.x setup.py build` to build locally, then go to the library directory, find the lib and use `python3.4 -c "from sniffles import sniffles; sniffles.main()"` to run locally.
+
+1. This has not been tested with Windows nor has it been tested on Linux.  It has been tested on FreeBSD and Mac OS X.
+2. Use `python3.x setup.py build` to build locally, then go to the library directory, find the lib and use `python3.4 -c "from sniffles import sniffles; sniffles.main()"` to run locally.
 
 Supported Formats:
 -----------------
@@ -95,10 +97,10 @@ Supported Formats:
   packet will be generated meeting those values.  If Home and External
   network address spaces are used then the correct space will be used
   for the respective $HOME_NET and $EXTERNAL_NET variables.  Example:
-
-    alert tcp $EXTERNAL_NET any -> $HOME_NET 8080 \
-    (msg:"SERVER-APACHE Apache Tomcat UNIX platform directory traversal"; \
-    flow:to_server; content:"/..|5C|/"; content:"/..|5C|/"; http_raw_uri;
+  
+  ```
+    alert tcp $EXTERNAL_NET any -> $HOME_NET 8080 (msg:"SERVER-APACHE Apache Tomcat UNIX platform directory traversal"; flow:to_server; content:"/..|5C|/"; content:"/..|5C|/"; http_raw_uri;
+  ```
 
 - Regular expressions: Raw regular expressions 1 to a line written as
   either abc or /abc/i.  Does support options as well.  Currently
