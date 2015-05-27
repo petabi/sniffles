@@ -20,7 +20,7 @@ setup(name='sniffles',
           ],
       },
       data_files=[
-          ('share/doc/sniffles', ['README']),
+          ('share/doc/sniffles', ['README.md']),
           ('share/examples/sniffles',
            ['examples/mac_definition_file.txt',
             'examples/rules.xml',
