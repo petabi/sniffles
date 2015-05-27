@@ -361,9 +361,9 @@ The Sniffles rule format is as follows:
 
 <?xml version="1.0" encoding="utf-8"?>
 
-<petabi_rules>
+`<petabi_rules>`
 
-  <rule name="test" >
+  `<rule name="test" >`
 
     <traffic_stream proto="tcp" src="any" dst="any" sport="any"
     dport="any" handshake="True" teardown="True" synch="True" ip="4">
@@ -383,9 +383,10 @@ The Sniffles rule format is as follows:
 
     </traffic_stream>
 
-  </rule>
+  `</rule>`
 
-</petabi_rules>
+`</petabi_rules>`
+
 
 In detail, the tags work as follows:
 
