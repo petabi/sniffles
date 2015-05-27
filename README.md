@@ -395,14 +395,18 @@ There should only be one set of these tags opening and closing all of the
 designated traffic streams.
 
 `<rule > </rule>`: Designates a single rule.  A single rule can generate an arbitrary
-number of traffic streams or packets, as will be illustrated later.
+number of traffic streams or packets.  May have any number of rules in a
+single file.
+
 Options:
+
   name: The name for this rule.  Mostly for documentation, no real function.
 
   `<traffic_stream> </traffic_stream>`: A traffic stream defines traffic between two
   endpoints.  All pkts designated within a single traffic stream will share the
   same endpoints.  Any number of traffic streams can be designatted for a given
-  rule.
+  rule.  Different traffic streams within the same rule may have different
+  end-points or not depending on the settings below.
   
   Options:
 
@@ -506,9 +510,8 @@ Credits:
 
     Authors:
 
-     Victor C. Valgenti
-
-     Min Sik Kim
+    - Victor C. Valgenti
+    - Min Sik Kim
 
 
 New Features:
