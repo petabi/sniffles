@@ -521,6 +521,11 @@ New Features:
    pcre directly into sniffles.  Cleaned up code and prepared it for the
    public.
 
+- 05/27/2015: Updated documentation, merged in pcre libraries and
+   nfa construction to make sniffles a self-contained package.
+   Added the Regex Generator and the Random Rule Generator as
+   a part of the Sniffles package.  Updated version to 3.0.0
+   and published to github.
 
 Regular Expression Generator
 ============================
