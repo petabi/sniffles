@@ -2060,12 +2060,9 @@ class TransportLayer(object):
 
 class ICMP(TransportLayer):
 
-    def __init__(self, type=None, code=None):
+    def __init__(self, type, code=None):
         self.proto = "icmp"
-        if type:
-            self.type = int(type)
-        else:
-            self.type = 1
+        self.type = int(type)
         if code:
             self.code = int(code)
         else:
