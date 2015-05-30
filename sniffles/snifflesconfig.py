@@ -281,30 +281,29 @@ class SnifflesConfig(object):
         for opt, arg in options:
             self.parse_opt_arg(opt, arg)
 
-    def parse_config_file(self, cfg_file=None):
-        if cfg_file:
-            print("Reading config file: ", cfg_file)
-            try:
-                fd = open(cfg_file, 'r')
-            except:
-                print("Error: Could not open provided config file: ", filename)
-                sys.exit(1)
-            line = fd.readline()
+    def parse_config_file(self, cfg_file):
+        print("Reading config file: ", cfg_file)
+        try:
+            fd = open(cfg_file, 'r')
+        except:
+            print("Error: Could not open provided config file: ", filename)
+            sys.exit(1)
+        line = fd.readline()
 
-            while line:
-                line = line.strip()
-                if len(line) > 0 and line[0] != '#':
-                    try:
-                        opt, arg = line.split('=')
-                    except Exception as err:
-                        print("Could not parse line in config file: ", line)
-                        print("Error: ", err)
-                        sys.exit(1)
-                    opt = opt.strip()
-                    arg = arg.strip()
-                    self.parse_opt_arg(opt, arg)
-                line = fd.readline()
-            fd.close()
+        while line:
+            line = line.strip()
+            if len(line) > 0 and line[0] != '#':
+                try:
+                    opt, arg = line.split('=')
+                except Exception as err:
+                    print("Could not parse line in config file: ", line)
+                    print("Error: ", err)
+                    sys.exit(1)
+                opt = opt.strip()
+                arg = arg.strip()
+                self.parse_opt_arg(opt, arg)
+            line = fd.readline()
+        fd.close()
 
     def parse_opt_arg(self, opt, arg):
         if opt == "-a":
