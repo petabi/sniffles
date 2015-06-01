@@ -47,7 +47,7 @@ rule features for more information.
 Finally, Sniffles can also do a lot for generating random network
 traffic.  By default, random traffic is TCP, UDP, or ICMP and
 unidirectional. However, it can also generate TCP traffic with ACKs,
-handshakes, and teardowns for each stream.  
+handshakes, and teardowns for each stream.
 It will generate correct sequence numbers and checksums.
 Further, MAC addresses can be set according to desired distributions,
 and IP network addresses can be defined by Home and External address
@@ -57,7 +57,7 @@ traffic capture.
 Install
 -------
 
-REQUIRES: Python 3.3+  
+REQUIRES: Python 3.3+
 
 Sniffles consists of the following files:
 - sniffles.py: The main program managing the process.
@@ -97,7 +97,7 @@ Supported Formats:
   packet will be generated meeting those values.  If Home and External
   network address spaces are used then the correct space will be used
   for the respective $HOME_NET and $EXTERNAL_NET variables.  Example:
-  
+
   ```
     alert tcp $EXTERNAL_NET any -> $HOME_NET 8080 (msg:"SERVER-APACHE Apache Tomcat UNIX platform directory traversal"; flow:to_server; content:"/..|5C|/"; content:"/..|5C|/"; http_raw_uri;
   ```
@@ -487,7 +487,7 @@ Credits:
 New Features:
 -------------
 
-- 11/21/2014: Version 1.4.0 Added traffic splitting and traffobot for 
+- 11/21/2014: Version 1.4.0 Added traffic splitting and traffobot for
    bi-directional traffic generation.  Fixed bug where an exception was
    thrown when the amount of traffic generated could fit in a single
    traffic write call. Reformatted and enabled usage.  Finally, added
@@ -687,7 +687,7 @@ like 192.168.1.1.  That would represent a simple IP address as
 it is a single fixed IP address without any possible ambiguous
 notation.  We then further define the range of the particular
 features (i.e. IP addresses across the entire 4 billion plus
-possible IPv4 addresses, or just some subset of that).  
+possible IPv4 addresses, or just some subset of that).
 
 The features ultimately define all of the aspects of for an
 arbitrary rule.  Given a feature set and a valid rule format,
@@ -700,7 +700,7 @@ Features are defined in a semi-colon separated list one feature per line
 type=feature; list of arguments in key=value pairs, lists using
 python formatting (i.e. [a, ..., z]).  Feature define specific
 portions of a target rule format.  Features may be extended
-to add more functionality.  Optionally, one can extend the 
+to add more functionality.  Optionally, one can extend the
 ability of the features by creating a new rule format.
 
 Current Feature Types:
@@ -711,7 +711,7 @@ Current Feature Types:
 4. Protocol -- Protocol Feature
 
 Ambiguous features should be written as lists like [x:y]
-for a range, [x,y] for a list with maximum of 10 
+for a range, [x,y] for a list with maximum of 10
 or just * for a wildcard or similar single option.
 
 Example:
@@ -780,5 +780,3 @@ Please look at the example feature sets in the
 example_features folder for further examples.
 More details as well as the academic theory
 behind this are scheduled to be added later.
-
-
