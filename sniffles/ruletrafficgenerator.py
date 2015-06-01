@@ -8,13 +8,12 @@ from os import listdir
 from os.path import isfile, join
 from sniffles.rulereader import *
 from sniffles.nfa import *
-from sniffles.vendor_mac_list import vendor_oui
+from sniffles.vendor_mac_list import VENDOR_MAC_OUI
 
 ETHERNET_HDR_GEN_RANDOM = 0
 ETHERNET_HDR_GEN_DISTRIBUTION = 1
 MAC_IP_MAP = dict()
 OPEN_PORT_CHANCE = 20
-VENDOR_MAC_OUI = []
 VENDOR_MAC_DIST_DOMAIN = 100
 VENDOR_MAC_DIST = {}
 HOME_IP_PREFIXES = []
@@ -1520,8 +1519,6 @@ class EthernetFrame:
         else:
             self.e_type = 0x0800
 
-        if not VENDOR_MAC_OUI:
-            self.build_vendor_mac_oui_list()
         if type == ETHERNET_HDR_GEN_DISTRIBUTION and dist_file is not None:
             self.gen_mac_addr_from_distribution(sip, dip, dist_file)
         elif type == ETHERNET_HDR_GEN_RANDOM:
@@ -1536,25 +1533,11 @@ class EthernetFrame:
         e_header_str = '-'.join(['%02x' % octet for octet in e_header])
         return e_header_str
 
-    def build_vendor_mac_oui_list(self):
-        global VENDOR_MAC_OUI
-        lines = vendor_oui.splitlines()
-        for line in lines:
-            line = line.strip()
-            if len(line) == 6:
-                octet1 = line[0:2]
-                octet2 = line[2:4]
-                octet3 = line[4:6]
-                VENDOR_MAC_OUI.append([int(octet1, 16), int(octet2, 16),
-                                       int(octet3, 16)])
-
     def clear_globals(self):
         global MAC_IP_MAP
-        global VENDOR_MAC_OUI
         global VENDOR_MAC_DIST_DOMAIN
         global VENDOR_MAC_DIST
         MAC_IP_MAP = dict()
-        VENDOR_MAC_OUI = []
         VENDOR_MAC_DIST_DOMAIN = 100
         VENDOR_MAC_DIST = {}
 
