@@ -477,12 +477,13 @@ Please contact me with desired features.
 Credits:
 --------
 
-    This application has been brought to you by Petabi, Inc where we make Reliable, Realistic, and Real-fast security solutions.
+This application has been brought to you by Petabi, Inc. where we make
+Reliable, Realistic, and Real-fast security solutions.
 
-    Authors:
+Authors:
 
-    - Victor C. Valgenti
-    - Min Sik Kim
+- Victor C. Valgenti
+- Min Sik Kim
 
 New Features:
 -------------
