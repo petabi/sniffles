@@ -1647,7 +1647,7 @@ class EthernetFrame:
         return self.s_mac
 
     def get_random_octets(self, prefix):
-        random_octets = prefix
+        random_octets = list(prefix)
         start = len(random_octets)
         for o in range(start, 6):
             random_octets.append(random.randint(0, 255))
