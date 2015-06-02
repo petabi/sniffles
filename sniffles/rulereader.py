@@ -1062,19 +1062,17 @@ class RuleList:
                     return myp
         return RuleParser()
 
-    def readRuleFile(self, filename=None):
-        if filename:
-
-            # Note: findParser is called multiple times if readRuleFiles()
-            # is used.  This is purposeful, as it allows for each of the
-            # rule files to be in a different format.
-            parser = self.findParser(filename)
-            parser.parseRuleFile(filename)
-            if parser.getRules():
-                if self.all_rules:
-                    self.all_rules.extend(parser.getRules())
-                else:
-                    self.all_rules = parser.getRules()
+    def readRuleFile(self):
+        # Note: findParser is called multiple times if readRuleFiles()
+        # is used.  This is purposeful, as it allows for each of the
+        # rule files to be in a different format.
+        parser = self.findParser(filename)
+        parser.parseRuleFile(filename)
+        if parser.getRules():
+            if self.all_rules:
+                self.all_rules.extend(parser.getRules())
+            else:
+                self.all_rules = parser.getRules()
 
     def readRuleFiles(self, dirname=None):
         if dirname is None:
