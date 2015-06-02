@@ -1062,7 +1062,7 @@ class RuleList:
                     return myp
         return RuleParser()
 
-    def readRuleFile(self):
+    def readRuleFile(self, filename):
         # Note: findParser is called multiple times if readRuleFiles()
         # is used.  This is purposeful, as it allows for each of the
         # rule files to be in a different format.
