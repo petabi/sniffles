@@ -12,7 +12,6 @@ from pkg_resources import get_distribution, DistributionNotFound
 
 
 def getVersion():
-    version = 0
     try:
         _dist = get_distribution('sniffles')
         dist_loc = os.path.normcase(_dist.location)

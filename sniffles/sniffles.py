@@ -44,7 +44,7 @@ def main():
     sconf = SnifflesConfig(sys.argv[1:])
     start = datetime.datetime.now()
     print("")
-    print("!^!Sniffles v" + str(getVersion()) +
+    print("!^!Sniffles v" + getVersion() +
           " -- Traffic Generation for NIDS evaluation.")
     print("Started at: ", start)
     if sconf.getSplitFile():
