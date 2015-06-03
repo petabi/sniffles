@@ -1,21 +1,14 @@
 from unittest import *
 from sniffles.ruletrafficgenerator import *
-from sniffles.vendor_mac_list import vendor_oui
+from sniffles.vendor_mac_list import VENDOR_MAC_OUI
 
 
 class TestRuleTrafficGenerator(TestCase):
     def test_build_random_ethernet_header(self):
         random.seed()
-        myouilist = []
-        lines = vendor_oui.splitlines()
-        for line in lines:
-            line = line.lower().strip()
-            myouilist.append(line)
         myehdr = EthernetFrame('10.0.0.1', '10.1.1.1', ETHERNET_HDR_GEN_RANDOM)
-        self.assertIn(''.join(['%02x' % i for i in myehdr.get_d_mac()[0:3]]),
-                      myouilist)
-        self.assertIn(''.join(['%02x' % i for i in myehdr.get_s_mac()[0:3]]),
-                      myouilist)
+        self.assertIn(myehdr.get_d_mac()[0:3], VENDOR_MAC_OUI)
+        self.assertIn(myehdr.get_s_mac()[0:3], VENDOR_MAC_OUI)
         myehdrstr1 = str(myehdr)
         myehdr = EthernetFrame('10.0.0.1', '10.1.1.1', ETHERNET_HDR_GEN_RANDOM)
         myehdrstr2 = str(myehdr)

@@ -1,6 +1,5 @@
 from unittest import *
 from sniffles.ruletrafficgenerator import *
-from sniffles.vendor_mac_list import vendor_oui
 
 
 class TestExamples(TestCase):
