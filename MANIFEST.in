@@ -5,6 +5,10 @@ include examples/test_frag.xml
 include examples/test_out_of_order_n_loss.xml
 include examples/test_all.xml
 include examples/test_udp.xml
+include example_features/hdr_features_complex.txt
+include example_features/hdr_features_simple.txt
+include example_features/re_features_complex.txt
+include example_features/re_features_simple.txt
 include README.md
 include sniffles/nfa.py
 include sniffles/pcre_chartables.c
