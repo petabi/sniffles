@@ -16,7 +16,7 @@ include sniffles/pcre_compile.c
 include sniffles/pcre_globals.c
 include sniffles/pcre_internal.h
 include sniffles/pcre_newline.c
-inlcude sniffles/pcre_tables.c
+include sniffles/pcre_tables.c
 include sniffles/pcre.h
 include sniffles/pcrecomp.c
 include sniffles/pcreconf.py
