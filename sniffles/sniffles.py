@@ -277,89 +277,89 @@ def write_packets(queue=None, traffic_writer=None, time_lapse=1,
     if not queue:
         print("No packets to write")
         return (0, traffic_writer.get_timestamp())
-    else:
-        # write out packets
-        reg_packets = 0
-        scan_packets = 0
-        slow_flow_counter = 0
-        current_time = time_lapse
-        last_scan = current_time
-        index = random.randint(0, len(queue)-1)
-        if slow_flows:
-            for sf in slow_flows:
-                if not sf.has_started():
-                    pkts = sf.getNextPkts()
-                    if pkts:
-                        for pkt in pkts:
-                            current_time = traffic_writer.write_packet(
-                                pkt.get_size(), pkt.get_packet(), time_lapse)
-                        reg_packets += len(pkts)
-                    else:
-                        slow_flows.remove(sf)
-        while queue:
 
-            index = index % len(queue)
-            current_stream = queue[index]
-            if current_stream.has_packets():
-                # write that packet
-                pkts = []
-                pkts.extend(current_stream.getNextPkts())
-                if pkts is not None and len(pkts) > 0:
-                    for pkt in pkts:
-                        if pkt is not None:
-                            current_time = traffic_writer.write_packet(
-                                pkt.get_size(), pkt.get_packet(), time_lapse)
-                    reg_packets += len(pkts)
-
-                else:
-                    print("packets is none!!! Something is wrong")
-                    del queue[index]
-
-            else:
-                del queue[index]
-
-            # Add scan packets interleaving with regular packets.
-            if scan:
-                last_time = current_time
-                for s in scanners:
-                    if s.get_offset() <= current_time and s.has_packets():
-                        last = s.get_last_sent()
-                        diff = (current_time - last) / s.get_pkt_interval()
-                        pkts = []
-                        while diff > 0:
-                            pkt = s.get_next_packet()
-                            if pkt is not None:
-                                pkts.append(pkt)
-                            diff -= 1
-                        for pkt in pkts:
-                            last_time = traffic_writer.write_packet(
-                                pkt.get_size(), pkt.get_packet(),
-                                time_lapse)
-                            scan_packets += 1
-                    if not s.has_packets():
-                        scanners.remove(s)
-                current_time = last_time
-
-            # Add in flows designed to extend across the entire pcap
-            if slow_flows and slow_flow_counter == SLOW_FLOW_COUNT:
-                sf_index = random.randint(0, len(slow_flows)-1)
-                sf = slow_flows[sf_index]
-                pkts = []
-                pkts.extend(sf.getNextPkts())
-                if pkts is not None and len(pkts) > 0:
+    # write out packets
+    reg_packets = 0
+    scan_packets = 0
+    slow_flow_counter = 0
+    current_time = time_lapse
+    last_scan = current_time
+    index = random.randint(0, len(queue)-1)
+    if slow_flows:
+        for sf in slow_flows:
+            if not sf.has_started():
+                pkts = sf.getNextPkts()
+                if pkts:
                     for pkt in pkts:
                         current_time = traffic_writer.write_packet(
                             pkt.get_size(), pkt.get_packet(), time_lapse)
                     reg_packets += len(pkts)
-
                 else:
-                    del slow_flows[sf_index]
-                if not sf.has_packets():
-                    del slow_flows[sf_index]
+                    slow_flows.remove(sf)
+    while queue:
 
-            slow_flow_counter += 1
-            index += 1
-        return (reg_packets + scan_packets, current_time)
+        index = index % len(queue)
+        current_stream = queue[index]
+        if current_stream.has_packets():
+            # write that packet
+            pkts = []
+            pkts.extend(current_stream.getNextPkts())
+            if pkts is not None and len(pkts) > 0:
+                for pkt in pkts:
+                    if pkt is not None:
+                        current_time = traffic_writer.write_packet(
+                            pkt.get_size(), pkt.get_packet(), time_lapse)
+                reg_packets += len(pkts)
+
+            else:
+                print("packets is none!!! Something is wrong")
+                del queue[index]
+
+        else:
+            del queue[index]
+
+        # Add scan packets interleaving with regular packets.
+        if scan:
+            last_time = current_time
+            for s in scanners:
+                if s.get_offset() <= current_time and s.has_packets():
+                    last = s.get_last_sent()
+                    diff = (current_time - last) / s.get_pkt_interval()
+                    pkts = []
+                    while diff > 0:
+                        pkt = s.get_next_packet()
+                        if pkt is not None:
+                            pkts.append(pkt)
+                        diff -= 1
+                    for pkt in pkts:
+                        last_time = traffic_writer.write_packet(
+                            pkt.get_size(), pkt.get_packet(),
+                            time_lapse)
+                        scan_packets += 1
+                if not s.has_packets():
+                    scanners.remove(s)
+            current_time = last_time
+
+        # Add in flows designed to extend across the entire pcap
+        if slow_flows and slow_flow_counter == SLOW_FLOW_COUNT:
+            sf_index = random.randint(0, len(slow_flows)-1)
+            sf = slow_flows[sf_index]
+            pkts = []
+            pkts.extend(sf.getNextPkts())
+            if pkts is not None and len(pkts) > 0:
+                for pkt in pkts:
+                    current_time = traffic_writer.write_packet(
+                        pkt.get_size(), pkt.get_packet(), time_lapse)
+                reg_packets += len(pkts)
+
+            else:
+                del slow_flows[sf_index]
+            if not sf.has_packets():
+                del slow_flows[sf_index]
+
+        slow_flow_counter += 1
+        index += 1
+    return (reg_packets + scan_packets, current_time)
 
 if __name__ == "__main__":
     main()
