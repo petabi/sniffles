@@ -76,7 +76,7 @@ def main():
 ##############################################################################
 
 
-def start_generation(sconf=None):
+def start_generation(sconf):
     """ This function controls the reading of rules and the actual
         generation of traffic.
     """
@@ -244,7 +244,7 @@ def build_eval_pcap(rules, num_rules, traffic_writer, sconf):
     return [num_rules, total_pkts, current_time]
 
 
-def printRegEx(rules=None):
+def printRegEx(rules):
     """
         This is a utility function to print out all of the content strings
         currently in memory (i.e. read in from rules).
