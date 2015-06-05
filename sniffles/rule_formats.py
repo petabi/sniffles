@@ -1,12 +1,3 @@
-import codecs
-import copy
-import getopt
-import sys
-import datetime
-import re
-import random
-
-
 class RuleFormat(object):
 
     def __init__(self, rule=None):
