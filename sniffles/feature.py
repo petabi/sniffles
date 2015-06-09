@@ -24,7 +24,7 @@ class RangeNotation(AmbiguousNotation):
 
     # Range notation should be expressed as [x:y] where
     # x is lower bound and y is upper bound.
-    def __init__(self, notation=None):
+    def __init__(self, notation):
         self.notation = notation
         self.prefix = notation[0:1]
         self.suffix = notation[-1:]
