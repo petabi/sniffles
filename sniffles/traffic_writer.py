@@ -93,6 +93,9 @@ class TrafficWriter:
         return float(self.current_time_sec + (self.current_time_usec/1000000))
 
     def write_pcap_file_header(self):
+        if not self.writer_handle:
+            return
+
         magic_number = 0xa1b2c3d4
         version_major = 2
         version_minor = 4
@@ -104,5 +107,4 @@ class TrafficWriter:
                                     version_major, version_minor,
                                     thiszone, sigfigs, snaplen,
                                     network)
-        if self.writer_handle:
-            self.writer_handle.write(global_header)
+        self.writer_handle.write(global_header)
