@@ -924,13 +924,13 @@ class Packet(object):
                  ipv=4, sport=None, dport=None, flags=None, seq=0,
                  ack=0, mac_gen=ETHERNET_HDR_GEN_RANDOM,
                  dist_file=None, content=None, frag_id=0,
-                 offset=0, mf=False,):
+                 offset=0, mf=False,ttl=None):
         self.transport_hdr = None
         self.proto = proto
         if ipv == 6:
-            self.network_hdr = IPV6(sip, dip)
+            self.network_hdr = IPV6(sip, dip, ttl)
         else:
-            self.network_hdr = IPV4(sip, dip)
+            self.network_hdr = IPV4(sip, dip, ttl)
         self.datalink_hdr = EthernetFrame(self.network_hdr.get_sip(),
                                           self.network_hdr.get_dip(),
                                           mac_gen, dist_file, ipv)
