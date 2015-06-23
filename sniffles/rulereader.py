@@ -253,6 +253,7 @@ class RulePkt(object):
         self.ack_this = ack_this
         self.ooo = ooo
         self.split = split
+        self.ttl = ttl
         if self.fragment > 1 and ooo:
             self.ooo = True
 
@@ -269,6 +270,8 @@ class RulePkt(object):
         mystr += str(self.fragment)
         mystr += ", Times: "
         mystr += str(self.times)
+        mystr += ", Time to live: "
+        mystr += str(self.ttl)
         mystr += ", Length: "
         mystr += str(self.length)
         mystr += ", Ack This: "
@@ -305,6 +308,9 @@ class RulePkt(object):
     def getTimes(self):
         return self.times
 
+    def getTTL(self):
+        return self.ttl
+
     # mutators
     def addContent(self, con=None):
         if con:
@@ -339,6 +345,8 @@ class RulePkt(object):
     def setTimes(self, times=1):
         self.times = times
 
+    def setTTL(self, ttl):
+        self.ttl = ttl
 
 class TrafficStreamRule(object):
     """
@@ -998,6 +1006,9 @@ class PetabiRuleParser(RuleParser):
                     if 'split' in pkt.attrib:
                         if int(pkt.attrib['split']) > 0:
                             mypkt.setSplit(int(pkt.attrib['split']))
+                    if 'ttl' in pkt.attrib:
+                        if int(pkt.attrib['ttl']) > 0:
+                            mypkt.setTTL(int(pkt.attrib['ttl']))
                     mytsrule.addPktRule(mypkt)
                 myprule.addTS(mytsrule)
             self.addRule(myprule)
