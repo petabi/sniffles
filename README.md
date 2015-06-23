@@ -205,7 +205,7 @@ Command Line Options:
      will only partially match rules, thus alerts should not be
      generated (not guaranteed though).
 
-  - -M It allows to use a mac distribution to have a custom MAC address
+  - -M It allows to use a MAC distribution to have a custom MAC address
       distribution in the traffic. By default, it will not use MAC
       distribution file but it will generate a random address.
 
