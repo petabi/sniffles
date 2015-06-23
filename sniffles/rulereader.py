@@ -348,6 +348,7 @@ class RulePkt(object):
     def setTTL(self, ttl):
         self.ttl = ttl
 
+
 class TrafficStreamRule(object):
     """
         The TrafficStreamRule defines all of the particulars

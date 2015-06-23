@@ -483,6 +483,10 @@ class TrafficStream(object):
                         self.updateSequence(p.getDir(), pkt.content.get_size())
                         self.p_count -= 1
 
+            # Update TTL value getting from the rule, ignored if 256
+            if p.getTTL() != 256:
+                pkt.set_ttl(p.getTTL())
+
             # If p_count is zero, then we have finished with this pkt rule.
             if self.p_count <= 0:
                 self.packets_in_stream -= 1
@@ -924,7 +928,7 @@ class Packet(object):
                  ipv=4, sport=None, dport=None, flags=None, seq=0,
                  ack=0, mac_gen=ETHERNET_HDR_GEN_RANDOM,
                  dist_file=None, content=None, frag_id=0,
-                 offset=0, mf=False,ttl=None):
+                 offset=0, mf=False, ttl=None):
         self.transport_hdr = None
         self.proto = proto
         if ipv == 6:
@@ -1026,6 +1030,9 @@ class Packet(object):
 
     def set_content(self, content=None):
         self.content = content
+
+    def set_ttl(self, ttl):
+        self.network_hdr.set_ttl(ttl)
 
 
 class Content(object):
@@ -1754,6 +1761,9 @@ class IP(object):
 
     def get_size(self):
         return self.size
+
+    def set_ttl(self, ttl):
+        self.ttl = ttl
 
 
 class IPV4(IP):
