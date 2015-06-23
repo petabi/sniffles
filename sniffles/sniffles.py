@@ -2,6 +2,7 @@ import getopt
 import datetime
 import random
 import sys
+import signal
 import copy
 from sniffles.rulereader import *
 from sniffles.ruletrafficgenerator import *
@@ -41,6 +42,7 @@ SLOW_FLOW_THRESHOLD = 1000000
 
 
 def main():
+    signal.signal(signal.SIGINT, handlerKeyboardInterupt)
     sconf = SnifflesConfig(sys.argv[1:])
     start = datetime.datetime.now()
     print("")
@@ -360,6 +362,14 @@ def write_packets(queue=None, traffic_writer=None, time_lapse=1,
         slow_flow_counter += 1
         index += 1
     return (reg_packets + scan_packets, current_time)
+
+
+def handlerKeyboardInterupt(signum, frame):
+    '''
+    When Sniffles is killed through a keyboard interrupt, it will
+    be gracefully shutdown. It was handled using interupt handler
+    '''
+    sys.exit(0)
 
 if __name__ == "__main__":
     main()
