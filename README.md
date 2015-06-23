@@ -205,6 +205,10 @@ Command Line Options:
      will only partially match rules, thus alerts should not be
      generated (not guaranteed though).
 
+  - -M It allows to use a mac distribution to have a custom MAC address 
+      distribution in the traffic. By default, it will not use mac 
+      distribution file but it will generate a random address.
+
   - -o output file: designate the name of the output file.  By default,
      the file is named: sniffles.pcap.
 
