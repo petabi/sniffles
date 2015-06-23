@@ -242,7 +242,7 @@ class RulePkt(object):
                  this with IP fragments has not been tested.
     """
     def __init__(self, dir="to server", content=None, fragment=0, times=1,
-                 length=-1, ack_this=False, ooo=False, split=0):
+                 length=-1, ack_this=False, ooo=False, split=0, ttl=256):
         self.dir = dir
         self.content = None
         if content:

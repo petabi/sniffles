@@ -924,7 +924,7 @@ class Packet(object):
                  ipv=4, sport=None, dport=None, flags=None, seq=0,
                  ack=0, mac_gen=ETHERNET_HDR_GEN_RANDOM,
                  dist_file=None, content=None, frag_id=0,
-                 offset=0, mf=False):
+                 offset=0, mf=False,):
         self.transport_hdr = None
         self.proto = proto
         if ipv == 6:
@@ -1678,7 +1678,7 @@ class IP(object):
         Base class for generating IP headers.  Should not be instantiated.
         Provides the shared functionality for IP headers.
     """
-    def __init__(self, sip=None, dip=None):
+    def __init__(self, sip=None, dip=None, ttl=None):
         home_or_not = False
         if random.randint(1, 100) > 60:
             home_or_not = not home_or_not
@@ -1692,7 +1692,10 @@ class IP(object):
             self.dip = self.gen_ip(home_or_not)
         else:
             self.dip = dip
-        self.ttl = int(random.normalvariate(45, 7))
+        if not ttl:
+            self.ttl = int(random.normalvariate(45, 7))
+        else:
+            self.ttl = ttl
         self.protocol = 0x00
         self.length = 0x0000
         self.size = 20
@@ -1763,8 +1766,8 @@ class IPV4(IP):
         NOTE: currently no effort is made to ensure external addresses do
         not match home addresses.
     """
-    def __init__(self, sip=None, dip=None):
-        super().__init__(sip, dip)
+    def __init__(self, sip=None, dip=None, ttl=None):
+        super().__init__(sip, dip, ttl)
         self.vhl = 0x45
         self.tos = 0x00
         self.id = 0x0000
@@ -1844,8 +1847,8 @@ class IPV6(IP):
         of HOME_IP_PREFIXESv6 if distinction between home and external networks
         is to be maintained.
     """
-    def __init__(self, sip=None, dip=None):
-        super().__init__(sip, dip)
+    def __init__(self, sip=None, dip=None, ttl=None):
+        super().__init__(sip, dip, ttl)
         self.vtc = 0x6000
         self.flow_label = 0
         self.length = 0
