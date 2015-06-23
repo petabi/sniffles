@@ -472,6 +472,8 @@ In detail, the tags work as follows:
                       a positive value will send exactly x packets (possibly
                       with acks if ack is true), while a negative number will
                       send a random number of packets between 1 and abs(-x).
+                    - ttl: set time to live value for packet. By default,
+                      sniffles will generate random TTL value.
 
 Final Notes: The new rule format is just a beginning and may contain problems.
 Please alert me of any inconsitencies or errors.  Further, the intent is to
@@ -488,6 +490,7 @@ Authors:
 
 - Victor C. Valgenti
 - Min Sik Kim
+- Tu Le
 
 New Features:
 -------------

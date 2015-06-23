@@ -223,6 +223,8 @@ class RulePkt(object):
           length: -1 == random length if random rule, otherwise length of
                  generated content, 0 = no data, 1+ fixes data length at
                  that value.
+          time to live: the time to live for the packet. By default, the
+                value of ttl is 256.
           ack_this: Whether or not an ack should be sent for each pkt using
                     this rule.  Only valid for TCP, will send one ack for
                     every pkt sent using this rule (though out of order
