@@ -219,35 +219,116 @@ class TestExamples(TestCase):
             mycount += 1
         self.assertEqual(mycount, 2)
 
-    def test_ttlvalue(self):
-        myrpkt = RulePkt("to server", "/my udp1/", 0, 3, ttl = 15)
-        self.assertEqual(myrpkt.getTTL(), 15)
-        # mytsrule = TrafficStreamRule('tcp', '1.2.3.4', '9.8.7.5', '9000',
-        #                              '101', -1, 4, False, True, True)
-        # mytsrule.addPktRule(myrpkt)
-        # myts = TrafficStream(mytsrule, 100, 0, len(mytsrule.getPkts()),
-        #                      None, False, mytsrule.getHandshake(),
-        #                      mytsrule.getTeardown(), False, True, False, False,
-        #                      mytsrule.getOutOfOrder(), mytsrule.getSynch(),
-        #                      mytsrule.getPkts())
-        # mycount = 0
-        # mypkt = myts.getNextPacket()[0]
-        # myseq = mypkt.transport_hdr.get_seq_num()
-        # self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
-        # mypkt = myts.getNextPacket()[0]
-        # self.assertEqual(mypkt.transport_hdr.get_flags(), SYN + ACK)
-        # for i in range(0, 3):
-        #     mypkt = myts.getNextPacket()[0]
-        #     self.assertEqual(mypkt.transport_hdr.get_seq_num(),
-        #                      myseq + (i * 100) + 1)
-        #     self.assertEqual(mypkt.get_src_ip(), '1.2.3.4')
-        #     self.assertEqual(mypkt.get_dst_ip(), '9.8.7.5')
+    def test_ttl_expiry_scenario2(self):
+        """
+           2)ttl = 115, 2 fragment
+           two packet should have ttl is 115
+        """
+        myrpkt = RulePkt("to server", "/my tcp2/", 2, 1, ttl=115)
+        mytsrule = TrafficStreamRule('tcp', '1.2.3.4', '9.8.7.5', '9000',
+                                     '101', -1, 4, False, False, False)
+        mytsrule.addPktRule(myrpkt)
+        myts = TrafficStream(mytsrule, -1, 0, len(mytsrule.getPkts()),
+                             None, False, mytsrule.getHandshake(),
+                             mytsrule.getTeardown(), False, True, False, False,
+                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
+                             mytsrule.getPkts())
+        mycount = 0
+        while myts.has_packets():
+            mypkt = myts.getNextPacket()[0]
+            self.assertEqual(mypkt.get_ttl(), 115)
+            mycount += 1
+        self.assertEqual(mycount, 2)
 
-        # mypkt = myts.getNextPacket()[0]
-        # self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
-        # mypkt = myts.getNextPacket()[0]
-        # self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
-        # mypkt = myts.getNextPacket()[0]
-        # self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
-        # mypkt = myts.getNextPacket()[0]
-        # self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
+    def test_ttl_expiry_scenario1(self):
+        """
+           1)tll = 110, no fragment
+           one packet should have ttl is 110
+        """
+        myrpkt = RulePkt("to server", "/my tcp2/", 0, 1, ttl=110)
+        mytsrule = TrafficStreamRule('tcp', '1.2.3.4', '9.8.7.5', '9000',
+                                     '101', -1, 4, False, False, False)
+        mytsrule.addPktRule(myrpkt)
+        myts = TrafficStream(mytsrule, -1, 0, len(mytsrule.getPkts()),
+                             None, False, mytsrule.getHandshake(),
+                             mytsrule.getTeardown(), False, True, False, False,
+                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
+                             mytsrule.getPkts())
+        mycount = 0
+        while myts.has_packets():
+            mypkt = myts.getNextPacket()[0]
+            self.assertEqual(mypkt.get_ttl(), 110)
+            mycount += 1
+        self.assertEqual(mycount, 1)
+
+    def test_ttl_expiry_scenario3(self):
+        """
+           ttl = 110 and ttl_expiry = 6 and fragment is 2
+           create two good packet with ttl value is 110
+           and malicious packet with ttl value is 6
+           the totall is 3 packet
+        """
+        myrpkt = RulePkt("to server", "/my tcp2/", 2, 1, ttl=110, ttl_expiry=6)
+        mytsrule = TrafficStreamRule('tcp', '1.2.3.4', '9.8.7.5', '9000',
+                                     '101', -1, 4, False, False, False)
+        mytsrule.addPktRule(myrpkt)
+        myts = TrafficStream(mytsrule, -1, 0, len(mytsrule.getPkts()),
+                             None, False, mytsrule.getHandshake(),
+                             mytsrule.getTeardown(), False, True, False, False,
+                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
+                             mytsrule.getPkts())
+        mycount = 0
+        while myts.has_packets():
+            mypkt = myts.getNextPacket()[0]
+            if mycount % 2 == 0:
+                self.assertEqual(mypkt.get_ttl(), 110)
+            else:
+                self.assertEqual(mypkt.get_ttl(), 6)
+            mycount += 1
+        self.assertEqual(mycount, 3)
+
+    def test_ttl_expiry_scenario4(self):
+        """
+           4)ttl = 147 and ttl_expiry = 0 and fragment is 2
+           create two packet with ttl value is 147
+           since ttl_expiry is 0
+        """
+        myrpkt = RulePkt("to server", "/my tcp2/", 2, 1, ttl=147, ttl_expiry=0)
+        mytsrule = TrafficStreamRule('tcp', '1.2.3.4', '9.8.7.5', '9000',
+                                     '101', -1, 4, False, False, False)
+        mytsrule.addPktRule(myrpkt)
+        myts = TrafficStream(mytsrule, -1, 0, len(mytsrule.getPkts()),
+                             None, False, mytsrule.getHandshake(),
+                             mytsrule.getTeardown(), False, True, False, False,
+                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
+                             mytsrule.getPkts())
+        mycount = 0
+        while myts.has_packets():
+            mypkt = myts.getNextPacket()[0]
+            self.assertEqual(mypkt.get_ttl(), 147)
+            mycount += 1
+        self.assertEqual(mycount, 2)
+
+    def test_ttl_expiry_scenario5(self):
+        """
+           5)ttl_expiry = 9 and fragment is 3
+           create three good packet with random ttl value
+           malicious packet with ttl value is 9
+           the totall is 5 packet
+        """
+        myrpkt = RulePkt("to server", "/abcdefghik/", 3, 1, ttl_expiry=9)
+        mytsrule = TrafficStreamRule('tcp', '1.2.3.4', '9.8.7.5', '9000',
+                                     '101', -1, 4, False, False, False)
+        mytsrule.addPktRule(myrpkt)
+        myts = TrafficStream(mytsrule, -1, 0, len(mytsrule.getPkts()),
+                             None, False, mytsrule.getHandshake(),
+                             mytsrule.getTeardown(), False, True, False, False,
+                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
+                             mytsrule.getPkts())
+        mycount = 0
+        while myts.has_packets():
+            mypkt = myts.getNextPacket()[0]
+            if mycount % 2 != 0:
+                self.assertEqual(mypkt.get_ttl(), 9)
+            mycount += 1
+        self.assertEqual(mycount, 5)

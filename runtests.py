@@ -7,6 +7,7 @@ if __name__ == '__main__':
                     sysconfig.get_platform() + '-' +
                     sysconfig.get_python_version())
     sys.path.insert(1, sys.path[1])
+    from sniffles.test.test_ttl_expiry_attack import *
     from sniffles.test.test_rule_reader import *
     from sniffles.test.test_rule_traffic_generator import *
     from sniffles.test.test_traffic_splitter import *
@@ -14,8 +15,8 @@ if __name__ == '__main__':
     from sniffles.test.test_examples import *
     from sniffles.test.test_pcrecomp import *
     from sniffles.test.test_nfa_build import *
-    from sniffles.test.test_ttl_expiry_attack import *
     suites = [
+        unittest.TestLoader().loadTestsFromTestCase(TestTTLExpiryAttack),
         unittest.TestLoader().loadTestsFromTestCase(TestRuleReader),
         unittest.TestLoader().loadTestsFromTestCase(TestRuleTrafficGenerator),
         unittest.TestLoader().loadTestsFromTestCase(TestTrafficSplitter),
@@ -52,8 +53,7 @@ if __name__ == '__main__':
         unittest.TestLoader().loadTestsFromTestCase(TestOpWhitespace),
         unittest.TestLoader().loadTestsFromTestCase(TestOpWordchar),
         unittest.TestLoader().loadTestsFromTestCase(TestOpNotStarI),
-        unittest.TestLoader().loadTestsFromTestCase(TestRegexOptions),
-        unittest.TestLoader().loadTestsFromTestCase(TestTTLExpiryAttack)
+        unittest.TestLoader().loadTestsFromTestCase(TestRegexOptions)
     ]
     tests = unittest.TestSuite(suites)
     unittest.TextTestRunner().run(tests)
