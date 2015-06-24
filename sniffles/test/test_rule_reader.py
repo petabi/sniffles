@@ -17,15 +17,15 @@ class TestRuleReader(TestCase):
         self.assertEqual(myp[0].getContent()[0].getContentString(), "/xyz/i")
         self.assertEqual(myp[1].getContent()[0].getContentString(), "/abc/i")
         self.assertEqual(myp[2].getContent()[0].getContentString(), "/def/i")
-        self.assertEqual(myp[0].getTTLExpiry(), 15);
-        self.assertEqual(myp[1].getTTLExpiry(), 23);
-        self.assertEqual(myp[1].getTTL(), 9);
-        self.assertEqual(myp[2].getTTLExpiry(), 0);
-        self.assertEqual(myp[2].getTTL(), 256);
+        self.assertEqual(myp[0].getTTLExpiry(), 15)
+        self.assertEqual(myp[1].getTTLExpiry(), 23)
+        self.assertEqual(myp[1].getTTL(), 9)
+        self.assertEqual(myp[2].getTTLExpiry(), 0)
+        self.assertEqual(myp[2].getTTL(), 256)
         myp[2].setTTLExpiry(5)
-        self.assertEqual(myp[2].getTTLExpiry(), 5);
+        self.assertEqual(myp[2].getTTLExpiry(), 5)
         myp[2].setTTL(114)
-        self.assertEqual(myp[2].getTTL(), 114);
+        self.assertEqual(myp[2].getTTL(), 114)
 
     def test_parse_snort_rule(self):
         textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
