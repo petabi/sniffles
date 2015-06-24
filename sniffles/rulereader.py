@@ -244,7 +244,8 @@ class RulePkt(object):
                  this with IP fragments has not been tested.
     """
     def __init__(self, dir="to server", content=None, fragment=0, times=1,
-                 length=-1, ack_this=False, ooo=False, split=0, ttl=256, ttl_expiry=False):
+                 length=-1, ack_this=False, ooo=False, split=0, ttl=256,
+                 ttl_expiry=False):
         self.dir = dir
         self.content = None
         if content:
@@ -1024,7 +1025,6 @@ class PetabiRuleParser(RuleParser):
                     if 'ttl_expiry' in pkt.attrib:
                         if pkt.attrib['ttl_expiry'].lower() == 'true':
                             mypkt.setTTLExpiry(True)
-
                     mytsrule.addPktRule(mypkt)
                 myprule.addTS(mytsrule)
             self.addRule(myprule)

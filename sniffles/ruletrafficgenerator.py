@@ -313,6 +313,18 @@ class TrafficStream(object):
                      frag, self.frag_id, offset, mf)
         return pkt
 
+    def buildDummyFragPkt(self, dir="to server", frag=None, offset=0,
+                          mf=False, ttl=5):
+        sip = self.sip
+        dip = self.dip
+        if dir == "to client":
+            sip = self.dip
+            dip = self.sip
+        pkt = Packet(self.proto, sip, dip, self.ip_type, self.sport,
+                     self.dport, 0, 0, 0, self.mac_gen, self.mac_def_file,
+                     frag, self.frag_id, offset, mf, ttl)
+        return pkt
+
     def buildPkt(self, dir="to server", flags=ACK, content=None, seq=None,
                  ack=None):
         sip = self.sip
@@ -387,15 +399,16 @@ class TrafficStream(object):
         else:
             return ip_generator.gen_ip(home)
 
-    def createFragments(self, dir="to server", content=None, myfrags=1): #ttl_expiry argument
+    def createFragments(self, dir="to server", content=None, myfrags=1,
+                        ttlexpiry=False):
         self.frag_id = random.randint(1, 65000)
         myoffset = 0
         myindex = 0
         mf = True
         whole_pkt = self.buildPkt(dir, ACK, content)
-        data = whole_pkt.get_packet() #everything after ip header
-        frag_content = Content(data[34:], len(data[34:]), False, True) #the data
-        possible_frags = frag_content.get_size() / 8 
+        data = whole_pkt.get_packet()
+        frag_content = Content(data[34:], len(data[34:]), False, True)
+        possible_frags = frag_content.get_size() / 8
         if not possible_frags.is_integer():
             possible_frags = int(possible_frags) + 1
         else:
@@ -411,10 +424,18 @@ class TrafficStream(object):
                 myend = frag_content.get_size()
                 mf = False
             self.last_off = myoffset
-            self.fragments.append(
-                (myoffset, frag_content.get_fragment(myindex, myend))) #ttlexpiry)
 
-            # self.fragments.append(dummy packet)
+            self.fragments.append(
+                (myoffset,
+                 frag_content.get_fragment(myindex, myend),
+                 False)
+                )
+            if i != (myfrags - 1) and ttlexpiry:
+                self.fragments.append(
+                    (myoffset,
+                     frag_content.get_fragment(myindex, myend),
+                     True)
+                    )
 
             myindex += (frag_size * 8)
             myoffset = int(myindex/8)
@@ -486,8 +507,9 @@ class TrafficStream(object):
                         self.updateSequence(p.getDir(), pkt.content.get_size())
                         self.p_count -= 1
 
-            # Update TTL value getting from the rule, ignored if 256
-            if p.getTTL() != 256:
+            # Update TTL value getting from the rule
+            # when we dont have ttl expiry attribute, ignored if 256
+            if p.getTTL() != 256 and p.getTTLExpiry():
                 pkt.set_ttl(p.getTTL())
 
             # If p_count is zero, then we have finished with this pkt rule.
@@ -575,20 +597,19 @@ class TrafficStream(object):
     def handleFragPacket(self, p=None):
         pkt = None
 
-        #if ttl expiry
-
         if not self.fragments or len(self.fragments) <= 0:
             cg = ContentGenerator(p, self.pkt_len, self.rand,
                                   self.full_match, self.full_eval)
             mycontent = cg.get_next_published_content()
             self.frag_con_size = mycontent.get_size()
-            self.createFragments(p.getDir(), mycontent, p.getFragment())
+            self.createFragments(p.getDir(), mycontent, p.getFragment(),
+                                 p.getTTLExpiry())
 
         # If a fragment is lost just consume the next frag.
         if self.rule and self.rule.getPacketLoss() > 0:
             pick = random.randint(0, 100)
             if pick < self.rule.getPacketLoss():
-                off, frag = self.fragments.pop(0)
+                off, frag, ttlexpi = self.fragments.pop(0)
                 self.dropped = True
 
         if len(self.fragments) > 0:
@@ -596,17 +617,19 @@ class TrafficStream(object):
             # out of order fragments
             if (self.stream_ooo or p.getOutOfOrder()) \
                and len(self.fragments) > 1:
-                off, frag = self.fragments.pop(
+                off, frag, ttlexpi = self.fragments.pop(
                     random.randint(0, len(self.fragments) - 1))
             else:
-                off, frag = self.fragments.pop(0)
+                off, frag, ttlexpi = self.fragments.pop(0)
             mf = True
 
-            #check if ttl expiry 
-
-            if off == self.last_off:
+            # check if this is last fragment and ttl expiry is false
+            if off == self.last_off and not p.getTTLExpiry():
                 mf = False
-            pkt = self.buildFragPkt(p.getDir(), frag, off, mf)
+            if not ttlexpi:
+                pkt = self.buildFragPkt(p.getDir(), frag, off, mf)
+            else:
+                pkt = self.buildDummyFragPkt(p.getDir(), frag, off, mf, ttl=5)
             if self.fragments is None or len(self.fragments) < 1:
                 if not self.dropped:
                     self.updateSequence(p.getDir(), self.frag_con_size)
