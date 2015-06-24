@@ -14,6 +14,7 @@ if __name__ == '__main__':
     from sniffles.test.test_examples import *
     from sniffles.test.test_pcrecomp import *
     from sniffles.test.test_nfa_build import *
+    from sniffles.test.test_ttl_expiry_attack import *
     suites = [
         unittest.TestLoader().loadTestsFromTestCase(TestRuleReader),
         unittest.TestLoader().loadTestsFromTestCase(TestRuleTrafficGenerator),
@@ -51,7 +52,8 @@ if __name__ == '__main__':
         unittest.TestLoader().loadTestsFromTestCase(TestOpWhitespace),
         unittest.TestLoader().loadTestsFromTestCase(TestOpWordchar),
         unittest.TestLoader().loadTestsFromTestCase(TestOpNotStarI),
-        unittest.TestLoader().loadTestsFromTestCase(TestRegexOptions)
+        unittest.TestLoader().loadTestsFromTestCase(TestRegexOptions),
+        unittest.TestLoader().loadTestsFromTestCase(TestTTLExpiryAttack)
     ]
     tests = unittest.TestSuite(suites)
     unittest.TextTestRunner().run(tests)

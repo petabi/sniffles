@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<petabi_rules>
+  <rule name="test1" >
+    <traffic_stream proto="tcp" src="any" dst="any" sport="any" dport="any"
+      handshake="false" teardown="false" synch="false" ip="4">
+      <pkt dir="to server" content="/abcdef/i" fragment="2" times="1" ttl="110" ttl_expiry="true"/>
+    </traffic_stream>
+  </rule>
+</petabi_rules>
