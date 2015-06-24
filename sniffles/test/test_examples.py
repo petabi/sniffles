@@ -332,4 +332,3 @@ class TestExamples(TestCase):
                 self.assertEqual(mypkt.get_ttl(), 9)
             mycount += 1
         self.assertEqual(mycount, 5)
-
