@@ -244,7 +244,7 @@ class RulePkt(object):
                  this with IP fragments has not been tested.
     """
     def __init__(self, dir="to server", content=None, fragment=0, times=1,
-                 length=-1, ack_this=False, ooo=False, split=0, ttl=256):
+                 length=-1, ack_this=False, ooo=False, split=0, ttl=256, ttl_expiry=False):
         self.dir = dir
         self.content = None
         if content:
@@ -256,6 +256,7 @@ class RulePkt(object):
         self.ooo = ooo
         self.split = split
         self.ttl = ttl
+        self.ttl_expiry = ttl_expiry
         if self.fragment > 1 and ooo:
             self.ooo = True
 
@@ -282,6 +283,8 @@ class RulePkt(object):
         mystr += str(self.ooo)
         mystr += ", Split: "
         mystr += str(self.split)
+        mystr += ", TTL Expiry: "
+        mystr += str(self.ttl_expiry)
         mystr += "\n"
         return mystr
 
@@ -312,6 +315,9 @@ class RulePkt(object):
 
     def getTTL(self):
         return self.ttl
+
+    def getTTLExpiry(self):
+        return self.ttl_expiry
 
     # mutators
     def addContent(self, con=None):
@@ -349,6 +355,9 @@ class RulePkt(object):
 
     def setTTL(self, ttl):
         self.ttl = ttl
+
+    def setTTLExpiry(self, ttl_expiry):
+        self.ttl_expiry = ttl_expiry
 
 
 class TrafficStreamRule(object):
@@ -1012,6 +1021,10 @@ class PetabiRuleParser(RuleParser):
                     if 'ttl' in pkt.attrib:
                         if int(pkt.attrib['ttl']) > 0:
                             mypkt.setTTL(int(pkt.attrib['ttl']))
+                    if 'ttl_expiry' in pkt.attrib:
+                        if pkt.attrib['ttl_expiry'].lower() == 'true':
+                            mypkt.setTTLExpiry(True)
+
                     mytsrule.addPktRule(mypkt)
                 myprule.addTS(mytsrule)
             self.addRule(myprule)
