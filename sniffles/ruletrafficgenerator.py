@@ -509,7 +509,7 @@ class TrafficStream(object):
 
             # Update TTL value getting from the rule
             # when we dont have ttl expiry attribute, ignored if 256
-            if p.getTTL() != 256 and p.getTTLExpiry():
+            if p.getTTL() != 256 and not p.getTTLExpiry():
                 pkt.set_ttl(p.getTTL())
 
             # If p_count is zero, then we have finished with this pkt rule.
