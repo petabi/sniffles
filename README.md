@@ -475,8 +475,8 @@ In detail, the tags work as follows:
                     - ttl: set time to live value for packet. By default,
                       sniffles will generate random TTL value.
                     - ttl_expiry: simulate the ttl expiry attack by breaking
-                      packets into multiple packet with one malicious packet 
-                      between two good packet. By default, the value is 0 
+                      packets into multiple packet with one malicious packet
+                      between two good packet. By default, the value is 0
                       (No malicious packet). If the value is nonzero, it will
                       insert malicious packet with this ttl equals ttl_expiry
                       value. If the ttl value is set, good packet will be set
