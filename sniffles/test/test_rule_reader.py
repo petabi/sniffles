@@ -3,6 +3,9 @@ from sniffles.rulereader import *
 
 
 class TestRuleReader(TestCase):
+    def test_ttl_expiry_value(self):
+        pass
+
     def test_parse_snort_rule(self):
         textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
                    '(msg:"NETBIOS SMB-DS NT Trans NT CREATE invalid SACL ' \

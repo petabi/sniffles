@@ -400,7 +400,7 @@ class TrafficStream(object):
             return ip_generator.gen_ip(home)
 
     def createFragments(self, dir="to server", content=None, myfrags=1,
-                        ttlexpiry=False):
+                        ttlexpiry=0):
         self.frag_id = random.randint(1, 65000)
         myoffset = 0
         myindex = 0
@@ -430,7 +430,9 @@ class TrafficStream(object):
                  frag_content.get_fragment(myindex, myend),
                  False)
                 )
-            if i != (myfrags - 1) and ttlexpiry:
+
+            # if this is not the last fragment and ttlexpiry is nonzero
+            if i != (myfrags - 1) and ttlexpiry != 0:
                 self.fragments.append(
                     (myoffset,
                      frag_content.get_fragment(myindex, myend),
@@ -507,9 +509,9 @@ class TrafficStream(object):
                         self.updateSequence(p.getDir(), pkt.content.get_size())
                         self.p_count -= 1
 
-            # Update TTL value getting from the rule
-            # when we dont have ttl expiry attribute, ignored if 256
-            if p.getTTL() != 256 and not p.getTTLExpiry():
+            # Update TTL value getting from the rule (ignored if 256)
+            # only if we have ttl expiry is 0
+            if p.getTTL() != 256 and p.getTTLExpiry() == 0:
                 pkt.set_ttl(p.getTTL())
 
             # If p_count is zero, then we have finished with this pkt rule.
@@ -623,13 +625,17 @@ class TrafficStream(object):
                 off, frag, ttlexpi = self.fragments.pop(0)
             mf = True
 
-            # check if this is last fragment and ttl expiry is false
-            if off == self.last_off and not p.getTTLExpiry():
+            # check if this is last fragment and ttl expiry == 0
+            if off == self.last_off and p.getTTLExpiry() == 0:
                 mf = False
+
+            # if this is a normal packet, create it.
+            # if not, create a malicious packet with our ttl = ttl_expiry
             if not ttlexpi:
                 pkt = self.buildFragPkt(p.getDir(), frag, off, mf)
             else:
-                pkt = self.buildDummyFragPkt(p.getDir(), frag, off, mf, ttl=5)
+                pkt = self.buildDummyFragPkt(p.getDir(), frag, off, mf,
+                                             ttl=p.getTTLExpiry())
             if self.fragments is None or len(self.fragments) < 1:
                 if not self.dropped:
                     self.updateSequence(p.getDir(), self.frag_con_size)

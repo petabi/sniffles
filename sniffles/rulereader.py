@@ -224,7 +224,14 @@ class RulePkt(object):
                  generated content, 0 = no data, 1+ fixes data length at
                  that value.
           time to live: the time to live for the packet. By default, the
-                value of ttl is 256.
+                        value of ttl is 256.
+          time to live expiry: simulate the ttl expiry attack by breaking
+                               packets into multiple packet with one
+                               malicious packet between two good packet.
+                               By default, the value is 0 (No malicious
+                               packet). If the value is nonzero, it will
+                               insert malicious packet with this ttl_expiry
+                               value.
           ack_this: Whether or not an ack should be sent for each pkt using
                     this rule.  Only valid for TCP, will send one ack for
                     every pkt sent using this rule (though out of order
@@ -245,7 +252,7 @@ class RulePkt(object):
     """
     def __init__(self, dir="to server", content=None, fragment=0, times=1,
                  length=-1, ack_this=False, ooo=False, split=0, ttl=256,
-                 ttl_expiry=False):
+                 ttl_expiry=0):
         self.dir = dir
         self.content = None
         if content:
@@ -1023,8 +1030,8 @@ class PetabiRuleParser(RuleParser):
                         if int(pkt.attrib['ttl']) > 0:
                             mypkt.setTTL(int(pkt.attrib['ttl']))
                     if 'ttl_expiry' in pkt.attrib:
-                        if pkt.attrib['ttl_expiry'].lower() == 'true':
-                            mypkt.setTTLExpiry(True)
+                        if int(pkt.attrib['ttl_expiry']) > 0:
+                            mypkt.setTTLExpiry(int(pkt.attrib['ttl_expiry']))
                     mytsrule.addPktRule(mypkt)
                 myprule.addTS(mytsrule)
             self.addRule(myprule)
