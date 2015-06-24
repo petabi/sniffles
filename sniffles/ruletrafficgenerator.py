@@ -464,6 +464,7 @@ class TrafficStream(object):
 
     def getNextContentPacket(self):
         pkt = None
+        isMalicious = None
         # Handle complex rules such as fragments, out-of-order, etc.
         if self.myp:
             p = self.myp[0]
@@ -487,7 +488,7 @@ class TrafficStream(object):
 
             # handle fragmented packets
             elif p.getFragment() > 0:
-                pkt = self.handleFragPacket(p)
+                pkt, isMalicious = self.handleFragPacket(p)
 
             # Out of order packet-level
             elif ((
@@ -510,8 +511,9 @@ class TrafficStream(object):
                         self.p_count -= 1
 
             # Update TTL value getting from the rule (ignored if 256)
-            # only if we have ttl expiry is 0
-            if p.getTTL() != 256 and p.getTTLExpiry() == 0:
+            # only if that packet is not malicious
+            # In other words, isMalicious is none or false
+            if p.getTTL() != 256 and (isMalicious is None or not isMalicious):
                 pkt.set_ttl(p.getTTL())
 
             # If p_count is zero, then we have finished with this pkt rule.
@@ -647,7 +649,7 @@ class TrafficStream(object):
                     self.next_is_ack = True
                 else:
                     self.p_count -= 1
-        return pkt
+        return pkt, ttlexpi
 
     def handleLostPacket(self, p=None):
         pkt = None
