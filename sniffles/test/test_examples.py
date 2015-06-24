@@ -218,3 +218,36 @@ class TestExamples(TestCase):
             self.assertEqual(mypkt.get_size(), 62)
             mycount += 1
         self.assertEqual(mycount, 2)
+
+    def test_ttlvalue(self):
+        myrpkt = RulePkt("to server", "/my udp1/", 0, 3, ttl = 15)
+        self.assertEqual(myrpkt.getTTL(), 15)
+        # mytsrule = TrafficStreamRule('tcp', '1.2.3.4', '9.8.7.5', '9000',
+        #                              '101', -1, 4, False, True, True)
+        # mytsrule.addPktRule(myrpkt)
+        # myts = TrafficStream(mytsrule, 100, 0, len(mytsrule.getPkts()),
+        #                      None, False, mytsrule.getHandshake(),
+        #                      mytsrule.getTeardown(), False, True, False, False,
+        #                      mytsrule.getOutOfOrder(), mytsrule.getSynch(),
+        #                      mytsrule.getPkts())
+        # mycount = 0
+        # mypkt = myts.getNextPacket()[0]
+        # myseq = mypkt.transport_hdr.get_seq_num()
+        # self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
+        # mypkt = myts.getNextPacket()[0]
+        # self.assertEqual(mypkt.transport_hdr.get_flags(), SYN + ACK)
+        # for i in range(0, 3):
+        #     mypkt = myts.getNextPacket()[0]
+        #     self.assertEqual(mypkt.transport_hdr.get_seq_num(),
+        #                      myseq + (i * 100) + 1)
+        #     self.assertEqual(mypkt.get_src_ip(), '1.2.3.4')
+        #     self.assertEqual(mypkt.get_dst_ip(), '9.8.7.5')
+
+        # mypkt = myts.getNextPacket()[0]
+        # self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
+        # mypkt = myts.getNextPacket()[0]
+        # self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
+        # mypkt = myts.getNextPacket()[0]
+        # self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
+        # mypkt = myts.getNextPacket()[0]
+        # self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)

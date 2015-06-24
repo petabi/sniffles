@@ -1002,6 +1002,9 @@ class Packet(object):
         else:
             return 0
 
+    def get_ttl(self):
+        return self.network_hdr.get_ttl()
+
     def prepare_headers(self, proto='tcp', sport=None, dport=None,
                         flags=0, seq=0, ack=0):
         if proto.lower() == 'icmp':
@@ -1736,6 +1739,9 @@ class IP(object):
 
     def get_version(self):
         return None
+
+    def get_ttl(self):
+        return self.ttl
 
     def set_prototcol(self, protocol=0):
         if protocol == 0:
