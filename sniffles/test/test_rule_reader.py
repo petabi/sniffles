@@ -7,7 +7,8 @@ class TestRuleReader(TestCase):
         myprule = Rule('Petabi')
         mytsrule1 = TrafficStreamRule('udp')
         mytsrule1.addPktRule(RulePkt("to server", "/xyz/i", ttl_expiry=15))
-        mytsrule1.addPktRule(RulePkt("to server", "/abc/i", ttl_expiry=23, ttl=9))
+        mytsrule1.addPktRule(RulePkt("to server", "/abc/i", ttl_expiry=23,
+                                     ttl=9))
         mytsrule1.addPktRule(RulePkt("to server", "/def/i"))
         myprule.addTS(mytsrule1)
         self.assertEqual(myprule.getRuleName(), 'Petabi')
