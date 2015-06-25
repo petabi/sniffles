@@ -433,9 +433,19 @@ class TrafficStream(object):
 
             # if this is not the last fragment and ttlexpiry is nonzero
             if i != (myfrags - 1) and ttlexpiry != 0:
+
+                def generateDummyContent(begin, end):
+                    dummyData = []
+                    for i in range(begin, end):
+                        dummyData.append(str(random.randint(0, 10)))
+                    return dummyData
+                dumbData = generateDummyContent(myindex, myend)
+                dummy = Content(dumbData, len(dumbData),
+                                False, True)
+
                 self.fragments.append(
                     (myoffset,
-                     frag_content.get_fragment(myindex, myend),
+                     frag_content.get_fragment(0, myend - myindex),
                      True)
                     )
 
