@@ -313,6 +313,18 @@ class TrafficStream(object):
                      frag, self.frag_id, offset, mf)
         return pkt
 
+    def buildDummyFragPkt(self, dir="to server", frag=None, offset=0,
+                          mf=False, ttl=5):
+        sip = self.sip
+        dip = self.dip
+        if dir == "to client":
+            sip = self.dip
+            dip = self.sip
+        pkt = Packet(self.proto, sip, dip, self.ip_type, self.sport,
+                     self.dport, 0, 0, 0, self.mac_gen, self.mac_def_file,
+                     frag, self.frag_id, offset, mf, ttl)
+        return pkt
+
     def buildPkt(self, dir="to server", flags=ACK, content=None, seq=None,
                  ack=None):
         sip = self.sip
@@ -387,7 +399,8 @@ class TrafficStream(object):
         else:
             return ip_generator.gen_ip(home)
 
-    def createFragments(self, dir="to server", content=None, myfrags=1):
+    def createFragments(self, dir="to server", content=None, myfrags=1,
+                        ttlexpiry=0):
         self.frag_id = random.randint(1, 65000)
         myoffset = 0
         myindex = 0
@@ -411,8 +424,31 @@ class TrafficStream(object):
                 myend = frag_content.get_size()
                 mf = False
             self.last_off = myoffset
+
             self.fragments.append(
-                (myoffset, frag_content.get_fragment(myindex, myend)))
+                (myoffset,
+                 frag_content.get_fragment(myindex, myend),
+                 False)
+                )
+
+            # if this is not the last fragment and ttlexpiry is nonzero
+            if i != (myfrags - 1) and ttlexpiry != 0:
+
+                def generateDummyContent(begin, end):
+                    dummyData = []
+                    for i in range(begin, end):
+                        dummyData.append(str(random.randint(0, 10)))
+                    return dummyData
+                dumbData = generateDummyContent(myindex, myend)
+                dummy = Content(dumbData, len(dumbData),
+                                False, True)
+
+                self.fragments.append(
+                    (myoffset,
+                     frag_content.get_fragment(0, myend - myindex),
+                     True)
+                    )
+
             myindex += (frag_size * 8)
             myoffset = int(myindex/8)
 
@@ -438,6 +474,7 @@ class TrafficStream(object):
 
     def getNextContentPacket(self):
         pkt = None
+        isMalicious = None
         # Handle complex rules such as fragments, out-of-order, etc.
         if self.myp:
             p = self.myp[0]
@@ -461,7 +498,7 @@ class TrafficStream(object):
 
             # handle fragmented packets
             elif p.getFragment() > 0:
-                pkt = self.handleFragPacket(p)
+                pkt, isMalicious = self.handleFragPacket(p)
 
             # Out of order packet-level
             elif ((
@@ -482,6 +519,12 @@ class TrafficStream(object):
                 else:
                         self.updateSequence(p.getDir(), pkt.content.get_size())
                         self.p_count -= 1
+
+            # Update TTL value getting from the rule (ignored if 256)
+            # only if that packet is not malicious
+            # In other words, isMalicious is none or false
+            if p.getTTL() != 256 and (isMalicious is None or not isMalicious):
+                pkt.set_ttl(p.getTTL())
 
             # If p_count is zero, then we have finished with this pkt rule.
             if self.p_count <= 0:
@@ -567,32 +610,44 @@ class TrafficStream(object):
 
     def handleFragPacket(self, p=None):
         pkt = None
+
         if not self.fragments or len(self.fragments) <= 0:
             cg = ContentGenerator(p, self.pkt_len, self.rand,
                                   self.full_match, self.full_eval)
             mycontent = cg.get_next_published_content()
             self.frag_con_size = mycontent.get_size()
-            self.createFragments(p.getDir(), mycontent, p.getFragment())
+            self.createFragments(p.getDir(), mycontent, p.getFragment(),
+                                 p.getTTLExpiry())
 
         # If a fragment is lost just consume the next frag.
         if self.rule and self.rule.getPacketLoss() > 0:
             pick = random.randint(0, 100)
             if pick < self.rule.getPacketLoss():
-                off, frag = self.fragments.pop(0)
+                off, frag, ttlexpi = self.fragments.pop(0)
                 self.dropped = True
 
-        # out of order fragments
         if len(self.fragments) > 0:
+
+            # out of order fragments
             if (self.stream_ooo or p.getOutOfOrder()) \
                and len(self.fragments) > 1:
-                off, frag = self.fragments.pop(
+                off, frag, ttlexpi = self.fragments.pop(
                     random.randint(0, len(self.fragments) - 1))
             else:
-                off, frag = self.fragments.pop(0)
+                off, frag, ttlexpi = self.fragments.pop(0)
             mf = True
-            if off == self.last_off:
+
+            # check if this is last fragment and ttl expiry == 0
+            if off == self.last_off and p.getTTLExpiry() == 0:
                 mf = False
-            pkt = self.buildFragPkt(p.getDir(), frag, off, mf)
+
+            # if this is a normal packet, create it.
+            # if not, create a malicious packet with our ttl = ttl_expiry
+            if not ttlexpi:
+                pkt = self.buildFragPkt(p.getDir(), frag, off, mf)
+            else:
+                pkt = self.buildDummyFragPkt(p.getDir(), frag, off, mf,
+                                             ttl=p.getTTLExpiry())
             if self.fragments is None or len(self.fragments) < 1:
                 if not self.dropped:
                     self.updateSequence(p.getDir(), self.frag_con_size)
@@ -604,7 +659,7 @@ class TrafficStream(object):
                     self.next_is_ack = True
                 else:
                     self.p_count -= 1
-        return pkt
+        return pkt, ttlexpi
 
     def handleLostPacket(self, p=None):
         pkt = None
@@ -924,13 +979,13 @@ class Packet(object):
                  ipv=4, sport=None, dport=None, flags=None, seq=0,
                  ack=0, mac_gen=ETHERNET_HDR_GEN_RANDOM,
                  dist_file=None, content=None, frag_id=0,
-                 offset=0, mf=False):
+                 offset=0, mf=False, ttl=None):
         self.transport_hdr = None
         self.proto = proto
         if ipv == 6:
-            self.network_hdr = IPV6(sip, dip)
+            self.network_hdr = IPV6(sip, dip, ttl)
         else:
-            self.network_hdr = IPV4(sip, dip)
+            self.network_hdr = IPV4(sip, dip, ttl)
         self.datalink_hdr = EthernetFrame(self.network_hdr.get_sip(),
                                           self.network_hdr.get_dip(),
                                           mac_gen, dist_file, ipv)
@@ -998,6 +1053,9 @@ class Packet(object):
         else:
             return 0
 
+    def get_ttl(self):
+        return self.network_hdr.get_ttl()
+
     def prepare_headers(self, proto='tcp', sport=None, dport=None,
                         flags=0, seq=0, ack=0):
         if proto.lower() == 'icmp':
@@ -1026,6 +1084,9 @@ class Packet(object):
 
     def set_content(self, content=None):
         self.content = content
+
+    def set_ttl(self, ttl):
+        self.network_hdr.set_ttl(ttl)
 
 
 class Content(object):
@@ -1678,7 +1739,7 @@ class IP(object):
         Base class for generating IP headers.  Should not be instantiated.
         Provides the shared functionality for IP headers.
     """
-    def __init__(self, sip=None, dip=None):
+    def __init__(self, sip=None, dip=None, ttl=None):
         home_or_not = False
         if random.randint(1, 100) > 60:
             home_or_not = not home_or_not
@@ -1692,7 +1753,10 @@ class IP(object):
             self.dip = self.gen_ip(home_or_not)
         else:
             self.dip = dip
-        self.ttl = int(random.normalvariate(45, 7))
+        if not ttl:
+            self.ttl = int(random.normalvariate(45, 7))
+        else:
+            self.ttl = ttl
         self.protocol = 0x00
         self.length = 0x0000
         self.size = 20
@@ -1727,6 +1791,9 @@ class IP(object):
     def get_version(self):
         return None
 
+    def get_ttl(self):
+        return self.ttl
+
     def set_prototcol(self, protocol=0):
         if protocol == 0:
             print("Cannot set the protocol to zero")
@@ -1752,6 +1819,9 @@ class IP(object):
     def get_size(self):
         return self.size
 
+    def set_ttl(self, ttl):
+        self.ttl = ttl
+
 
 class IPV4(IP):
     """
@@ -1763,8 +1833,8 @@ class IPV4(IP):
         NOTE: currently no effort is made to ensure external addresses do
         not match home addresses.
     """
-    def __init__(self, sip=None, dip=None):
-        super().__init__(sip, dip)
+    def __init__(self, sip=None, dip=None, ttl=None):
+        super().__init__(sip, dip, ttl)
         self.vhl = 0x45
         self.tos = 0x00
         self.id = 0x0000
@@ -1844,8 +1914,8 @@ class IPV6(IP):
         of HOME_IP_PREFIXESv6 if distinction between home and external networks
         is to be maintained.
     """
-    def __init__(self, sip=None, dip=None):
-        super().__init__(sip, dip)
+    def __init__(self, sip=None, dip=None, ttl=None):
+        super().__init__(sip, dip, ttl)
         self.vtc = 0x6000
         self.flow_label = 0
         self.length = 0

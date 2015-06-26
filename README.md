@@ -474,6 +474,15 @@ In detail, the tags work as follows:
                       a positive value will send exactly x packets (possibly
                       with acks if ack is true), while a negative number will
                       send a random number of packets between 1 and abs(-x).
+                    - ttl: set time to live value for packet. By default,
+                      sniffles will generate random TTL value.
+                    - ttl_expiry: simulate the ttl expiry attack by breaking
+                      packets into multiple packet with one malicious packet
+                      between two good packet. By default, the value is 0
+                      (No malicious packet). If the value is nonzero, it will
+                      insert malicious packet with this ttl equals ttl_expiry
+                      value. If the ttl value is set, good packet will be set
+                      with new ttl value
 
 Final Notes: The new rule format is just a beginning and may contain problems.
 Please alert me of any inconsitencies or errors.  Further, the intent is to
@@ -490,6 +499,7 @@ Authors:
 
 - Victor C. Valgenti
 - Min Sik Kim
+- Tu Le
 
 New Features:
 -------------
