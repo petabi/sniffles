@@ -108,19 +108,31 @@ class TestRuleTrafficGenerator(TestCase):
 
     def test_http_content_are_properly_constructed(self):
         mysrp = SnortRuleParser()
-        mysrp.parseRule(textrule)
+
+        # TESTING GET REQUEST
         textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
                    '(msg:"test-rule"; content:"GET"; http_method; ' \
                    'content:"/tutorials/other/"; http_uri;' \
                    'classtype:protocol-command-decode; sid:1; ' \
                    'rev:1;)'
+        mysrp.parseRule(textrule)
+
+        # TESTING POST REQUEST
         textrule1 = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
-                   '(msg:"test-rule"; content:"GET"; http_method; ' \
+                   '(msg:"test-rule"; content:"POST"; http_method; ' \
                    'content:"/tutorials/other/"; http_uri;' \
-                   'content:"PHPSESSID=abcd"; http_cookie;' \
                    'classtype:protocol-command-decode; sid:1; ' \
                    'rev:1;)'
         mysrp.parseRule(textrule1)
+
+        # TESTING COOKIE REQUEST
+        textrule2 = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
+                   '(msg:"test-rule"; content:"POST"; http_method; ' \
+                   'content:"/tutorials/other/"; http_uri;' \
+                   'classtype:protocol-command-decode; sid:1; ' \
+                   'rev:1;)'
+        mysrp.parseRule(textrule2)
+
         myrules = mysrp.getRules()
 
         myrule = myrules.pop(0)
@@ -134,12 +146,13 @@ class TestRuleTrafficGenerator(TestCase):
                                   )))
         self.assertEqual(myhttpdata, textruledata)
 
+
         myrule = myrules.pop(0)
         myts = myrule.getTS()[0]
         mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
         myhttpdata = mycontent.get_next_published_content().get_data()
         textruledata = struct.pack(
-            "!59s", bytearray(map(ord, 'GET /tutorials/other/ '
+            "!60s", bytearray(map(ord, 'POST /tutorials/other/ '
                                   'HTTP/1.1\r\n'
                                   'content-type: text-html\r\n\r\n'
                                   )))

@@ -1361,11 +1361,16 @@ class ContentGenerator:
 
     def generate_http_content(self, rules):
         http_directive_map = {}
+        # HTTP/1.1
         http_text = [72, 84, 84, 80, 47, 49, 46, 49]
+        # GET
         http_method = [71, 69, 84]
+        # /
         http_uri = [47]
-        http_header = [99, 111, 110, 116, 101, 45, 116, 121, 112, 101,
-                       58, 32, 116, 101, 120, 116, 45, 104, 116, 109, 108]
+        # content-type: text-html
+        http_header = [99, 111, 110, 116, 101, 110, 116, 45, 116, 121, 112,
+                       101, 58, 32, 116, 101, 120, 116, 45, 104, 116, 109,
+                       108]
         http_body = []
         generated = []
         cr_lf = [13, 10]
