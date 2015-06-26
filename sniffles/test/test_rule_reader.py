@@ -53,8 +53,17 @@ class TestRuleReader(TestCase):
                    'classtype:protocol-command-decode; sid:3046; rev:5;)'
         mysrp.parseRule(textrule)
 
-        self.assertEqual(len(mysrp.getRules()), 3)
+        # test if snort rule recognize http_uri
+        textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
+                   '(msg:"recognize http_cookie"; ' \
+                   'content:"POST"; http_method; ' \
+                   'content:"/tutorial/here"; http_uri; ' \
+                   'classtype:protocol-command-decode; sid:3046; rev:5;)'
+        mysrp.parseRule(textrule)
 
+        self.assertEqual(len(mysrp.getRules()), 4)
+
+        # test if snort rule recognize http_cookie
         myrule = mysrp.getRules()[0]
         myts = myrule.getTS()[0]
         self.assertEqual('Snort', myrule.getRuleName())
@@ -62,6 +71,7 @@ class TestRuleReader(TestCase):
         self.assertEqual(mycontent.getName(), "Snort Rule Content")
         self.assertTrue(mycontent.getHttpCookie())
 
+        # test if snort rule recognize http_raw_cookie
         myrule = mysrp.getRules()[1]
         myts = myrule.getTS()[0]
         self.assertEqual('Snort', myrule.getRuleName())
@@ -69,6 +79,7 @@ class TestRuleReader(TestCase):
         self.assertEqual(mycontent.getName(), "Snort Rule Content")
         self.assertTrue(mycontent.getHttpRawCookie())
 
+        # test if snort rule recognize http_method and http_cookie
         myrule = mysrp.getRules()[2]
         myts = myrule.getTS()[0]
         self.assertEqual('Snort', myrule.getRuleName())
@@ -80,6 +91,19 @@ class TestRuleReader(TestCase):
         self.assertEqual(mycontent.getName(), "Snort Rule Content")
         self.assertTrue(mycontent.getHttpCookie())
         self.assertEqual(mycontent.getContentString(), "PHPSESSIONID=3561")
+
+        # test if snort rule recognize http_uri
+        myrule = mysrp.getRules()[3]
+        myts = myrule.getTS()[0]
+        self.assertEqual('Snort', myrule.getRuleName())
+        mycontent = myts.getPkts()[0].getContent()[0]
+        self.assertEqual(mycontent.getName(), "Snort Rule Content")
+        self.assertTrue(mycontent.getHttpMethod())
+        self.assertEqual(mycontent.getContentString(), "POST")
+        mycontent = myts.getPkts()[0].getContent()[1]
+        self.assertEqual(mycontent.getName(), "Snort Rule Content")
+        self.assertTrue(mycontent.getHttpUri())
+        self.assertEqual(mycontent.getContentString(), "/tutorial/here")
 
     def test_parse_snort_rule(self):
         textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
