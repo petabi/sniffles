@@ -1367,10 +1367,12 @@ class ContentGenerator:
         http_method = [71, 69, 84]
         # /
         http_uri = [47]
-        # content-type: text-html
+        # Content-type: text-html
         http_header = [99, 111, 110, 116, 101, 110, 116, 45, 116, 121, 112,
                        101, 58, 32, 116, 101, 120, 116, 45, 104, 116, 109,
                        108]
+        # Cookie: 
+        http_cookie = []
         http_body = []
         generated = []
         cr_lf = [13, 10]
@@ -1396,6 +1398,17 @@ class ContentGenerator:
                         )
                     else:
                         http_uri = self.generate_from_regex(
+                            rule.getContentString())
+                elif (
+                    rule.getHttpCookie() is not None or
+                    rule.getHttpRawCookie() is not None
+                ):
+                    if rule.getType() == 'content':
+                        http_cookie = self.generate_from_content_strings(
+                            rule.getContentString()
+                        )
+                    else:
+                        http_cookie = self.generate_from_regex(
                             rule.getContentString())
                 elif (
                     rule.getHttpHeader() is not None or
@@ -1429,8 +1442,13 @@ class ContentGenerator:
         request_line.extend(space)
         request_line.extend(http_text)
         request_line.extend(cr_lf)
+
         for c in request_line:
             generated.append(c)
+
+        if http_cookie:
+            http_header.extend(cr_lf)
+            http_header.extend(http_cookie)
 
         http_header.extend(cr_lf)
         http_header.extend(cr_lf)

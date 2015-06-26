@@ -107,6 +107,10 @@ class TestRuleTrafficGenerator(TestCase):
         self.assertEqual(mytrans.get_checksum(), 0xa86B)
 
     def test_http_content_are_properly_constructed(self):
+
+        def convert_to_binary_data(self, data):
+            pass
+
         mysrp = SnortRuleParser()
 
         # TESTING GET REQUEST AND HTTP_URI
@@ -129,7 +133,7 @@ class TestRuleTrafficGenerator(TestCase):
         textrule2 = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
                    '(msg:"test-rule"; content:"POST"; http_method; ' \
                    'content:"/tutorials/other/"; http_uri;' \
-                   'content:"SESSIONID=560"; http_cookie;' \
+                   'content:"cookie: SESSIONID=560"; http_cookie;' \
                    'classtype:protocol-command-decode; sid:1; ' \
                    'rev:1;)'
         mysrp.parseRule(textrule2)
@@ -176,15 +180,19 @@ class TestRuleTrafficGenerator(TestCase):
 
         self.assertEqual(mySnortContents[2].getName(), "Snort Rule Content")
         self.assertTrue(mySnortContents[2].getHttpCookie())
-        self.assertEqual(mySnortContents[2].getContentString(), "SESSIONID=560")
+        self.assertEqual(mySnortContents[2].getContentString(), "cookie: SESSIONID=560")
 
         mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
         myhttpdata = mycontent.get_next_published_content().get_data()
+        test_str = 'POST /tutorials/other/ ' \
+                   'HTTP/1.1\r\n' \
+                   'content-type: text-html\r\n' \
+                   'cookie: SESSIONID=560' \
+                   '\r\n\r\n'
         textruledata = struct.pack(
-            "!59s", bytearray(map(ord, 'POST /tutorial/other/ '
-                                  'HTTP/1.1\r\n'
-                                  'content-type: text-html\r\n\r\n'
-                                  )))
+            "!" + str(len(test_str)) + "s", bytearray(map(ord,test_str)))
+        print(myhttpdata)
+        print(textruledata)
         self.assertEqual(myhttpdata, textruledata)
 
 

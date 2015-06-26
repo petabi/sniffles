@@ -49,7 +49,7 @@ class TestRuleReader(TestCase):
         textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
                    '(msg:"recognize http_cookie"; ' \
                    'content:"GET"; http_method; ' \
-                   'content:"PHPSESSIONID=3561"; http_cookie; ' \
+                   'content:"Cookie: PHPSESSIONID=3561"; http_cookie; ' \
                    'classtype:protocol-command-decode; sid:3046; rev:5;)'
         mysrp.parseRule(textrule)
 
@@ -90,7 +90,7 @@ class TestRuleReader(TestCase):
         mycontent = myts.getPkts()[0].getContent()[1]
         self.assertEqual(mycontent.getName(), "Snort Rule Content")
         self.assertTrue(mycontent.getHttpCookie())
-        self.assertEqual(mycontent.getContentString(), "PHPSESSIONID=3561")
+        self.assertEqual(mycontent.getContentString(), "Cookie: PHPSESSIONID=3561")
 
         # test if snort rule recognize http_uri
         myrule = mysrp.getRules()[3]
