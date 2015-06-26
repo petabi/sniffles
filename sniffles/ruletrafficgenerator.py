@@ -313,18 +313,6 @@ class TrafficStream(object):
                      frag, self.frag_id, offset, mf)
         return pkt
 
-    def buildDummyFragPkt(self, dir="to server", frag=None, offset=0,
-                          mf=False, ttl=5):
-        sip = self.sip
-        dip = self.dip
-        if dir == "to client":
-            sip = self.dip
-            dip = self.sip
-        pkt = Packet(self.proto, sip, dip, self.ip_type, self.sport,
-                     self.dport, 0, 0, 0, self.mac_gen, self.mac_def_file,
-                     frag, self.frag_id, offset, mf, ttl)
-        return pkt
-
     def buildPkt(self, dir="to server", flags=ACK, content=None, seq=None,
                  ack=None):
         sip = self.sip
@@ -433,21 +421,11 @@ class TrafficStream(object):
 
             # if this is not the last fragment and ttlexpiry is nonzero
             if i != (myfrags - 1) and ttlexpiry != 0:
-
-                def generateDummyContent(begin, end):
-                    dummyData = []
-                    for i in range(begin, end):
-                        dummyData.append(str(random.randint(0, 10)))
-                    return dummyData
-                dumbData = generateDummyContent(myindex, myend)
-                dummy = Content(dumbData, len(dumbData),
-                                False, True)
-
                 self.fragments.append(
                     (myoffset,
-                     frag_content.get_fragment(0, myend - myindex),
-                     True)
-                    )
+                    ContentGenerator(None, myend - myindex).get_next_published_content(),
+                    True)
+                )
 
             myindex += (frag_size * 8)
             myoffset = int(myindex/8)
@@ -474,7 +452,7 @@ class TrafficStream(object):
 
     def getNextContentPacket(self):
         pkt = None
-        isMalicious = None
+        isMalicious = False
         # Handle complex rules such as fragments, out-of-order, etc.
         if self.myp:
             p = self.myp[0]
@@ -523,7 +501,7 @@ class TrafficStream(object):
             # Update TTL value getting from the rule (ignored if 256)
             # only if that packet is not malicious
             # In other words, isMalicious is none or false
-            if p.getTTL() != 256 and (isMalicious is None or not isMalicious):
+            if p.getTTL() != 256 and not isMalicious:
                 pkt.set_ttl(p.getTTL())
 
             # If p_count is zero, then we have finished with this pkt rule.
@@ -641,13 +619,13 @@ class TrafficStream(object):
             if off == self.last_off and p.getTTLExpiry() == 0:
                 mf = False
 
-            # if this is a normal packet, create it.
-            # if not, create a malicious packet with our ttl = ttl_expiry
-            if not ttlexpi:
-                pkt = self.buildFragPkt(p.getDir(), frag, off, mf)
-            else:
-                pkt = self.buildDummyFragPkt(p.getDir(), frag, off, mf,
-                                             ttl=p.getTTLExpiry())
+            pkt = self.buildFragPkt(p.getDir(), frag, off, mf)
+
+            # If ttl_expiry is set, then change the ttl to match
+            # the value that should expire prior to reaching the
+            # destination.
+            if ttlexpi:
+                pkt.network_hdr.set_ttl(p.getTTLExpiry())
             if self.fragments is None or len(self.fragments) < 1:
                 if not self.dropped:
                     self.updateSequence(p.getDir(), self.frag_con_size)
