@@ -660,10 +660,10 @@ class SnortRuleContent(RuleContent):
     def getHttpRawUri(self):
         return self.http_raw_uri
 
-    def getHttpStartCode(self):
+    def getHttpStatCode(self):
         return self.http_stat_code
 
-    def getHttpStartMsg(self):
+    def getHttpStatMsg(self):
         return self.http_stat_msg
 
     def getHttpEncode(self):

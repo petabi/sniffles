@@ -68,7 +68,15 @@ class TestRuleReader(TestCase):
                    'classtype:protocol-command-decode; sid:3046; rev:5;)'
         mysrp.parseRule(textrule)
 
-        self.assertEqual(len(mysrp.getRules()), 5)
+        # test if snort rule recognize http_stat_code and http_stat_msg
+        textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
+                   '(msg:"recognize http_stat_code"; ' \
+                   'content:"301"; http_stat_code; ' \
+                   'content:"Moved Permanently"; http_stat_msg; ' \
+                   'classtype:protocol-command-decode; sid:3046; rev:5;)'
+        mysrp.parseRule(textrule)
+
+        self.assertEqual(len(mysrp.getRules()), 6)
 
         # test if snort rule recognize http_cookie
         myrule = mysrp.getRules()[0]
@@ -119,8 +127,22 @@ class TestRuleReader(TestCase):
         self.assertEqual('Snort', myrule.getRuleName())
         mycontent = myts.getPkts()[0].getContent()[0]
         self.assertEqual(mycontent.getName(), "Snort Rule Content")
-        self.assertTrue(mycontent.getHttpMethod())
-        self.assertEqual(mycontent.getContentString(), "POST")
+        self.assertTrue(mycontent.getHttpStatCode())
+        self.assertEqual(mycontent.getContentString(), "301 Moved Permanently")
+
+        # test if snort rule recognize http_stat_code and http_stat_msg
+        myrule = mysrp.getRules()[5]
+        myts = myrule.getTS()[0]
+        self.assertEqual('Snort', myrule.getRuleName())
+        mycontent = myts.getPkts()[0].getContent()
+
+        self.assertEqual(mycontent[0].getName(), "Snort Rule Content")
+        self.assertTrue(mycontent[0].getHttpStatCode())
+        self.assertEqual(mycontent[0].getContentString(), "301")
+
+        self.assertEqual(mycontent[1].getName(), "Snort Rule Content")
+        self.assertTrue(mycontent[1].getHttpStatMsg())
+        self.assertEqual(mycontent[1].getContentString(), "Moved Permanently")
 
     def test_parse_snort_rule(self):
         textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \

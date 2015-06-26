@@ -1373,6 +1373,10 @@ class ContentGenerator:
                        108]
         # Cookie:
         http_cookie = []
+        # Stat Code:
+        http_stat_code = []
+        # Stat Msg:
+        http_stat_msg = []
         http_body = []
         generated = []
         cr_lf = [13, 10]
@@ -1387,7 +1391,26 @@ class ContentGenerator:
                     else:
                         http_method = self.generate_from_regex(
                             rule.getContentString())
-
+                elif (
+                    rule.getHttpStatCode() is not None
+                ):
+                    if rule.getType() == 'content':
+                        http_stat_code = self.generate_from_content_strings(
+                            rule.getContentString()
+                        )
+                    else:
+                        http_stat_code = self.generate_from_regex(
+                            rule.getContentString())
+                elif (
+                    rule.getHttpStatMsg() is not None
+                ):
+                    if rule.getType() == 'content':
+                        http_stat_msg = self.generate_from_content_strings(
+                            rule.getContentString()
+                        )
+                    else:
+                        http_stat_msg = self.generate_from_regex(
+                            rule.getContentString())
                 elif (
                     rule.getHttpUri() is not None or
                     rule.getHttpRawUri() is not None
@@ -1441,6 +1464,15 @@ class ContentGenerator:
         request_line.extend(http_uri)
         request_line.extend(space)
         request_line.extend(http_text)
+
+        if http_stat_code:
+            request_line.extend(space)
+            request_line.extend(http_stat_code)
+
+        if http_stat_msg:
+            request_line.extend(space)
+            request_line.extend(http_stat_msg)
+
         request_line.extend(cr_lf)
 
         for c in request_line:

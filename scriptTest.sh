@@ -18,6 +18,10 @@ elif [ "$1" = "pep8" ]; then
 	clear
 	echo "=========== Begin to verify code standard ========="
 	echo
+	echo "==== Verifying sniffles.py ===="
+	pep8 sniffles/sniffles.py
+	echo "==== Verified ===="
+	echo
 	echo "==== Verifying ruletrafficgenerator.py ===="
 	pep8 sniffles/ruletrafficgenerator.py
 	echo "==== Verified ===="
