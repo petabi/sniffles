@@ -708,9 +708,9 @@ class SnortRuleContent(RuleContent):
                 elif tag == 'http_raw_uri':
                     self.setHttpRawUri(True)
                 elif tag == 'http_stat_code':
-                    self.setHttpStartCode(True)
+                    self.setHttpStatCode(True)
                 elif tag == 'http_stat_msg':
-                    self.setHttpStartMsg(True)
+                    self.setHttpStatMsg(True)
 
     def isHTTP(self):
         if self.http_client_body or \
@@ -809,14 +809,14 @@ class SnortRuleContent(RuleContent):
             else:
                 self.http_raw_uri = h
 
-    def setHttpStartCode(self, h=None):
+    def setHttpStatCode(self, h=None):
         if h is not None:
             if self.http_stat_code:
                 self.http_stat_code += h
             else:
                 self.http_stat_code = h
 
-    def setHttpStartMsg(self, h=None):
+    def setHttpStatMsg(self, h=None):
         if h is not None:
             if self.http_stat_msg:
                 self.http_stat_msg += h

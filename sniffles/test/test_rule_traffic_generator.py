@@ -108,8 +108,10 @@ class TestRuleTrafficGenerator(TestCase):
 
     def test_http_content_are_properly_constructed(self):
 
-        def convert_to_binary_data(self, data):
-            pass
+        def convert_to_binary_data(data):
+            binary_data = struct.pack("!" + str(len(data)) + "s",
+                                      bytearray(map(ord, data)))
+            return binary_data
 
         mysrp = SnortRuleParser()
 
@@ -123,19 +125,19 @@ class TestRuleTrafficGenerator(TestCase):
 
         # TESTING POST REQUEST AND HTTP_URI
         textrule1 = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
-                   '(msg:"test-rule"; content:"POST"; http_method; ' \
-                   'content:"/tutorials/other/"; http_uri;' \
-                   'classtype:protocol-command-decode; sid:1; ' \
-                   'rev:1;)'
+                    '(msg:"test-rule"; content:"POST"; http_method; ' \
+                    'content:"/tutorials/other/"; http_uri;' \
+                    'classtype:protocol-command-decode; sid:1; ' \
+                    'rev:1;)'
         mysrp.parseRule(textrule1)
 
         # TESTING POST REQUEST AND HTTP_URI AND HTTP_COOKIE
         textrule2 = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
-                   '(msg:"test-rule"; content:"POST"; http_method; ' \
-                   'content:"/tutorials/other/"; http_uri;' \
-                   'content:"cookie: SESSIONID=560"; http_cookie;' \
-                   'classtype:protocol-command-decode; sid:1; ' \
-                   'rev:1;)'
+                    '(msg:"test-rule"; content:"POST"; http_method; ' \
+                    'content:"/tutorials/other/"; http_uri;' \
+                    'content:"cookie: SESSIONID=560"; http_cookie;' \
+                    'classtype:protocol-command-decode; sid:1; ' \
+                    'rev:1;)'
         mysrp.parseRule(textrule2)
 
         myrules = mysrp.getRules()
@@ -157,11 +159,10 @@ class TestRuleTrafficGenerator(TestCase):
         myts = myrule.getTS()[0]
         mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
         myhttpdata = mycontent.get_next_published_content().get_data()
-        textruledata = struct.pack(
-            "!60s", bytearray(map(ord, 'POST /tutorials/other/ '
-                                  'HTTP/1.1\r\n'
-                                  'content-type: text-html\r\n\r\n'
-                                  )))
+        textruledata = convert_to_binary_data('POST /tutorials/other/ '
+                                              'HTTP/1.1\r\n'
+                                              'content-type: text-html\r\n\r\n'
+                                              )
         self.assertEqual(myhttpdata, textruledata)
 
         # TESTING POST REQUEST AND HTTP_URI AND HTTP_COOKIE
@@ -176,11 +177,13 @@ class TestRuleTrafficGenerator(TestCase):
 
         self.assertEqual(mySnortContents[1].getName(), "Snort Rule Content")
         self.assertTrue(mySnortContents[1].getHttpUri())
-        self.assertEqual(mySnortContents[1].getContentString(), "/tutorials/other/")
+        self.assertEqual(mySnortContents[1].getContentString(),
+                         "/tutorials/other/")
 
         self.assertEqual(mySnortContents[2].getName(), "Snort Rule Content")
         self.assertTrue(mySnortContents[2].getHttpCookie())
-        self.assertEqual(mySnortContents[2].getContentString(), "cookie: SESSIONID=560")
+        self.assertEqual(mySnortContents[2].getContentString(),
+                         "cookie: SESSIONID=560")
 
         mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
         myhttpdata = mycontent.get_next_published_content().get_data()
@@ -189,12 +192,8 @@ class TestRuleTrafficGenerator(TestCase):
                    'content-type: text-html\r\n' \
                    'cookie: SESSIONID=560' \
                    '\r\n\r\n'
-        textruledata = struct.pack(
-            "!" + str(len(test_str)) + "s", bytearray(map(ord,test_str)))
-        print(myhttpdata)
-        print(textruledata)
+        textruledata = convert_to_binary_data(test_str)
         self.assertEqual(myhttpdata, textruledata)
-
 
     def test_snort_content_generator(self):
         textruledata = [48, 49, 50, 51, 52, 53, 97, 98, 99, 100, 101, 53, 52,

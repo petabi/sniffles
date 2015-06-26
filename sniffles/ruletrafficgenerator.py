@@ -1371,7 +1371,7 @@ class ContentGenerator:
         http_header = [99, 111, 110, 116, 101, 110, 116, 45, 116, 121, 112,
                        101, 58, 32, 116, 101, 120, 116, 45, 104, 116, 109,
                        108]
-        # Cookie: 
+        # Cookie:
         http_cookie = []
         http_body = []
         generated = []
