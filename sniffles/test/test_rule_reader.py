@@ -28,6 +28,59 @@ class TestRuleReader(TestCase):
         myp[2].setTTL(114)
         self.assertEqual(myp[2].getTTL(), 114)
 
+    def test_parse_snort_rule_full(self):
+        mysrp = SnortRuleParser()
+
+        # test if snort rule recognize http_cookie
+        textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
+                   '(msg:"recognize http_cookie"; ' \
+                   'content:"hello"; http_cookie; ' \
+                   'classtype:protocol-command-decode; sid:3046; rev:5;)'
+        mysrp.parseRule(textrule)
+
+        # test if snort rule recognize http_raw_cookie
+        textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
+                   '(msg:"recognize http_cookie"; ' \
+                   'content:"hello"; http_raw_cookie; ' \
+                   'classtype:protocol-command-decode; sid:3046; rev:5;)'
+        mysrp.parseRule(textrule)
+
+        # test if snort rule recognize http_method and http_cookie
+        textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
+                   '(msg:"recognize http_cookie"; ' \
+                   'content:"GET"; http_method; ' \
+                   'content:"PHPSESSIONID=3561"; http_cookie; ' \
+                   'classtype:protocol-command-decode; sid:3046; rev:5;)'
+        mysrp.parseRule(textrule)
+
+        self.assertEqual(len(mysrp.getRules()), 3)
+
+        myrule = mysrp.getRules()[0]
+        myts = myrule.getTS()[0]
+        self.assertEqual('Snort', myrule.getRuleName())
+        mycontent = myts.getPkts()[0].getContent()[0]
+        self.assertEqual(mycontent.getName(), "Snort Rule Content")
+        self.assertTrue(mycontent.getHttpCookie())
+
+        myrule = mysrp.getRules()[1]
+        myts = myrule.getTS()[0]
+        self.assertEqual('Snort', myrule.getRuleName())
+        mycontent = myts.getPkts()[0].getContent()[0]
+        self.assertEqual(mycontent.getName(), "Snort Rule Content")
+        self.assertTrue(mycontent.getHttpRawCookie())
+
+        myrule = mysrp.getRules()[2]
+        myts = myrule.getTS()[0]
+        self.assertEqual('Snort', myrule.getRuleName())
+        mycontent = myts.getPkts()[0].getContent()[0]
+        self.assertEqual(mycontent.getName(), "Snort Rule Content")
+        self.assertTrue(mycontent.getHttpMethod())
+        self.assertEqual(mycontent.getContentString(), "GET")
+        mycontent = myts.getPkts()[0].getContent()[1]
+        self.assertEqual(mycontent.getName(), "Snort Rule Content")
+        self.assertTrue(mycontent.getHttpCookie())
+        self.assertEqual(mycontent.getContentString(), "PHPSESSIONID=3561")
+
     def test_parse_snort_rule(self):
         textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
                    '(msg:"NETBIOS SMB-DS NT Trans NT CREATE invalid SACL ' \

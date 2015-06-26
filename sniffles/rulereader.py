@@ -769,7 +769,7 @@ class SnortRuleContent(RuleContent):
 
     def setHttpRawCookie(self, h=None):
         if h is not None:
-            if self.http_raw_cooked:
+            if self.http_raw_cookie:
                 self.http_raw_cookie += h
             else:
                 self.http_raw_cookie = h
