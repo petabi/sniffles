@@ -207,7 +207,9 @@ Command Line Options:
 
   - -M It allows to use a MAC distribution to have a custom MAC address
       distribution in the traffic. By default, it will not use MAC
-      distribution file but it will generate a random address.
+      distribution file but it will generate a random address. More
+      information about the MAC definition file can be found in the
+      the examples/mac_definition_file.txt .
 
   - -o output file: designate the name of the output file.  By default,
      the file is named: sniffles.pcap.
