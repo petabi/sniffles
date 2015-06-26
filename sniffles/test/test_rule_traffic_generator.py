@@ -106,6 +106,45 @@ class TestRuleTrafficGenerator(TestCase):
                              mytrans.get_size() + 4, mydata)
         self.assertEqual(mytrans.get_checksum(), 0xa86B)
 
+    def test_http_content_are_properly_constructed(self):
+        mysrp = SnortRuleParser()
+        mysrp.parseRule(textrule)
+        textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
+                   '(msg:"test-rule"; content:"GET"; http_method; ' \
+                   'content:"/tutorials/other/"; http_uri;' \
+                   'classtype:protocol-command-decode; sid:1; ' \
+                   'rev:1;)'
+        textrule1 = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
+                   '(msg:"test-rule"; content:"GET"; http_method; ' \
+                   'content:"/tutorials/other/"; http_uri;' \
+                   'content:"PHPSESSID=abcd"; http_cookie;' \
+                   'classtype:protocol-command-decode; sid:1; ' \
+                   'rev:1;)'
+        mysrp.parseRule(textrule1)
+        myrules = mysrp.getRules()
+
+        myrule = myrules.pop(0)
+        myts = myrule.getTS()[0]
+        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        myhttpdata = mycontent.get_next_published_content().get_data()
+        textruledata = struct.pack(
+            "!59s", bytearray(map(ord, 'GET /tutorials/other/ '
+                                  'HTTP/1.1\r\n'
+                                  'content-type: text-html\r\n\r\n'
+                                  )))
+        self.assertEqual(myhttpdata, textruledata)
+
+        myrule = myrules.pop(0)
+        myts = myrule.getTS()[0]
+        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        myhttpdata = mycontent.get_next_published_content().get_data()
+        textruledata = struct.pack(
+            "!59s", bytearray(map(ord, 'GET /tutorials/other/ '
+                                  'HTTP/1.1\r\n'
+                                  'content-type: text-html\r\n\r\n'
+                                  )))
+        self.assertEqual(myhttpdata, textruledata)
+
     def test_snort_content_generator(self):
         textruledata = [48, 49, 50, 51, 52, 53, 97, 98, 99, 100, 101, 53, 52,
                         51, 50, 49, 48, 101, 100, 99, 98, 97]
@@ -138,26 +177,32 @@ class TestRuleTrafficGenerator(TestCase):
         mysrp.parseRule(textrule)
         myrules = mysrp.getRules()
         self.assertEqual(len(myrules), 4)
+
         myrule = myrules.pop(0)
         myts = myrule.getTS()[0]
         mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
         mytestcontent = struct.pack("!22s", bytearray(textruledata))
         self.assertEqual(mycontent.get_next_published_content().get_data(),
                          mytestcontent)
+
         myrule = myrules.pop(0)
         myts = myrule.getTS()[0]
         mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
         self.assertEqual(
             len(mycontent.get_next_published_content().get_data()), 30)
+
         myrule = myrules.pop(0)
         myts = myrule.getTS()[0]
         mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
         myhttpdata = mycontent.get_next_published_content().get_data()
+
         textruledata = struct.pack(
             "!62s", bytearray(map(ord, "POST www.test.com/hello/ "
                                   "HTTP/1.1\r\nmy_header: "
                                   "testing\r\n\r\nabcde")))
+
         self.assertEqual(myhttpdata, textruledata)
+
         myrule = myrules.pop(0)
         myts = myrule.getTS()[0]
         self.assertEqual(len(myrules), 0)
