@@ -7,7 +7,6 @@ import re
 import random
 from sniffles.regex_generator import *
 
-
 class AmbiguousNotation(object):
 
     def __init__(self, notation=None):
@@ -144,13 +143,13 @@ class ContentFeature(Feature):
             mystring += "/"
 
         if complex:
-            mystring += regex_generator.generate_regex(self.length, 0,
+            mystring += generate_regex(self.length, 0,
                                                        [60, 30, 10],
                                                        None, None,
                                                        [20, 20, 40, 20],
                                                        50, 30)
         else:
-            mystring += regex_generator.generate_regex(self.length, 0,
+            mystring += generate_regex(self.length, 0,
                                                        [100, 0, 0],
                                                        [20, 35, 20, 20, 0],
                                                        None, None, 0, 0)

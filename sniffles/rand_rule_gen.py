@@ -68,12 +68,12 @@ def getRuleWithFormat(rule=None, fmt=None):
     if rule:
         if fmt is not None:
             if fmt == "snort":
-                rulefmt = rule_formats.SnortRuleFormat(
+                rulefmt = SnortRuleFormat(
                     rule, getRuleWithFormat.rule_counter)
                 getRuleWithFormat.rule_counter += 1
 
         if rulefmt is None:
-            rulefmt = rule_formats.RuleFormat(rule)
+            rulefmt = RuleFormat(rule)
     return rulefmt
 getRuleWithFormat.rule_counter = 1
 
