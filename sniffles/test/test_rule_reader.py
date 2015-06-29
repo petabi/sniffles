@@ -3,6 +3,31 @@ from sniffles.rulereader import *
 
 
 class TestRuleReader(TestCase):
+    def test_ttl_expiry_value(self):
+        myprule = Rule('Petabi')
+        mytsrule1 = TrafficStreamRule('udp')
+        mytsrule1.addPktRule(RulePkt("to server", "/xyz/i", ttl_expiry=15))
+        mytsrule1.addPktRule(RulePkt("to server", "/abc/i", ttl_expiry=23,
+                                     ttl=9))
+        mytsrule1.addPktRule(RulePkt("to server", "/def/i"))
+        myprule.addTS(mytsrule1)
+        self.assertEqual(myprule.getRuleName(), 'Petabi')
+        mytslist = myprule.getTS()
+        myp = mytslist[0].getPkts()
+        self.assertEqual(len(myp), 3)
+        self.assertEqual(myp[0].getContent()[0].getContentString(), "/xyz/i")
+        self.assertEqual(myp[1].getContent()[0].getContentString(), "/abc/i")
+        self.assertEqual(myp[2].getContent()[0].getContentString(), "/def/i")
+        self.assertEqual(myp[0].getTTLExpiry(), 15)
+        self.assertEqual(myp[1].getTTLExpiry(), 23)
+        self.assertEqual(myp[1].getTTL(), 9)
+        self.assertEqual(myp[2].getTTLExpiry(), 0)
+        self.assertEqual(myp[2].getTTL(), 256)
+        myp[2].setTTLExpiry(5)
+        self.assertEqual(myp[2].getTTLExpiry(), 5)
+        myp[2].setTTL(114)
+        self.assertEqual(myp[2].getTTL(), 114)
+
     def test_parse_snort_rule(self):
         textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
                    '(msg:"NETBIOS SMB-DS NT Trans NT CREATE invalid SACL ' \

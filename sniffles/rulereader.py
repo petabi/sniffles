@@ -223,6 +223,15 @@ class RulePkt(object):
           length: -1 == random length if random rule, otherwise length of
                  generated content, 0 = no data, 1+ fixes data length at
                  that value.
+          time to live: the time to live for the packet. By default, the
+                        value of ttl is 256.
+          time to live expiry: simulate the ttl expiry attack by breaking
+                               packets into multiple packet with one
+                               malicious packet between two good packet.
+                               By default, the value is 0 (No malicious
+                               packet). If the value is nonzero, it will
+                               insert malicious packet with this ttl_expiry
+                               value.
           ack_this: Whether or not an ack should be sent for each pkt using
                     this rule.  Only valid for TCP, will send one ack for
                     every pkt sent using this rule (though out of order
@@ -242,7 +251,8 @@ class RulePkt(object):
                  this with IP fragments has not been tested.
     """
     def __init__(self, dir="to server", content=None, fragment=0, times=1,
-                 length=-1, ack_this=False, ooo=False, split=0):
+                 length=-1, ack_this=False, ooo=False, split=0, ttl=256,
+                 ttl_expiry=0):
         self.dir = dir
         self.content = None
         if content:
@@ -253,6 +263,8 @@ class RulePkt(object):
         self.ack_this = ack_this
         self.ooo = ooo
         self.split = split
+        self.ttl = ttl
+        self.ttl_expiry = ttl_expiry
         if self.fragment > 1 and ooo:
             self.ooo = True
 
@@ -269,6 +281,8 @@ class RulePkt(object):
         mystr += str(self.fragment)
         mystr += ", Times: "
         mystr += str(self.times)
+        mystr += ", Time to live: "
+        mystr += str(self.ttl)
         mystr += ", Length: "
         mystr += str(self.length)
         mystr += ", Ack This: "
@@ -277,6 +291,8 @@ class RulePkt(object):
         mystr += str(self.ooo)
         mystr += ", Split: "
         mystr += str(self.split)
+        mystr += ", TTL Expiry: "
+        mystr += str(self.ttl_expiry)
         mystr += "\n"
         return mystr
 
@@ -304,6 +320,12 @@ class RulePkt(object):
 
     def getTimes(self):
         return self.times
+
+    def getTTL(self):
+        return self.ttl
+
+    def getTTLExpiry(self):
+        return self.ttl_expiry
 
     # mutators
     def addContent(self, con=None):
@@ -338,6 +360,12 @@ class RulePkt(object):
 
     def setTimes(self, times=1):
         self.times = times
+
+    def setTTL(self, ttl):
+        self.ttl = ttl
+
+    def setTTLExpiry(self, ttl_expiry):
+        self.ttl_expiry = ttl_expiry
 
 
 class TrafficStreamRule(object):
@@ -998,6 +1026,12 @@ class PetabiRuleParser(RuleParser):
                     if 'split' in pkt.attrib:
                         if int(pkt.attrib['split']) > 0:
                             mypkt.setSplit(int(pkt.attrib['split']))
+                    if 'ttl' in pkt.attrib:
+                        if int(pkt.attrib['ttl']) > 0:
+                            mypkt.setTTL(int(pkt.attrib['ttl']))
+                    if 'ttl_expiry' in pkt.attrib:
+                        if int(pkt.attrib['ttl_expiry']) > 0:
+                            mypkt.setTTLExpiry(int(pkt.attrib['ttl_expiry']))
                     mytsrule.addPktRule(mypkt)
                 myprule.addTS(mytsrule)
             self.addRule(myprule)
