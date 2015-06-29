@@ -38,6 +38,14 @@ elif [ "$1" = "pep8" ]; then
 	pep8 sniffles/test/test_rule_reader.py
 	echo "==== Verified ===="
 	echo
+	echo "==== Verifying feature.py ===="
+	pep8 sniffles/feature.py
+	echo "==== Verified ===="
+	echo
+	echo "==== Verifying test_feature.py ===="
+	pep8 sniffles/test/test_feature.py
+	echo "==== Verified ===="
+	echo
 	echo "=========== End of verification ========="
 	echo
 fi

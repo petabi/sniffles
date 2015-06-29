@@ -5,7 +5,9 @@ import sys
 import datetime
 import re
 import random
+import math
 from sniffles.regex_generator import *
+
 
 class AmbiguousNotation(object):
 
@@ -72,13 +74,17 @@ class ListNotation(AmbiguousNotation):
 
     def toString(self):
         num_elements = random.randint(2, self.max_list_size)
-        if num_elements > (self.upper_bound - self.lower_bound):
-            print("Error!!!!!")
+        num_elements = max(self.upper_bound - self.lower_bound + 1,
+                           num_elements)
         myelements = []
-        while len(myelements) < num_elements:
-            mypick = random.randint(self.lower_bound, self.upper_bound)
-            if mypick not in myelements:
-                myelements.append(mypick)
+
+        # generate a list from lower_bound to upper_bound
+        myIndexedList = []
+        for i in range(self.lower_bound, self.upper_bound + 1):
+            myIndexedList.append(i)
+        random.shuffle(myIndexedList)
+        myelements = myIndexedList[0:num_elements]
+
         myelements = sorted(myelements)
         mystring = self.prefix
         while myelements:
@@ -144,15 +150,15 @@ class ContentFeature(Feature):
 
         if complex:
             mystring += generate_regex(self.length, 0,
-                                                       [60, 30, 10],
-                                                       None, None,
-                                                       [20, 20, 40, 20],
-                                                       50, 30)
+                                       [60, 30, 10],
+                                       None, None,
+                                       [20, 20, 40, 20],
+                                       50, 30)
         else:
             mystring += generate_regex(self.length, 0,
-                                                       [100, 0, 0],
-                                                       [20, 35, 20, 20, 0],
-                                                       None, None, 0, 0)
+                                       [100, 0, 0],
+                                       [20, 35, 20, 20, 0],
+                                       None, None, 0, 0)
         if self.regex:
             mystring += "/"
             if complex:
@@ -339,7 +345,7 @@ class FeatureParser(object):
                 myambiguity_list = self.buildAmbiguityList(
                     mypairs['ambiguity_list'])
             if 'regex' in mypairs:
-                if mypairs['regex'] == 'True':
+                if mypairs['regex'].lower() == 'true':
                     regex = True
             if 'len' in mypairs:
                 len = int(mypairs['len'])
