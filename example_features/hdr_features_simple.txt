@@ -3,4 +3,4 @@ type=ip; name=sip; version=4; complexity_prob=0;
 type=feature; name=sport; lower_bound=0; upper_bound=65535; complexity_prob=0; ambiguity_list=[any, [1024:65535], [1024,65535]];
 type=ip; name=dip; version=4; complexity_prob=0;
 type=feature; name=dport; lower_bound=0; upper_bound=65535; complexity_prob=0; ambiguity_list=[any, [1024:65535], [1024,65535]];
-type=content; name=content; regex=True; complexity_prob=0; len=5;
+type=content; name=content; regex=true; complexity_prob=0; len=5;
