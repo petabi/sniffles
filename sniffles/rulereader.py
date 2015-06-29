@@ -569,8 +569,8 @@ class SnortRuleContent(RuleContent):
         self.http_method = None
         self.http_uri = None
         self.http_raw_uri = None
-        self.http_start_code = None
-        self.http_start_msg = None
+        self.http_stat_code = None
+        self.http_stat_msg = None
         self.http_encode = None
         if content is not None:
             self.handleContent(content)
@@ -609,10 +609,10 @@ class SnortRuleContent(RuleContent):
             mystr += "  http_uri: " + str(self.http_uri) + "\n"
         if self.http_raw_uri:
             mystr += "  http_raw_uri: " + str(self.http_raw_uri) + "\n"
-        if self.http_start_code:
-            mystr += "  http_start_code: " + str(self.http_start_code) + "\n"
-        if self.http_start_msg:
-            mystr += "  http_start_msg: " + str(self.http_start_msg) + "\n"
+        if self.http_stat_code:
+            mystr += "  http_stat_code: " + str(self.http_stat_code) + "\n"
+        if self.http_stat_msg:
+            mystr += "  http_stat_msg: " + str(self.http_stat_msg) + "\n"
         if self.http_encode:
             mystr += "  http_encode: " + str(self.http_encode) + "\n"
         return mystr
@@ -660,11 +660,11 @@ class SnortRuleContent(RuleContent):
     def getHttpRawUri(self):
         return self.http_raw_uri
 
-    def getHttpStartCode(self):
-        return self.http_start_code
+    def getHttpStatCode(self):
+        return self.http_stat_code
 
-    def getHttpStartMsg(self):
-        return self.http_start_msg
+    def getHttpStatMsg(self):
+        return self.http_stat_msg
 
     def getHttpEncode(self):
         return self.http_encode
@@ -707,10 +707,10 @@ class SnortRuleContent(RuleContent):
                     self.setHttpUri(True)
                 elif tag == 'http_raw_uri':
                     self.setHttpRawUri(True)
-                elif tag == 'http_start_code':
-                    self.setHttpStartCode(True)
-                elif tag == 'http_start_msg':
-                    self.setHttpStartMsg(True)
+                elif tag == 'http_stat_code':
+                    self.setHttpStatCode(True)
+                elif tag == 'http_stat_msg':
+                    self.setHttpStatMsg(True)
 
     def isHTTP(self):
         if self.http_client_body or \
@@ -721,8 +721,8 @@ class SnortRuleContent(RuleContent):
            self.http_method or \
            self.http_uri or \
            self.http_raw_uri or \
-           self.http_start_code or \
-           self.http_start_msg or \
+           self.http_stat_code or \
+           self.http_stat_msg or \
            self.http_encode:
             return True
         return False
@@ -769,7 +769,7 @@ class SnortRuleContent(RuleContent):
 
     def setHttpRawCookie(self, h=None):
         if h is not None:
-            if self.http_raw_cooked:
+            if self.http_raw_cookie:
                 self.http_raw_cookie += h
             else:
                 self.http_raw_cookie = h
@@ -809,19 +809,19 @@ class SnortRuleContent(RuleContent):
             else:
                 self.http_raw_uri = h
 
-    def setHttpStartCode(self, h=None):
+    def setHttpStatCode(self, h=None):
         if h is not None:
-            if self.http_start_code:
-                self.http_start_code += h
+            if self.http_stat_code:
+                self.http_stat_code += h
             else:
-                self.http_start_code = h
+                self.http_stat_code = h
 
-    def setHttpStartMsg(self, h=None):
+    def setHttpStatMsg(self, h=None):
         if h is not None:
-            if self.http_start_msg:
-                self.http_start_msg += h
+            if self.http_stat_msg:
+                self.http_stat_msg += h
             else:
-                self.http_start_msg = h
+                self.http_stat_msg = h
 
     def setHttpEncode(self, h=None):
         if h is not None:

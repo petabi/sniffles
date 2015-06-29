@@ -106,6 +106,227 @@ class TestRuleTrafficGenerator(TestCase):
                              mytrans.get_size() + 4, mydata)
         self.assertEqual(mytrans.get_checksum(), 0xa86B)
 
+    def test_http_content_are_properly_constructed(self):
+
+        def convert_to_binary_data(data):
+            binary_data = struct.pack("!" + str(len(data)) + "s",
+                                      bytearray(map(ord, data)))
+            return binary_data
+
+        mysrp = SnortRuleParser()
+
+        # TESTING GET REQUEST AND HTTP_URI
+        textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
+                   '(msg:"test-rule"; content:"GET"; http_method; ' \
+                   'content:"/tutorials/other/"; http_uri;' \
+                   'classtype:protocol-command-decode; sid:1; ' \
+                   'rev:1;)'
+        mysrp.parseRule(textrule)
+
+        # TESTING POST REQUEST AND HTTP_URI
+        textrule1 = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
+                    '(msg:"test-rule"; content:"POST"; http_method; ' \
+                    'content:"/tutorials/other/"; http_uri;' \
+                    'classtype:protocol-command-decode; sid:1; ' \
+                    'rev:1;)'
+        mysrp.parseRule(textrule1)
+
+        # TESTING POST REQUEST AND HTTP_URI AND HTTP_COOKIE
+        textrule2 = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
+                    '(msg:"test-rule"; content:"POST"; http_method; ' \
+                    'content:"/tutorials/other/"; http_uri;' \
+                    'content:"cookie: SESSIONID=560"; http_cookie;' \
+                    'classtype:protocol-command-decode; sid:1; ' \
+                    'rev:1;)'
+        mysrp.parseRule(textrule2)
+
+        # TESTING POST REQUEST AND HTTP_STAT_CODE AND HTTP_COOKIE
+        textrule3 = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
+                    '(msg:"test-rule"; content:"POST"; http_method; ' \
+                    'content:"/tutorials/other/"; http_uri;' \
+                    'content:"301"; http_stat_code;' \
+                    'content:"cookie: SESSIONID=560"; http_cookie;' \
+                    'classtype:protocol-command-decode; sid:1; ' \
+                    'rev:1;)'
+        mysrp.parseRule(textrule3)
+
+        # TESTING POST REQUEST AND HTTP_STAT_CODE AND HTTP_COOKIE
+        # AND HTTP_STAT_MSG
+        textrule4 = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
+                    '(msg:"test-rule"; content:"POST"; http_method; ' \
+                    'content:"/tutorials/other/"; http_uri;' \
+                    'content:"301"; http_stat_code;' \
+                    'content:"Moved Permanently"; http_stat_msg;' \
+                    'content:"cookie: SESSIONID=560"; http_cookie;' \
+                    'classtype:protocol-command-decode; sid:1; ' \
+                    'rev:1;)'
+        mysrp.parseRule(textrule4)
+
+        # TESTING HTTP_METHOD HTTP_URI HTTP_STAT_CODE
+        # HTTP_STAT_MSG HTTP_COOKIE HTTP_CLIENT_BODY
+        textrule4 = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
+                    '(msg:"test-rule"; content:"POST"; http_method; ' \
+                    'content:"/tutorials/other/"; http_uri;' \
+                    'content:"301"; http_stat_code;' \
+                    'content:"Moved Permanently"; http_stat_msg;' \
+                    'content:"cookie: SESSIONID=560"; http_cookie;' \
+                    'pcre:"/abcde{5}/"; http_client_body;' \
+                    'classtype:protocol-command-decode; sid:1; ' \
+                    'rev:1;)'
+        mysrp.parseRule(textrule4)
+
+        myrules = mysrp.getRules()
+
+        # TESTING GET REQUEST AND HTTP_URI
+        myrule = myrules.pop(0)
+        myts = myrule.getTS()[0]
+        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        myhttpdata = mycontent.get_next_published_content().get_data()
+        textruledata = struct.pack(
+            "!59s", bytearray(map(ord, 'GET /tutorials/other/ '
+                                  'HTTP/1.1\r\n'
+                                  'content-type: text-html\r\n\r\n'
+                                  )))
+        self.assertEqual(myhttpdata, textruledata)
+
+        # TESTING POST REQUEST AND HTTP_URI
+        myrule = myrules.pop(0)
+        myts = myrule.getTS()[0]
+        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        myhttpdata = mycontent.get_next_published_content().get_data()
+        textruledata = convert_to_binary_data('POST /tutorials/other/ '
+                                              'HTTP/1.1\r\n'
+                                              'content-type: text-html\r\n\r\n'
+                                              )
+        self.assertEqual(myhttpdata, textruledata)
+
+        # TESTING POST REQUEST AND HTTP_URI AND HTTP_COOKIE
+        myrule = myrules.pop(0)
+        myts = myrule.getTS()[0]
+        mySnortContents = myts.getPkts()[0].getContent()
+        self.assertEqual(len(mySnortContents), 3)
+
+        self.assertEqual(mySnortContents[0].getName(), "Snort Rule Content")
+        self.assertTrue(mySnortContents[0].getHttpMethod())
+        self.assertEqual(mySnortContents[0].getContentString(), "POST")
+
+        self.assertEqual(mySnortContents[1].getName(), "Snort Rule Content")
+        self.assertTrue(mySnortContents[1].getHttpUri())
+        self.assertEqual(mySnortContents[1].getContentString(),
+                         "/tutorials/other/")
+
+        self.assertEqual(mySnortContents[2].getName(), "Snort Rule Content")
+        self.assertTrue(mySnortContents[2].getHttpCookie())
+        self.assertEqual(mySnortContents[2].getContentString(),
+                         "cookie: SESSIONID=560")
+
+        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        myhttpdata = mycontent.get_next_published_content().get_data()
+        test_str = 'POST /tutorials/other/ ' \
+                   'HTTP/1.1\r\n' \
+                   'content-type: text-html\r\n' \
+                   'cookie: SESSIONID=560' \
+                   '\r\n\r\n'
+        textruledata = convert_to_binary_data(test_str)
+        self.assertEqual(myhttpdata, textruledata)
+
+        # TESTING POST REQUEST AND HTTP_STAT_CODE AND HTTP_COOKIE
+        myrule = myrules.pop(0)
+        myts = myrule.getTS()[0]
+        mySnortContents = myts.getPkts()[0].getContent()
+        self.assertEqual(len(mySnortContents), 4)
+
+        self.assertEqual(mySnortContents[0].getName(), "Snort Rule Content")
+        self.assertTrue(mySnortContents[0].getHttpMethod())
+        self.assertEqual(mySnortContents[0].getContentString(), "POST")
+
+        self.assertEqual(mySnortContents[1].getName(), "Snort Rule Content")
+        self.assertTrue(mySnortContents[1].getHttpUri())
+        self.assertEqual(mySnortContents[1].getContentString(),
+                         "/tutorials/other/")
+
+        self.assertEqual(mySnortContents[2].getName(), "Snort Rule Content")
+        self.assertTrue(mySnortContents[2].getHttpStatCode())
+        self.assertEqual(mySnortContents[2].getContentString(),
+                         "301")
+
+        self.assertEqual(mySnortContents[3].getName(), "Snort Rule Content")
+        self.assertTrue(mySnortContents[3].getHttpCookie())
+        self.assertEqual(mySnortContents[3].getContentString(),
+                         "cookie: SESSIONID=560")
+
+        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        myhttpdata = mycontent.get_next_published_content().get_data()
+        test_str = 'POST /tutorials/other/ ' \
+                   'HTTP/1.1 ' \
+                   '301\r\n' \
+                   'content-type: text-html\r\n' \
+                   'cookie: SESSIONID=560' \
+                   '\r\n\r\n'
+        textruledata = convert_to_binary_data(test_str)
+        self.assertEqual(myhttpdata, textruledata)
+
+        # TESTING POST REQUEST AND HTTP_STAT_CODE AND HTTP_COOKIE
+        # AND HTTP_STAT_MSG
+        myrule = myrules.pop(0)
+        myts = myrule.getTS()[0]
+        mySnortContents = myts.getPkts()[0].getContent()
+        self.assertEqual(len(mySnortContents), 5)
+
+        self.assertEqual(mySnortContents[0].getName(), "Snort Rule Content")
+        self.assertTrue(mySnortContents[0].getHttpMethod())
+        self.assertEqual(mySnortContents[0].getContentString(), "POST")
+
+        self.assertEqual(mySnortContents[1].getName(), "Snort Rule Content")
+        self.assertTrue(mySnortContents[1].getHttpUri())
+        self.assertEqual(mySnortContents[1].getContentString(),
+                         "/tutorials/other/")
+
+        self.assertEqual(mySnortContents[2].getName(), "Snort Rule Content")
+        self.assertTrue(mySnortContents[2].getHttpStatCode())
+        self.assertEqual(mySnortContents[2].getContentString(),
+                         "301")
+
+        self.assertEqual(mySnortContents[3].getName(), "Snort Rule Content")
+        self.assertTrue(mySnortContents[3].getHttpStatMsg())
+        self.assertEqual(mySnortContents[3].getContentString(),
+                         "Moved Permanently")
+
+        self.assertEqual(mySnortContents[4].getName(), "Snort Rule Content")
+        self.assertTrue(mySnortContents[4].getHttpCookie())
+        self.assertEqual(mySnortContents[4].getContentString(),
+                         "cookie: SESSIONID=560")
+
+        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        myhttpdata = mycontent.get_next_published_content().get_data()
+        test_str = 'POST /tutorials/other/ ' \
+                   'HTTP/1.1 ' \
+                   '301 Moved Permanently\r\n' \
+                   'content-type: text-html\r\n' \
+                   'cookie: SESSIONID=560' \
+                   '\r\n\r\n'
+        textruledata = convert_to_binary_data(test_str)
+        self.assertEqual(myhttpdata, textruledata)
+
+        # TESTING HTTP_METHOD HTTP_URI HTTP_STAT_CODE
+        # HTTP_STAT_MSG HTTP_COOKIE HTTP_CLIENT_BODY
+        myrule = myrules.pop(0)
+        myts = myrule.getTS()[0]
+        mySnortContents = myts.getPkts()[0].getContent()
+        self.assertEqual(len(mySnortContents), 6)
+
+        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        myhttpdata = mycontent.get_next_published_content().get_data()
+        test_str = 'POST /tutorials/other/ ' \
+                   'HTTP/1.1 ' \
+                   '301 Moved Permanently\r\n' \
+                   'content-type: text-html\r\n' \
+                   'cookie: SESSIONID=560' \
+                   '\r\n\r\n' \
+                   'abcdeeeee'
+        textruledata = convert_to_binary_data(test_str)
+        self.assertEqual(myhttpdata, textruledata)
+
     def test_snort_content_generator(self):
         textruledata = [48, 49, 50, 51, 52, 53, 97, 98, 99, 100, 101, 53, 52,
                         51, 50, 49, 48, 101, 100, 99, 98, 97]
@@ -138,26 +359,32 @@ class TestRuleTrafficGenerator(TestCase):
         mysrp.parseRule(textrule)
         myrules = mysrp.getRules()
         self.assertEqual(len(myrules), 4)
+
         myrule = myrules.pop(0)
         myts = myrule.getTS()[0]
         mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
         mytestcontent = struct.pack("!22s", bytearray(textruledata))
         self.assertEqual(mycontent.get_next_published_content().get_data(),
                          mytestcontent)
+
         myrule = myrules.pop(0)
         myts = myrule.getTS()[0]
         mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
         self.assertEqual(
             len(mycontent.get_next_published_content().get_data()), 30)
+
         myrule = myrules.pop(0)
         myts = myrule.getTS()[0]
         mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
         myhttpdata = mycontent.get_next_published_content().get_data()
+
         textruledata = struct.pack(
             "!62s", bytearray(map(ord, "POST www.test.com/hello/ "
                                   "HTTP/1.1\r\nmy_header: "
                                   "testing\r\n\r\nabcde")))
+
         self.assertEqual(myhttpdata, textruledata)
+
         myrule = myrules.pop(0)
         myts = myrule.getTS()[0]
         self.assertEqual(len(myrules), 0)

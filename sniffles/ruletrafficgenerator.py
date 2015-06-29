@@ -1339,11 +1339,22 @@ class ContentGenerator:
 
     def generate_http_content(self, rules):
         http_directive_map = {}
+        # HTTP/1.1
         http_text = [72, 84, 84, 80, 47, 49, 46, 49]
+        # GET
         http_method = [71, 69, 84]
+        # /
         http_uri = [47]
-        http_header = [99, 111, 110, 116, 101, 45, 116, 121, 112, 101,
-                       58, 32, 116, 101, 120, 116, 45, 104, 116, 109, 108]
+        # Content-type: text-html
+        http_header = [99, 111, 110, 116, 101, 110, 116, 45, 116, 121, 112,
+                       101, 58, 32, 116, 101, 120, 116, 45, 104, 116, 109,
+                       108]
+        # Cookie:
+        http_cookie = []
+        # Stat Code:
+        http_stat_code = []
+        # Stat Msg:
+        http_stat_msg = []
         http_body = []
         generated = []
         cr_lf = [13, 10]
@@ -1358,7 +1369,26 @@ class ContentGenerator:
                     else:
                         http_method = self.generate_from_regex(
                             rule.getContentString())
-
+                elif (
+                    rule.getHttpStatCode() is not None
+                ):
+                    if rule.getType() == 'content':
+                        http_stat_code = self.generate_from_content_strings(
+                            rule.getContentString()
+                        )
+                    else:
+                        http_stat_code = self.generate_from_regex(
+                            rule.getContentString())
+                elif (
+                    rule.getHttpStatMsg() is not None
+                ):
+                    if rule.getType() == 'content':
+                        http_stat_msg = self.generate_from_content_strings(
+                            rule.getContentString()
+                        )
+                    else:
+                        http_stat_msg = self.generate_from_regex(
+                            rule.getContentString())
                 elif (
                     rule.getHttpUri() is not None or
                     rule.getHttpRawUri() is not None
@@ -1369,6 +1399,17 @@ class ContentGenerator:
                         )
                     else:
                         http_uri = self.generate_from_regex(
+                            rule.getContentString())
+                elif (
+                    rule.getHttpCookie() is not None or
+                    rule.getHttpRawCookie() is not None
+                ):
+                    if rule.getType() == 'content':
+                        http_cookie = self.generate_from_content_strings(
+                            rule.getContentString()
+                        )
+                    else:
+                        http_cookie = self.generate_from_regex(
                             rule.getContentString())
                 elif (
                     rule.getHttpHeader() is not None or
@@ -1401,9 +1442,23 @@ class ContentGenerator:
         request_line.extend(http_uri)
         request_line.extend(space)
         request_line.extend(http_text)
+
+        if http_stat_code:
+            request_line.extend(space)
+            request_line.extend(http_stat_code)
+
+        if http_stat_msg:
+            request_line.extend(space)
+            request_line.extend(http_stat_msg)
+
         request_line.extend(cr_lf)
+
         for c in request_line:
             generated.append(c)
+
+        if http_cookie:
+            http_header.extend(cr_lf)
+            http_header.extend(http_cookie)
 
         http_header.extend(cr_lf)
         http_header.extend(cr_lf)
