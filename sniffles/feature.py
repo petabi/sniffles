@@ -378,11 +378,53 @@ class FeatureParser(object):
                 return None
             self.features.append(myfeature)
 
+    def tokenizeAmbiguityList(self, list):
+        notTrim = list[1:-1]
+        parsedlist = ""
+
+        # remove all space
+        for i in range(0, len(notTrim)):
+            if notTrim[i] != " ":
+                parsedlist += notTrim[i]
+
+        values = []
+        currentIndex = 0
+        beginIndex = 0
+        lastIndex = len(parsedlist) - 1
+        while currentIndex <= lastIndex:
+            if parsedlist[currentIndex] == ",":
+                tmpStr = parsedlist[beginIndex: currentIndex]
+                values.append(tmpStr)
+                currentIndex += 1
+                beginIndex = currentIndex
+            elif parsedlist[currentIndex] == "[":
+                beginIndex = currentIndex
+                while parsedlist[currentIndex] != "]":
+                    currentIndex += 1
+                currentIndex += 1
+                tmpStr = parsedlist[beginIndex: currentIndex]
+                values.append(tmpStr)
+                currentIndex += 1
+                beginIndex = currentIndex
+            elif parsedlist[currentIndex] == "{":
+                beginIndex = currentIndex
+                while parsedlist[currentIndex] != "}":
+                    currentIndex += 1
+                currentIndex += 1
+                tmpStr = parsedlist[beginIndex: currentIndex]
+                values.append(tmpStr)
+                currentIndex += 1
+                beginIndex = currentIndex
+            else:
+                currentIndex += 1
+                if currentIndex > lastIndex and \
+                   currentIndex > beginIndex:
+                    tmpStr = parsedlist[beginIndex: currentIndex]
+                    values.append(tmpStr)
+        return values
+
     def buildAmbiguityList(self, list):
         mylist = []
-        parsedlist = list[1:-1]
-        values = re.split(r",\s", parsedlist)
-
         myamb = None
         for val in values:
             if ',' in val:
