@@ -54,6 +54,9 @@ class ListNotation(AmbiguousNotation):
 
     # list notation should be [x,y] where x is lower bound and
     # y is upper bound.
+    # it will generate a random list of values falling between
+    # lower bound and upper bound
+
     def __init__(self, notation):
         self.separator = notation
         self.prefix = notation[0:1]
@@ -74,16 +77,14 @@ class ListNotation(AmbiguousNotation):
 
     def toString(self):
         num_elements = random.randint(2, self.max_list_size)
-        num_elements = max(self.upper_bound - self.lower_bound + 1,
-                           num_elements)
+        num_elements = min(num_elements,
+                           self.upper_bound - self.lower_bound + 1
+                           )
         myelements = []
-
-        # generate a list from lower_bound to upper_bound
-        myIndexedList = []
         for i in range(self.lower_bound, self.upper_bound + 1):
-            myIndexedList.append(i)
-        random.shuffle(myIndexedList)
-        myelements = myIndexedList[0:num_elements]
+            myelements.append(i)
+        random.shuffle(myelements)
+        myelements = myelements[0:num_elements]
 
         myelements = sorted(myelements)
         mystring = self.prefix
@@ -381,6 +382,7 @@ class FeatureParser(object):
         mylist = []
         parsedlist = list[1:-1]
         values = re.split(r",\s", parsedlist)
+
         myamb = None
         for val in values:
             if ',' in val:
