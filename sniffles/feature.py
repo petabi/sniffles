@@ -36,7 +36,7 @@ class RangeNotation(AmbiguousNotation):
         self.upper_bound = int(bounds[1])
         if self.upper_bound < 1:
             self.upper_bound = 1
-        if self.lower_bound > self.upper_bound:
+        if self.lower_bound >= self.upper_bound:
             self.lower_bound = self.upper_bound - 1
 
     def __str__(self):
@@ -56,6 +56,8 @@ class ListNotation(AmbiguousNotation):
     # y is upper bound.
     # it will generate a random list of values falling between
     # lower bound and upper bound
+    # for example: [5,10] can generate [5,7,9]
+    # for [20,20], it will be converted into [19,20]
 
     def __init__(self, notation):
         self.separator = notation
@@ -69,7 +71,7 @@ class ListNotation(AmbiguousNotation):
         self.max_list_size = 100
         if self.upper_bound < 1:
             self.upper_bound = 1
-        if self.lower_bound > self.upper_bound:
+        if self.lower_bound >= self.upper_bound:
             self.lower_bound = self.upper_bound - 1
 
     def __str__(self):
@@ -117,7 +119,8 @@ class Feature(object):
     def toString(self):
         complex = False
         mystring = self.feature_name + "="
-        if self.complexity_prob > 0 and len(self.ambiguity_list) > 0:
+        if self.complexity_prob > 0 and self.ambiguity_list is \
+           not None and len(self.ambiguity_list) > 0:
             pick = random.randint(0, 100)
             if pick <= self.complexity_prob:
                 complex = True
@@ -381,12 +384,11 @@ class FeatureParser(object):
     def tokenizeAmbiguityList(self, list):
         notTrim = list[1:-1]
         parsedlist = ""
-
         # remove all space
+        # currently, sniffles support no space
         for i in range(0, len(notTrim)):
             if notTrim[i] != " ":
                 parsedlist += notTrim[i]
-
         values = []
         currentIndex = 0
         beginIndex = 0
@@ -425,6 +427,7 @@ class FeatureParser(object):
 
     def buildAmbiguityList(self, list):
         mylist = []
+        values = self.tokenizeAmbiguityList(list)
         myamb = None
         for val in values:
             if ',' in val:

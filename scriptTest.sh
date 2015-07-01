@@ -11,7 +11,7 @@ elif [ "$1" = "test" ]; then
 	echo "=========== Begin to install and build ========="
 	sudo python3.4 setup.py build
 	echo "=========== Begin to tests ========="
-	sudo python3.4 runtests.py
+	python3.4 runtests.py
 	echo "=========== Tested the sniffles ========="
 	echo
 elif [ "$1" = "pep8" ]; then
