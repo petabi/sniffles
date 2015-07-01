@@ -21,6 +21,35 @@ class AmbiguousNotation(object):
         return self.notation
 
 
+class SetNotation(AmbiguousNotation):
+    # Set notation should be expressed as <x1,x2,x3...>
+    # toString will return a subset of x(i) with
+    # the length of subset should be at least 2
+    # requirement: length of set should be at least 2
+    # for example: <5,6,9>
+    # it can return [5,6] or [5,9] or [6,9]
+    def __init__(self, notation):
+        self.notation = notation
+        mystr = notation[1:-1]
+        self.values = mystr.split(",")
+        self.max_list_size = len(self.values)
+
+    def __str__(self):
+        return self.toString()
+
+    def toString(self):
+        num_elements = random.randint(2, self.max_list_size)
+        myelements = self.values
+        random.shuffle(myelements)
+        myString = "["
+        for index, elem in enumerate(myelements[0:num_elements]):
+            myString += elem
+            if index != num_elements - 1:
+                myString += ","
+        myString += "]"
+        return myString
+
+
 class RangeNotation(AmbiguousNotation):
 
     # Range notation should be expressed as [x:y] where
@@ -431,7 +460,10 @@ class FeatureParser(object):
         myamb = None
         for val in values:
             if ',' in val:
-                myamb = ListNotation(val)
+                if "[" in val:
+                    myamb = ListNotation(val)
+                elif "{" in val:
+                    myamb = SetNotation(val)
             elif ':' in val:
                 myamb = RangeNotation(val)
             else:
