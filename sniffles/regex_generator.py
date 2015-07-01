@@ -489,7 +489,7 @@ def usage():
     The distributions are handled by creating a list of probabilities for
     the various possibilities, or slots, for a particular distribution.
     These are added as command line arguments using a simple string
-    list like: "10,30,40,20".  The list should have as many values
+    list like: "10,30,40,20".  The list shoduld have as many values
     as it has slots.  The total of all values in the list should be
     100 and there should not be any fractions.  The value at each slot
     is the probability that that slot will be chosen.  For example,

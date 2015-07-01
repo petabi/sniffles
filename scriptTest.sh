@@ -46,6 +46,22 @@ elif [ "$1" = "pep8" ]; then
 	pep8 sniffles/test/test_feature.py
 	echo "==== Verified ===="
 	echo
+	echo "==== Verifying rule_formats.py ===="
+	pep8 sniffles/rule_formats.py
+	echo "==== Verified ===="
+	echo
+	echo "==== Verifying test_ruleformats.py ===="
+	pep8 sniffles/test/test_ruleformat.py
+	echo "==== Verified ===="
+	echo
+	echo "==== Verifying regex_generator.py ===="
+	pep8 sniffles/regex_generator.py
+	echo "==== Verified ===="
+	echo
+	echo "==== Verifying test_regex_generator.py ===="
+	pep8 sniffles/test/test_regex_generator.py
+	echo "==== Verified ===="
+	echo
 	echo "=========== End of verification ========="
 	echo
 fi
