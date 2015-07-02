@@ -490,6 +490,7 @@ Authors:
 
 - Victor C. Valgenti
 - Min Sik Kim
+- Tu Le
 
 New Features:
 -------------
@@ -704,11 +705,11 @@ to generate test rule sets that will examine the IDS across a
 vector that is often missed.
 
 Features are defined in a semi-colon separated list one feature per line
-type=feature; list of arguments in key=value pairs, lists using
-python formatting (i.e. [a, ..., z]).  Feature define specific
-portions of a target rule format.  Features may be extended
-to add more functionality.  Optionally, one can extend the
-ability of the features by creating a new rule format.
+type=feature; list of arguments in key=value pairs, lists using python
+formatting (i.e. [a, ..., z]).  Feature define specific portions of a
+target rule format.  Features may be extended to add more functionality.
+Optionally, one can extend the ability of the features by creating a new
+rule format.
 
 Current Feature Types:
 
@@ -717,11 +718,29 @@ Current Feature Types:
 3. IP -- IP Feature
 4. Protocol -- Protocol Feature
 
-Ambiguous features should be written as lists like [x:y]
-for a range, [x,y] for a list with maximum of 10
+Ambiguous list should be written as lists like [x:y]
+for a range, [x,y] for a list, {x1,x2,x3} for a set
 or just * for a wildcard or similar single option.
 
-Example:
+Example about ambiguous list:
+'''
+ambiguity_list=[[2:9]]
+it will generate [3:4], [5:6], etc (any [x:y] such that
+x <= y and x >= 2 and y <= 9).
+
+ambiguity_list=[[3,20]]
+it will generate [3,9,10], [3,4,8,12], etc (any list [x1,x2,x3,..]
+such that all values falling between 3 and 20.
+
+ambiguity_list=[{5,6,10}]
+it will generate a subset of {5,6,10} such as {5,10}, {5}.
+
+ambiguity_list=[[2:9],[3,20],{5,6,11}]
+it will pick one of [2:9], [3,20], and {5,6,11} and
+generate a corresponding instance (see above)
+'''
+
+Example for feature file:
 ```
 type=protocol; name=proto; proto_list=[IP,TCP,UDP,ICMP]; complexity_prob=0;ambiguity_list=None;
 type=ip; name=sip; version=4; complexity_prob=100;
@@ -774,14 +793,18 @@ IP Feature -- Inherits from Feature:
 - version: 4 for IP version 4, 6 for IP version 6.
            Defaults to version 4.
 
-Ambigous notation for ranges and lists:
+Ambigous notation for ranges, lists, sets:
 
 Range Notation:
   [x:y]  means from x to y (inclusive).
 
-list notation:
-  [x,y] means x or y.
+List notation:
+  [x,y] means list of values greater than or equal to x
+  and smaller than or equal to y
 
+Set notation:
+  {x1,x2,x3,x4} means a set of value x1, x2, x3, x4.  It
+  will generate a subset set of original set.
 
 Please look at the example feature sets in the
 example_features folder for further examples.
