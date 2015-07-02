@@ -62,6 +62,14 @@ elif [ "$1" = "pep8" ]; then
 	pep8 sniffles/test/test_regex_generator.py
 	echo "==== Verified ===="
 	echo
+	echo "==== Verifying rand_rule_gen.py ===="
+	pep8 sniffles/rand_rule_gen.py
+	echo "==== Verified ===="
+	echo
+	echo "==== Verifying test_rand_rule_gen.py ===="
+	pep8 sniffles/test/test_rand_rule_gen.py
+	echo "==== Verified ===="
+	echo
 	echo "=========== End of verification ========="
 	echo
 fi

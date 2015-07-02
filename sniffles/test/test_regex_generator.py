@@ -82,7 +82,8 @@ class TestRegexGenerator(TestCase):
         pass
 
     def test_get_alternation(self):
-        pass
+        test = get_alternation(1, [30, 30, 40], [20, 20, 20, 20, 20],
+                               [50, 50], [25, 25, 25, 25], 50, 50)
 
     def test_get_repetition(self):
         for i in range(0, 100):

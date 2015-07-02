@@ -350,11 +350,16 @@ class FeatureParser(object):
                 fd = codecs.open(filename, 'r', encoding='utf-8')
             except Exception as err:
                 print("Could not read feature file.")
-                print(err)
+                print("FeatureParser-parseFile: " + str(err))
+                raise Exception("The program will stop.")
                 return False
             line = fd.readline()
             while line:
-                self.parseLine(line)
+                try:
+                    self.parseLine(line)
+                except Exception as err:
+                    print("FeatureParser-parseFile: " + str(err))
+                    raise Exception("The program will stop.")
                 line = fd.readline()
             fd.close()
             return True
@@ -391,7 +396,7 @@ class FeatureParser(object):
             if 'complexity_prob' in mypairs:
                 complexity_prob = int(mypairs['complexity_prob'])
             if 'ambiguity_list' in mypairs:
-                myambiguity_list = self.buildAmbiguityList(
+                ambiguity_list = self.buildAmbiguityList(
                     mypairs['ambiguity_list'])
             if 'regex' in mypairs:
                 if mypairs['regex'].lower() == 'true':
@@ -413,14 +418,14 @@ class FeatureParser(object):
                 return None
             if mypairs['type'].lower() == 'feature':
                 myfeature = Feature(name, lower_bound, upper_bound,
-                                    complexity_prob, myambiguity_list)
+                                    complexity_prob, ambiguity_list)
             elif mypairs['type'].lower() == 'content':
                 myfeature = ContentFeature(name, regex, complexity_prob, len)
             elif mypairs['type'].lower() == 'ip':
                 myfeature = IPFeature(name, version, complexity_prob)
             elif mypairs['type'].lower() == 'protocol':
                 myfeature = ProtocolFeature(name, proto_list, complexity_prob,
-                                            myambiguity_list)
+                                            ambiguity_list)
             else:
                 print("Unrecognized feature type.", line)
                 return None
