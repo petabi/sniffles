@@ -379,7 +379,7 @@ def get_index(total_options=1, dist=None):
     else:
         index = 0
         sum = 0
-        pick = random.randint(0, 100)
+        pick = random.randint(0, 99)
         for prob in dist:
             sum += int(prob)
             if pick < sum:
