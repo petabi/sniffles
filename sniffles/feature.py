@@ -290,21 +290,19 @@ class FeatureParser(object):
         self.features = []
         self.parseFile(filename)
 
-    def parseFile(self, filename=None):
-        if filename is not None:
-            try:
-                fd = codecs.open(filename, 'r', encoding='utf-8')
-            except Exception as err:
-                print("Could not read feature file.")
-                print(err)
-                return False
+    def parseFile(self, filename):
+        try:
+            fd = codecs.open(filename, 'r', encoding='utf-8')
+        except Exception as err:
+            print("Could not read feature file.")
+            print(err)
+            return False
+        line = fd.readline()
+        while line:
+            self.parseLine(line)
             line = fd.readline()
-            while line:
-                self.parseLine(line)
-                line = fd.readline()
-            fd.close()
-            return True
-        return False
+        fd.close()
+        return True
 
     def getFeatures(self):
         return self.features
