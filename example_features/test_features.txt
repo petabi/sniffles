@@ -1,0 +1,7 @@
+type=feature; name=alert; complexity_prob=100; ambiguity_list=[alert, log, pass, activate, dynamic, drop, reject, sdrop]
+type=protocol; name=proto; proto_list=[TCP,UDP];
+type=ip; name=sip; complexity_prob=50; version=4;
+type=feature; name=sport; complexity_prob=100; ambiguity_list=[1500,1600,{1400,1300,1670},[2000:2100]]
+type=ip; name=dip; complexity_prob=50; version=6;
+type=feature; name=dport; complexity_prob=100; ambiguity_list=[1250,1400,[6000,7000]]
+type=content; name=content regex=true
