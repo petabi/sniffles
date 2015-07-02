@@ -24,8 +24,8 @@ class AmbiguousNotation(object):
 class SetNotation(AmbiguousNotation):
     # Set notation should be expressed as <x1,x2,x3...>
     # toString will return a subset of x(i) with
-    # the length of subset should be at least 2
-    # requirement: length of set should be at least 2
+    # the length of subset should be at least 1
+    # requirement: length of set should be at least 1
     # for example: <5,6,9>
     # it can return [5,6] or [5,9] or [6,9]
     def __init__(self, notation):
@@ -38,7 +38,7 @@ class SetNotation(AmbiguousNotation):
         return self.toString()
 
     def toString(self):
-        num_elements = random.randint(2, self.max_list_size)
+        num_elements = random.randint(1, self.max_list_size)
         myelements = self.values
         random.shuffle(myelements)
         myString = "["
@@ -255,11 +255,15 @@ class IPFeature(Feature):
             totalbytes = 4
             if self.version == 6:
                 totalbytes = 16
-            mynetmask = random.randint(0, totalbytes*8)
+            mynetmask = random.randint(0, totalbytes * 8)
+
             myprefixbytes = int(mynetmask / 8)
             myremainder = mynetmask % 8
+
             mask = ((2**myremainder)-1) << (8 - myremainder)
+
             index = 0
+
             while index < myprefixbytes:
                 if self.version == 4:
                     myip.append(random.randint(0, 255))
@@ -270,25 +274,37 @@ class IPFeature(Feature):
                     else:
                         break
                 index += 1
+
             mypartialbyte = (random.randint(0, 255) & mask)
             last_bytes = totalbytes - myprefixbytes
+
             if (myprefixbytes - index) == 1:
                 mypartialbyte += (random.randint(0, 255)) << 8
+
             elif self.version == 6:
                 mypartialbyte = mypartialbyte << 8
+
             if mypartialbyte > 0:
                 myip.append(mypartialbyte)
                 last_bytes -= 1
-            while last_bytes > 0:
-                myip.append(0)
-                last_bytes -= 1
-                if self.version == 6:
+
+            if self.version == 6:
+                remain = 8 - len(myip)
+                for i in range(0, remain):
+                    myip.append(0)
+            else:
+                while last_bytes > 0:
+                    myip.append(0)
                     last_bytes -= 1
+                    if self.version == 6:
+                        last_bytes -= 1
+
             if self.version == 4:
                 myipstring = '.'.join(['%d' % byte for byte in myip])
             else:
                 myipstring = ':'.join(['%04x' % byte for byte in myip])
             myipstring += "/" + str(mynetmask)
+
         else:
             if self.version == 4:
                 for i in range(0, 4):

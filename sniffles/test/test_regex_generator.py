@@ -59,3 +59,13 @@ class TestRegexGenerator(TestCase):
         testStr = "\d\s\w\D\S\W."
         for i in range(0, 100):
             self.assertTrue(get_substitution_class() in testStr)
+
+    def test_get_class(self):
+        for i in range(0, 100):
+            test = get_class([0, 100], 0)
+            test = test[1:-1]
+            values = test.split("-")
+            if values[0].islower():
+                self.assertTrue(values[1].islower())
+            else:
+                self.assertTrue(not values[1].islower())
