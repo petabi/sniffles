@@ -183,7 +183,7 @@ def generate_regex(lambd=10, max_len=0, type_dist=None, char_dist=None,
                                        negation_prob)
         else:
             myregex += get_char(char_dist)
-        pick = random.randint(0, 100)
+        pick = random.randint(0, 99)
         if pick < rep_chance:
             myregex += get_repetition(rep_dist)
         i += 1
@@ -283,7 +283,7 @@ def get_class(class_distribution=None, negation_prob=50):
     class_set = []
     myclass = '['
     neg = False
-    pick = random.randint(0, 100)
+    pick = random.randint(0, 99)
     if pick < negation_prob:
         myclass += '^'
         neg = True

@@ -69,3 +69,39 @@ class TestRegexGenerator(TestCase):
                 self.assertTrue(values[1].islower())
             else:
                 self.assertTrue(not values[1].islower())
+            self.assertTrue(ord(values[0]) < ord(values[1]))
+
+        for i in range(0, 100):
+            test = get_class([0, 100], 100)
+            self.assertEqual(test[1], "^")
+
+    def test_generate_regex(self):
+        pass
+
+    def test_getREGroups(self):
+        pass
+
+    def test_get_alternation(self):
+        pass
+
+    def test_get_repetition(self):
+        for i in range(0, 100):
+            test = get_repetition([100, 0, 0, 0], 0)
+            self.assertEqual(test, "?")
+
+        for i in range(0, 100):
+            test = get_repetition([0, 100, 0, 0], 0)
+            self.assertEqual(test, "*")
+
+        for i in range(0, 100):
+            test = get_repetition([0, 0, 100, 0], 0)
+            self.assertEqual(test, "+")
+
+        for i in range(0, 100):
+            test = get_repetition([0, 0, 0, 100], 0)
+            self.assertEqual(test[0], "{")
+            self.assertEqual(test[-1], "}")
+            values = test[1:-1].split(",")
+            lower = int(values[0])
+            upper = int(values[1])
+            self.assertTrue(lower <= upper)
