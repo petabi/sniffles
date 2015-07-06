@@ -1706,8 +1706,7 @@ class EthernetFrame:
 
     def get_dist_mac_oui(self):
         dist_map = VENDOR_MAC_DIST.keys()
-        # pick = random.randint(1, VENDOR_MAC_DIST_DOMAIN)
-        pick = 100
+        pick = random.randint(1, VENDOR_MAC_DIST_DOMAIN)
         prefix = []
         last_key = 0
         for i in dist_map:
