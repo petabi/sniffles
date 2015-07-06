@@ -1706,7 +1706,8 @@ class EthernetFrame:
 
     def get_dist_mac_oui(self):
         dist_map = VENDOR_MAC_DIST.keys()
-        pick = random.randint(1, VENDOR_MAC_DIST_DOMAIN)
+        # pick = random.randint(1, VENDOR_MAC_DIST_DOMAIN)
+        pick = 100
         prefix = []
         last_key = 0
         for i in dist_map:
@@ -1718,7 +1719,9 @@ class EthernetFrame:
                 break
             else:
                 last_key = i
-        if prefix is None:
+
+        # [] is not same as None
+        if len(prefix) == 0:
             prefix = VENDOR_MAC_DIST[last_key]
         return prefix
 

@@ -20,25 +20,27 @@ class TestRuleTrafficGenerator(TestCase):
         self.assertNotEqual(myehdrstr1, str(myehdr))
 
     def test_build_ethernet_header_dist(self):
-        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
-                               ETHERNET_HDR_GEN_DISTRIBUTION,
-                               'examples/mac_definition_file.txt')
-        self.assertEqual(''.join(['%02x' % i
-                                  for i in myehdr.get_d_mac()[0:2]]),
-                         '0080')
-        self.assertEqual(''.join(['%02x' % i
-                                  for i in myehdr.get_s_mac()[0:2]]),
-                         '0080')
-        mystr1 = str(myehdr)
-        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
-                               ETHERNET_HDR_GEN_DISTRIBUTION,
-                               'examples/mac_definition_file.txt')
-        self.assertEqual(mystr1, str(myehdr))
-        myehdr.clear_globals()
-        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
-                               ETHERNET_HDR_GEN_DISTRIBUTION,
-                               'examples/mac_definition_file.txt')
-        self.assertNotEqual(mystr1, str(myehdr))
+        for i in range(0, 1000):
+            myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
+                                   ETHERNET_HDR_GEN_DISTRIBUTION,
+                                   'examples/mac_definition_file.txt')
+            self.assertEqual(''.join(['%02x' % i
+                                      for i in myehdr.get_d_mac()[0:2]]),
+                             '0080')
+
+            self.assertEqual(''.join(['%02x' % i
+                                      for i in myehdr.get_s_mac()[0:2]]),
+                             '0080')
+            mystr1 = str(myehdr)
+            myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
+                                   ETHERNET_HDR_GEN_DISTRIBUTION,
+                                   'examples/mac_definition_file.txt')
+            self.assertEqual(mystr1, str(myehdr))
+            myehdr.clear_globals()
+            myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
+                                   ETHERNET_HDR_GEN_DISTRIBUTION,
+                                   'examples/mac_definition_file.txt')
+            self.assertNotEqual(mystr1, str(myehdr))
 
     def test_build_ip_header(self):
         myipv4a = IPV4(None, None)
