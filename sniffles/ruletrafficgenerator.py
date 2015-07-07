@@ -1705,6 +1705,12 @@ class EthernetFrame:
         return self.d_mac
 
     def get_dist_mac_oui(self):
+
+        # this one should support both mac address
+        # for source and destination
+        # we will support by
+        # VENDOR_MAC_DIST
+
         dist_map = VENDOR_MAC_DIST.keys()
         pick = random.randint(1, VENDOR_MAC_DIST_DOMAIN)
         prefix = []
@@ -1718,7 +1724,9 @@ class EthernetFrame:
                 break
             else:
                 last_key = i
-        if prefix is None:
+
+        # [] is not same as None
+        if not prefix:
             prefix = VENDOR_MAC_DIST[last_key]
         return prefix
 
