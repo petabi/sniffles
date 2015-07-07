@@ -75,16 +75,6 @@ class TestRegexGenerator(TestCase):
             test = get_class([0, 100], 100)
             self.assertEqual(test[1], "^")
 
-    def test_generate_regex(self):
-        pass
-
-    def test_getREGroups(self):
-        pass
-
-    def test_get_alternation(self):
-        test = get_alternation(1, [30, 30, 40], [20, 20, 20, 20, 20],
-                               [50, 50], [25, 25, 25, 25], 50, 50)
-
     def test_get_repetition(self):
         for i in range(0, 100):
             test = get_repetition([100, 0, 0, 0], 0)

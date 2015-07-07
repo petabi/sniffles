@@ -31,6 +31,15 @@ class TestFeature(TestCase):
             self.assertTrue(upper <= 25)
             self.assertTrue(lower <= upper)
 
+    def test_list_notation_class_distribution(self):
+        test = ListNotation("[5,1500000]")
+        mySplit = test.toString()[1:-1]
+        values = mySplit.split(",")
+        for value in values:
+            iVal = int(value)
+            self.assertTrue(iVal >= 5)
+            self.assertTrue(iVal <= 1500000)
+
     def test_list_notation_class(self):
         # basic test case [5,6]
         test1 = ListNotation("[5,6]")

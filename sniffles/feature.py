@@ -22,11 +22,11 @@ class AmbiguousNotation(object):
 
 
 class SetNotation(AmbiguousNotation):
-    # Set notation should be expressed as <x1,x2,x3...>
+    # Set notation should be expressed as {x1,x2,x3...}
     # toString will return a subset of x(i) with
     # the length of subset should be at least 1
     # requirement: length of set should be at least 1
-    # for example: <5,6,9>
+    # for example: {5,6,9}
     # it can return [5,6] or [5,9] or [6,9]
     def __init__(self, notation):
         self.notation = notation
@@ -111,13 +111,37 @@ class ListNotation(AmbiguousNotation):
         num_elements = min(num_elements,
                            self.upper_bound - self.lower_bound + 1
                            )
-        myelements = []
-        for i in range(self.lower_bound, self.upper_bound + 1):
-            myelements.append(i)
-        random.shuffle(myelements)
-        myelements = myelements[0:num_elements]
 
-        myelements = sorted(myelements)
+        offset = int((self.upper_bound - self.lower_bound) / num_elements) - 1
+
+        myelements = []
+
+        # if the width of range is not big enough
+        if offset <= 20:
+            for i in range(self.lower_bound, self.upper_bound + 1):
+                myelements.append(i)
+
+            boundarylist = []
+
+            random.shuffle(myelements)
+            myelements = myelements[0:num_elements]
+            myelements = sorted(myelements)
+        else:
+            boundarylist = []
+            offset = int((self.upper_bound - self.lower_bound) / num_elements) - 1
+            lower = self.lower_bound
+            for i in range(1, num_elements):
+                upper = lower + offset
+                boundarylist.append([lower, upper])
+                lower = upper + 1
+            boundarylist.append([lower, self.upper_bound])
+
+            for bounds in boundarylist:
+                if bounds[0] - bounds[1] <= 1:
+                    myelements.append(bounds[0])
+                else:
+                    myelements.append(random.randint(bounds[0], bounds[1]))
+
         mystring = self.prefix
         while myelements:
             myelement = myelements.pop(0)
@@ -432,13 +456,13 @@ class FeatureParser(object):
             self.features.append(myfeature)
 
     def tokenizeAmbiguityList(self, list):
-        notTrim = list[1:-1]
+        listAsString = list[1:-1]
         parsedlist = ""
         # remove all space
         # currently, sniffles support no space
-        for i in range(0, len(notTrim)):
-            if notTrim[i] != " ":
-                parsedlist += notTrim[i]
+        for i in range(0, len(listAsString)):
+            if listAsString[i] != " ":
+                parsedlist += listAsString[i]
         values = []
         currentIndex = 0
         beginIndex = 0
