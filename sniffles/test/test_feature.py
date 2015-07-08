@@ -55,14 +55,6 @@ class TestFeature(TestCase):
             self.assertTrue(iVal >= 5)
             self.assertTrue(iVal <= 150)
 
-        # [5,4] --> [3,4]
-        test3 = ListNotation("[5,4]")
-        self.assertEqual(str(test3), "[3,4]")
-
-        # [5,0] --> [0,1]
-        test3 = ListNotation("[5,0]")
-        self.assertEqual(str(test3), "[0,1]")
-
     def test_feature_class(self):
         # no ambiguity list
         myfeature = Feature("f1", 20, 30, 0)
@@ -274,7 +266,7 @@ class TestFeature(TestCase):
                     self.assertTrue(iVal >= 5)
                     self.assertTrue(iVal <= 15)
 
-        test = featureParser.buildAmbiguityList("[mozart,[5,15],[23:13]]")
+        test = featureParser.buildAmbiguityList("[mozart,[5,15],[9:13]]")
         self.assertEqual(len(test), 3)
         for i in range(0, 3):
             if i == 0:
@@ -290,9 +282,9 @@ class TestFeature(TestCase):
                 values = convertToRange(str(test[i]))
                 lower = int(values[0])
                 upper = int(values[1])
-                self.assertTrue(lower <= upper)
+                self.assertTrue(lower < upper)
 
-        test = featureParser.buildAmbiguityList("[mozart,[5,15],[23:13]"
+        test = featureParser.buildAmbiguityList("[mozart,[5,15],[9:13]"
                                                 ", {mon, fri,wed}]")
         self.assertEqual(len(test), 4)
         for i in range(0, 3):
@@ -309,7 +301,7 @@ class TestFeature(TestCase):
                 values = convertToRange(str(test[i]))
                 lower = int(values[0])
                 upper = int(values[1])
-                self.assertTrue(lower <= upper)
+                self.assertTrue(lower < upper)
             else:
                 self.assertTrue(isinstance(test[i], SetNotation))
                 testList = ["mon", "wed", "fri"]
