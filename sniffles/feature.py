@@ -63,17 +63,18 @@ class RangeNotation(AmbiguousNotation):
         bounds = myrange.split(self.separator)
         self.lower_bound = int(bounds[0])
         self.upper_bound = int(bounds[1])
-        if self.upper_bound < 1:
-            self.upper_bound = 1
-        if self.lower_bound >= self.upper_bound:
-            self.lower_bound = self.upper_bound - 1
+        if self.upper_bound - self.lower_bound < 1:
+            print("RangeNotation: Upper bound has to be greater than"
+                  " the lower bound." + str(self.upper_bound) + " > "
+                  + str(self.lower_bound))
+            sys.exit(0)
 
     def __str__(self):
         return self.toString()
 
     def toString(self):
         mylower = random.randint(self.lower_bound, self.upper_bound-1)
-        myupper = random.randint(mylower, self.upper_bound)
+        myupper = random.randint(mylower + 1, self.upper_bound)
         mystring = self.prefix + str(mylower) + self.separator + \
             str(myupper) + self.suffix
         return mystring
@@ -128,7 +129,8 @@ class ListNotation(AmbiguousNotation):
             myelements = sorted(myelements)
         else:
             boundarylist = []
-            offset = int((self.upper_bound - self.lower_bound) / num_elements) - 1
+            offset = int((self.upper_bound - self.lower_bound)
+                         / num_elements) - 1
             lower = self.lower_bound
             for i in range(1, num_elements):
                 upper = lower + offset
