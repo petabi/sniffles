@@ -40,6 +40,14 @@ class TestFeature(TestCase):
             self.assertTrue(iVal >= 5)
             self.assertTrue(iVal <= 1500000)
 
+        test = ListNotation("[0, 4294967295]")
+        mySplit = test.toString()[1:-1]
+        values = mySplit.split(",")
+        for value in values:
+            iVal = int(value)
+            self.assertTrue(iVal >= 0)
+            self.assertTrue(iVal <= 4294967295)
+
     def test_list_notation_class(self):
         # basic test case [5,6]
         test1 = ListNotation("[5,6]")

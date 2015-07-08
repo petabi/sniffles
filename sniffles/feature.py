@@ -113,27 +113,22 @@ class ListNotation(AmbiguousNotation):
                            self.upper_bound - self.lower_bound + 1
                            )
 
-        offset = int((self.upper_bound - self.lower_bound) / num_elements) - 1
+        sample_size = int((self.upper_bound - self.lower_bound) / num_elements) - 1
 
         myelements = []
 
         # if the width of range is not big enough
-        if offset <= 20:
+        if sample_size <= 20:
             for i in range(self.lower_bound, self.upper_bound + 1):
                 myelements.append(i)
-
-            boundarylist = []
-
             random.shuffle(myelements)
             myelements = myelements[0:num_elements]
             myelements = sorted(myelements)
         else:
             boundarylist = []
-            offset = int((self.upper_bound - self.lower_bound)
-                         / num_elements) - 1
             lower = self.lower_bound
             for i in range(1, num_elements):
-                upper = lower + offset
+                upper = lower + sample_size
                 boundarylist.append([lower, upper])
                 lower = upper + 1
             boundarylist.append([lower, self.upper_bound])
