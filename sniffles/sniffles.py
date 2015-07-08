@@ -267,7 +267,7 @@ def printRegEx(rules):
     return [0, 0, 0]
 
 
-def write_packets(queue=None, traffic_writer=None, time_lapse=1,
+def write_packets(queue, traffic_writer, time_lapse=1,
                   scan=False, scanners=None, slow_flows=None):
     """
         Packets are written out interleaved (round-robin) from
