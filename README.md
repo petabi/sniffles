@@ -581,17 +581,17 @@ regex_gen--Random Regular Expression Generator.
     has five slots: ASCII Characters, Binary characters in \x00 format,
     Alphabetical letters (upper or lower case), Digits, and substitution
     classes (like \w).  An example input to this would be "10,20,10,40,20"
-    which would mean 10% chance any generated chae would come from ASCII,
+    which would mean 10% chance any generated char would come from 10% ASCII,
     20% binary, 10% letters, etc.  One Caveat is that ASCII chars that
-    might cause problems with regular expressions (like `[' or '{')
+    might cause problems with regular expression (like `[' or '{')
     are converted to hex representation (\x3b for example).
--    -c number of regular expression to generate.  Default is one.
+-    -c Number of regular expressions to generate.  Default is one.
 -    -D Class Distribution: There are only two slots in the class
     distribution.  The first slot is the probability that the class is
     comprised of some number of randomly generated character.  The
     second slot is the probability that the class is comprised of
     ranges (like a-z).
--    -f output file name.  This sets the name of the file where the
+-    -f Output file name.  This sets the name of the file where the
     regular expressions are stored.  The default is a file named rand.re
     in the current working directory.
 -    -g Groups: All regular expressions will have a common prefix with
@@ -600,19 +600,19 @@ regex_gen--Random Regular Expression Generator.
     that is the same for some set of regular expressions.  The total
     number of possible common prefixes is from 1 to 1/2 the size of the
     total regular expressions to generate.  The default value for this
-    is false.  This option takes no parameters.
--    -l lambda for length:  This is the mean length for an exponentional
+    option is false.  This option takes no parameters.
+-    -l Lambda for length:  This is the mean length for an exponentional
     distribution of regular expression lengths.  The default value is 10.
--    -n negation probability: The probability that a character class will
+-    -n Negation probability: The probability that a character class will
     be a negation class ([^xyz]) rather than a normal character class ([xyz]).
     Default probability is 50%.
--    -o option chance:  This is the chance for an option to be appended
+-    -o Option chance:  This is the chance for an option to be appended
     to the regular expression.  Current options are 'i', 'm', and 's'.
     A random number of options are added to the list with those options
     chose through a uniform distribution.
--    -R repetition chance: The chance of repetition occuring after
+-    -R Repetition chance: The chance of repetition occuring after
     any structural component has been added to the regular expression.
--    -r repetion distribution: The distribution of repetition structures.
+-    -r Repetion distribution: The distribution of repetition structures.
     The slots are: Zero to one (?), Zero to many (*), one to many (+), and
     counting ({x,y}).
 -    -t Re structural type distribution: The distribution for the
@@ -624,10 +624,10 @@ regex_gen--Random Regular Expression Generator.
     regular expressions being joined into the overall regular expression.
     The alternation uses the exact same methodology in creating those
     smaller regular expressions.
--   -? print this help.
+-   -? Print this help.
 
     This generator will create random regular expressions.  It is possible
-    to tune the structures within the regular expressions to a prbability
+    to tune the structures within the regular expressions to a probability
     distribution, but currently not the content.  This is desirable in
     order to explore the maximum diversity in possible regular expressions
     (though not necessarily realistic regular expressions).
@@ -641,7 +641,7 @@ regex_gen--Random Regular Expression Generator.
     the base RE structural type distribution has three slots.  The
     first slot is the probability that the next structure type is
     a character (where a character can be a letter, digit, binary, ASCII,
-    or substitution class (like \w).  The second slot is for character
+    or substitution class (like \w)).  The second slot is for character
     classes like [ab@%], [^123], or [a-z].  The final slot is the probability
     of alternation occuring like (ab|cd).  With these three slots you can tune
     how often you would like the structures to appear in your regular
@@ -652,7 +652,7 @@ regex_gen--Random Regular Expression Generator.
 Random Rule Generator
 =====================
 
-The Random Rule Generator provides a means for creating a number of randomly
+The Random Rule Generator provides a mean for creating a number of randomly
 generated rules with which to test a particular platform.  Currently,
 rules generated meet either the Snort rule format or are just lines
 of text.  In order for the Random Rule Generator to work you must have
@@ -680,12 +680,12 @@ usage: rule_gen -c [number of rules] -f [feature set]
 - -f  Feature set: The file containing the feature set description.
       Please see the documentation for further explanation of
       feature sets and how to describe them.
-- -o  outfile: output file to which rules are written.
+- -o  Output file: output file to which rules are written.
       Default is rules.txt
 - -s  Snort rule format: write rules to a snort rule format.
-      No options, defaults to off.  When off, rules are just converted
-      to a string format, whatever that may be based on the feature
-      parser.
+      No parameters, defaults to off.  When off, rules are just
+      converted to a string format, whatever that may be based on
+      the feature parser.
 
 Feature Set
 -----------
@@ -693,12 +693,12 @@ Feature Set
 Features are used to describe potential aspects of rules used in
 IDS.  For example, a packet filter might use rules that target
 IP source and destination address.  In that case, it would be possible
-to create a feature set describing how those IP source and Destination
+to create a feature set describing how those IP source and destination
 addresses should be generated.  More specifically, we make the
 distinction between simple rules and complex rules.  The difference
 between these two is the presence of ambiguous notations.  For
 example, if we possessed an ambiguous notation of * to mean any
-IP address, then we could say that * represents and ambigous notation.
+IP address, then we could say that * represents an ambigous notation.
 Further, we know that a rule can also use a non-ambigous notation,
 like 192.168.1.1.  That would represent a simple IP address as
 it is a single fixed IP address without any possible ambiguous
@@ -708,17 +708,17 @@ possible IPv4 addresses, or just some subset of that).
 
 The features ultimately define all of the aspects of for an
 arbitrary rule.  Given a feature set and a valid rule format,
-it becomes possible to randomly
-generate an arbitrary number of rules that use those features.
-In this manner, it is possible to generate test rule sets that
-will examine the IDS across a vector that is often missed.
+it becomes possible to randomly generate an arbitrary number
+of rules that use those features. In this manner, it is possible 
+to generate test rule sets that will examine the IDS across a
+vector that is often missed.
 
 Features are defined in a semi-colon separated list one feature per line
-type=feature; list of arguments in key=value pairs, lists using
-python formatting (i.e. [a, ..., z]).  Feature define specific
-portions of a target rule format.  Features may be extended
-to add more functionality.  Optionally, one can extend the
-ability of the features by creating a new rule format.
+type=feature; list of arguments in key=value pairs, lists using python
+formatting (i.e. [a, ..., z]).  Feature define specific portions of a
+target rule format.  Features may be extended to add more functionality.
+Optionally, one can extend the ability of the features by creating a new
+rule format.
 
 Current Feature Types:
 
@@ -727,11 +727,29 @@ Current Feature Types:
 3. IP -- IP Feature
 4. Protocol -- Protocol Feature
 
-Ambiguous features should be written as lists like [x:y]
-for a range, [x,y] for a list with maximum of 10
+Ambiguous list should be written as lists like [x:y]
+for a range, [x,y] for a list, {x1,x2,x3} for a set
 or just * for a wildcard or similar single option.
 
-Example:
+Example about ambiguous list:
+'''
+ambiguity_list=[[2:9]]
+it will generate [3:4], [5:6], etc (any [x:y] such that
+x <= y and x >= 2 and y <= 9).
+
+ambiguity_list=[[3,20]]
+it will generate [3,9,10], [3,4,8,12], etc (any list [x1,x2,x3,..]
+such that all values falling between 3 and 20.
+
+ambiguity_list=[{5,6,10}]
+it will generate a subset of {5,6,10} such as {5,10}, {5}.
+
+ambiguity_list=[[2:9],[3,20],{5,6,11}]
+it will pick one of [2:9], [3,20], and {5,6,11} and
+generate a corresponding instance (see above)
+'''
+
+Example for feature file:
 ```
 type=protocol; name=proto; proto_list=[IP,TCP,UDP,ICMP]; complexity_prob=0;ambiguity_list=None;
 type=ip; name=sip; version=4; complexity_prob=100;
@@ -784,14 +802,18 @@ IP Feature -- Inherits from Feature:
 - version: 4 for IP version 4, 6 for IP version 6.
            Defaults to version 4.
 
-Ambigous notation for ranges and lists:
+Ambigous notation for ranges, lists, sets:
 
 Range Notation:
   [x:y]  means from x to y (inclusive).
 
-list notation:
-  [x,y] means x or y.
+List notation:
+  [x,y] means list of values greater than or equal to x
+  and smaller than or equal to y
 
+Set notation:
+  {x1,x2,x3,x4} means a set of value x1, x2, x3, x4.  It
+  will generate a subset set of original set.
 
 Please look at the example feature sets in the
 example_features folder for further examples.
