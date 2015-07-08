@@ -14,14 +14,8 @@ ETHERNET_HDR_GEN_RANDOM = 0
 ETHERNET_HDR_GEN_DISTRIBUTION = 1
 MAC_IP_MAP = dict()
 OPEN_PORT_CHANCE = 20
-VENDOR_MAC_DIST_RESET = True
-VENDOR_MAC_DIST_OPTION = -1
 VENDOR_MAC_DIST_DOMAIN = {}
-VENDOR_MAC_DIST_DOMAIN['src'] = 100
-VENDOR_MAC_DIST_DOMAIN['dest'] = 100
 VENDOR_MAC_DIST = {}
-VENDOR_MAC_DIST['src'] = {}
-VENDOR_MAC_DIST['dest'] = {}
 HOME_IP_PREFIXES = []
 HOME_IP_PREFIXESv6 = []
 FIN = 0x01
@@ -1638,22 +1632,11 @@ class EthernetFrame:
         global MAC_IP_MAP
         global VENDOR_MAC_DIST_DOMAIN
         global VENDOR_MAC_DIST
-        global VENDOR_MAC_DIST_OPTION
-
-        global VENDOR_MAC_DIST_RESET
-
-        VENDOR_MAC_DIST_RESET = True
         MAC_IP_MAP = dict()
-
         VENDOR_MAC_DIST_DOMAIN = {}
-        VENDOR_MAC_DIST_DOMAIN['src'] = 100
-        VENDOR_MAC_DIST_DOMAIN['dest'] = 100
-
         VENDOR_MAC_DIST = {}
-        VENDOR_MAC_DIST['src'] = {}
-        VENDOR_MAC_DIST['dest'] = {}
 
-    def create_vendor_mac_dist(self, dist_file, src=None, dest=None):
+    def create_vendor_mac_dist(self, src=None, dest=None):
         global VENDOR_MAC_DIST_DOMAIN
         global VENDOR_MAC_DIST
         origins = ['src', 'dest']
@@ -1668,6 +1651,8 @@ class EthernetFrame:
                 except:
                     print("Could not open mac definition file: ", path)
                     sys.exit(1)
+
+                VENDOR_MAC_DIST[origin] = {}
 
                 line = fd.readline()
                 base_prob = 0
@@ -1702,49 +1687,41 @@ class EthernetFrame:
 
     def gen_mac_addr_from_distribution(self, sip=None, dip=None,
                                        dist_file=None):
-        global VENDOR_MAC_DIST_RESET
-        global VENDOR_MAC_DIST_OPTION
 
-        # if len(VENDOR_MAC_DIST) <= 0:
-        #     if dist_file is None:
-        #         self.gen_random_mac_addrs(sip, dip)
-        #     else:
-        #         self.create_vendor_mac_dist(dist_file)
+        global VENDOR_MAC_DIST
 
-        if VENDOR_MAC_DIST_RESET:
+        if not VENDOR_MAC_DIST:
             paths = dist_file.split(":")
             lenPaths = len(paths)
             source = None
             dest = None
-            if lenPaths == 0:
-                option = 0
-            elif lenPaths == 1:
-                option = -1
+            if lenPaths == 1:
                 source = dest = paths[0]
             elif lenPaths == 2:
                 if paths[0] != "?" and paths[1] != "?":
-                    option = -1
                     source = paths[0]
                     dest = paths[1]
                 elif paths[0] != "?":
-                    option = 2
                     source = paths[0]
                 elif paths[1] != "?":
-                    option = 1
                     dest = paths[1]
-                else:
-                    option = 0
             else:
                 print("Invalid format for mac distribution file: " + dist_file)
-                sys.exit(1)
+                sys.exit(0)
 
-            self.create_vendor_mac_dist(dist_file, source, dest)
+            self.create_vendor_mac_dist(source, dest)
 
-            VENDOR_MAC_DIST_OPTION = option
-            VENDOR_MAC_DIST_RESET = False
+        if 'src' in VENDOR_MAC_DIST and 'dest' in VENDOR_MAC_DIST:
+            option = -1
+        elif 'src' in VENDOR_MAC_DIST:
+            option = 2
+        elif 'dest' in VENDOR_MAC_DIST:
+            option = 1
+        else:
+            option = 0
 
-        if VENDOR_MAC_DIST_OPTION in [0, 1, 2]:
-            self.gen_random_mac_addrs(sip, dip, VENDOR_MAC_DIST_OPTION)
+        if option in [0, 1, 2]:
+            self.gen_random_mac_addrs(sip, dip, option)
 
         self.test_mac_addr_exists(sip, dip)
         if not self.s_mac:
