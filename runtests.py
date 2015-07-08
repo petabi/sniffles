@@ -13,6 +13,7 @@ if __name__ == '__main__':
     from sniffles.test.test_traffic_splitter import *
     from sniffles.test.test_xml_rule_reader import *
     from sniffles.test.test_examples import *
+    from sniffles.test.test_feature import *
     from sniffles.test.test_pcrecomp import *
     from sniffles.test.test_nfa_build import *
     suites = [
@@ -22,6 +23,7 @@ if __name__ == '__main__':
         unittest.TestLoader().loadTestsFromTestCase(TestTrafficSplitter),
         unittest.TestLoader().loadTestsFromTestCase(TestXMLRuleReader),
         unittest.TestLoader().loadTestsFromTestCase(TestExamples),
+        unittest.TestLoader().loadTestsFromTestCase(TestFeature),
         unittest.TestLoader().loadTestsFromTestCase(TestPcreComp),
         unittest.TestLoader().loadTestsFromTestCase(TestNFABuild),
         unittest.TestLoader().loadTestsFromTestCase(TestOpAny),
