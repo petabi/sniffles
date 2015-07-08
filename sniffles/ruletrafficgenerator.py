@@ -1642,7 +1642,7 @@ class EthernetFrame:
             fd = open(dist_file, 'r')
         except:
             print("Could not open mac definition file: ", dist_file)
-            sys.exit(1)
+            sys.exit(0)
 
         line = fd.readline()
         base_prob = 0

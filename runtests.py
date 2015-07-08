@@ -15,8 +15,16 @@ if __name__ == '__main__':
     from sniffles.test.test_examples import *
     from sniffles.test.test_pcrecomp import *
     from sniffles.test.test_nfa_build import *
+    from sniffles.test.test_feature import *
+    from sniffles.test.test_ruleformat import *
+    from sniffles.test.test_regex_generator import *
+    from sniffles.test.test_rand_rule_gen import *
     suites = [
         unittest.TestLoader().loadTestsFromTestCase(TestTTLExpiryAttack),
+        unittest.TestLoader().loadTestsFromTestCase(TestRandRuleGen),
+        unittest.TestLoader().loadTestsFromTestCase(TestRegexGenerator),
+        unittest.TestLoader().loadTestsFromTestCase(TestRuleFormat),
+        unittest.TestLoader().loadTestsFromTestCase(TestFeature),
         unittest.TestLoader().loadTestsFromTestCase(TestRuleReader),
         unittest.TestLoader().loadTestsFromTestCase(TestRuleTrafficGenerator),
         unittest.TestLoader().loadTestsFromTestCase(TestTrafficSplitter),
