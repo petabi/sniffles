@@ -8,7 +8,8 @@ class TestNFABuild(TestCase):
         a = pcre2nfa('')
         self.assertEqual(NFA, type(a))
         test = pcre2nfa('^abc')
-        self.assertTrue()
+        self.assertTrue(test.match("abc"))
+        self.assertFalse(test.match("dabc"))
 
 
 class TestOpAny(TestCase):

@@ -287,18 +287,15 @@ class NFABuilder:
         """Add states to convert the current instruction.
         """
         opcode = self.code[self.cp]
-        # print("My opcode : " + str(opcode))
         if opcode == OP_ANY or opcode == OP_ALLANY:
             sp = self.op_any(sp)
         elif opcode == OP_BRA or opcode == OP_CBRA or opcode == OP_SCBRA:
-            # print ("bra first")
             sp = self.op_bra(sp)
         elif opcode == OP_BRAZERO or opcode == OP_BRAMINZERO:
             sp = self.op_brazero(sp)
         elif opcode == OP_CHAR or opcode == OP_CHARI:
             sp = self.op_char(sp)
         elif opcode == OP_CIRC or opcode == OP_CIRCM:
-            # print ("opcode first")
             sp = self.op_circ(sp)
         elif opcode == OP_CLASS:
             sp = self.op_class(sp)
@@ -434,11 +431,6 @@ class NFABuilder:
 
     def op_circ(self, sp):
         self.cp += 1
-        # it can cause a problem with
-        # multiple regular expression
-        # fallback = self.nfa.start
-        # self.nfa.start = get_nfa_state()
-        # self.nfa.start.add_tx(E, fallback)
         self.nfa.start.clear_tx()
         return sp
 
