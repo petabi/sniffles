@@ -1725,10 +1725,10 @@ class EthernetFrame:
 
         self.test_mac_addr_exists(sip, dip)
         if not self.s_mac:
-            self.s_mac = self.get_random_octets(self.get_dist_mac_oui(True))
+            self.s_mac = self.get_random_octets(self.get_dist_mac_oui('src'))
             self.map_mac_addr_to_ip(self.s_mac, sip)
         if not self.d_mac:
-            self.d_mac = self.get_random_octets(self.get_dist_mac_oui(False))
+            self.d_mac = self.get_random_octets(self.get_dist_mac_oui('dest'))
             self.map_mac_addr_to_ip(self.d_mac, dip)
 
     def gen_random_mac_addrs(self, sip=None, dip=None, option=0):
@@ -1751,12 +1751,7 @@ class EthernetFrame:
     def get_d_mac(self):
         return self.d_mac
 
-    def get_dist_mac_oui(self, isSource=True):
-        if isSource:
-            origin = 'src'
-        else:
-            origin = 'dest'
-
+    def get_dist_mac_oui(self, origin):
         dist_map = VENDOR_MAC_DIST[origin].keys()
         pick = random.randint(1, VENDOR_MAC_DIST_DOMAIN[origin])
         prefix = []
