@@ -102,7 +102,6 @@ def start_generation(sconf):
     if sconf.getIPV6Home() is not None:
         set_ipv6_home(sconf.getIPV6Home())
     allrules = myrulelist.getParsedRules()
-    total_rules = len(allrules)
     scanners = []
     if sconf.getWriteRegEx():
         return printRegEx(allrules)
@@ -133,7 +132,7 @@ def start_generation(sconf):
     lapse = 0
     timer = 0
     if sconf.getEval() or sconf.getFullEval():
-        return build_eval_pcap(allrules, total_rules, traffic_writer, sconf)
+        return build_eval_pcap(allrules, traffic_writer, sconf)
     current = 0
     end = 0
     if sconf.getTrafficDuration() > 0:
@@ -146,7 +145,7 @@ def start_generation(sconf):
         lapse = current
         mycon = None
         if allrules:
-            myrand = random.randint(0, total_rules-1)
+            myrand = random.randrange(0, len(allrules))
             mycon = copy.deepcopy(allrules[myrand])
             if sconf.getVerbosity():
                 print(mycon)
@@ -203,7 +202,7 @@ def start_generation(sconf):
     return [total_generated_streams, total_generated_packets, final]
 
 
-def build_eval_pcap(rules, num_rules, traffic_writer, sconf):
+def build_eval_pcap(rules, traffic_writer, sconf):
     """
         This function is used to build an evaluation pcap.  An evaluation
         pcap will take a set of regular expression rules and build a pcap
@@ -226,8 +225,8 @@ def build_eval_pcap(rules, num_rules, traffic_writer, sconf):
     """
     traffic_queue = []
     total_pkts = 0
-    for i in range(0, num_rules):
-        mycon = Conversation(rules[i], sconf.getEval(), sconf.getFullEval(), 1,
+    for rule in rules:
+        mycon = Conversation(rule, sconf.getEval(), sconf.getFullEval(), 1,
                              sconf.getTCPACK(), sconf.getTCPHandshake(),
                              sconf.getTCPTeardown())
         traffic_queue.append(mycon)
