@@ -50,6 +50,10 @@ class NFAState(object):
     def set_depth(self, depth=-1):
         return False
 
+    def clear_tx(self):
+        for i in range(0, NSYMBOLS):
+            self.tx[i] = []
+
 
 class NFAStateWithStats(NFAState):
 
@@ -427,10 +431,8 @@ class NFABuilder:
 
     def op_circ(self, sp):
         self.cp += 1
-        fallback = self.nfa.start
-        self.nfa.start = get_nfa_state()
-        self.nfa.start.add_tx(E, fallback)
-        return self.nfa.start
+        self.nfa.start.clear_tx()
+        return sp
 
     def op_class(self, sp):
         bmp = self.cp + 1
