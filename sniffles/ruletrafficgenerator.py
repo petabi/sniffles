@@ -14,7 +14,7 @@ ETHERNET_HDR_GEN_RANDOM = 0
 ETHERNET_HDR_GEN_DISTRIBUTION = 1
 MAC_IP_MAP = dict()
 OPEN_PORT_CHANCE = 20
-VENDOR_MAC_DIST_DOMAIN = 100
+VENDOR_MAC_DIST_DOMAIN = {}
 VENDOR_MAC_DIST = {}
 HOME_IP_PREFIXES = []
 HOME_IP_PREFIXESv6 = []
@@ -423,8 +423,9 @@ class TrafficStream(object):
             if i != (myfrags - 1) and ttlexpiry != 0:
                 self.fragments.append(
                     (myoffset,
-                    ContentGenerator(None, myend - myindex).get_next_published_content(),
-                    True)
+                     ContentGenerator(None, myend - myindex)
+                     .get_next_published_content(),
+                     True)
                 )
 
             myindex += (frag_size * 8)
@@ -1632,102 +1633,143 @@ class EthernetFrame:
         global VENDOR_MAC_DIST_DOMAIN
         global VENDOR_MAC_DIST
         MAC_IP_MAP = dict()
-        VENDOR_MAC_DIST_DOMAIN = 100
+        VENDOR_MAC_DIST_DOMAIN = {}
         VENDOR_MAC_DIST = {}
 
-    def create_vendor_mac_dist(self, dist_file):
+    def create_vendor_mac_dist(self, src=None, dest=None):
         global VENDOR_MAC_DIST_DOMAIN
         global VENDOR_MAC_DIST
-        try:
-            fd = open(dist_file, 'r')
-        except:
-            print("Could not open mac definition file: ", dist_file)
-            sys.exit(0)
 
-        line = fd.readline()
-        base_prob = 0
-        while line:
-            line = line.strip()
-            if len(line) > 1 and line.find('#') < 0:
-                prefix = line.partition('=')[0].strip().lower()
-                percent = line.partition('=')[2].strip().lower()
-                if prefix == 'domain':
-                    VENDOR_MAC_DIST_DOMAIN = int(percent)
-                else:
-                    octets = []
+        origins = ['src', 'dest']
+        for origin in origins:
+            if origin == 'src':
+                path = src
+            elif origin == 'dest':
+                path = dest
+            if path is not None:
+                try:
+                    fd = open(path, 'r')
+                except:
+                    print("Could not open mac definition file: ", path)
+                    sys.exit(1)
 
-                    # Differentiate between handling hex or raw digit notation
-                    if prefix.find('0x') > -1:
-                        str_octets = prefix.split('0x')
-                        for o in str_octets:
-                            if o:
-                                octets.append(int(o, 16))
-                    else:
-                        i = 0
-                        while i < len(prefix):
-                            octets.append(int(prefix[i:i+2], 16))
-                            i += 2
-                    VENDOR_MAC_DIST[base_prob] = octets
-                    base_prob += int(percent)
-                    if VENDOR_MAC_DIST_DOMAIN and \
-                       base_prob > VENDOR_MAC_DIST_DOMAIN:
-                        break
-            line = fd.readline()
+                VENDOR_MAC_DIST[origin] = {}
+
+                line = fd.readline()
+                base_prob = 0
+                while line:
+                    line = line.strip()
+                    if len(line) > 1 and line.find('#') < 0:
+                        prefix = line.partition('=')[0].strip().lower()
+                        percent = line.partition('=')[2].strip().lower()
+                        if prefix == 'domain':
+                            VENDOR_MAC_DIST_DOMAIN[origin] = int(percent)
+                        else:
+                            octets = []
+
+                            # Differentiate between handling hex
+                            # or raw digit notation
+                            if prefix.find('0x') > -1:
+                                str_octets = prefix.split('0x')
+                                for o in str_octets:
+                                    if o:
+                                        octets.append(int(o, 16))
+                            else:
+                                i = 0
+                                while i < len(prefix):
+                                    octets.append(int(prefix[i:i+2], 16))
+                                    i += 2
+                            VENDOR_MAC_DIST[origin][base_prob] = octets
+                            base_prob += int(percent)
+                            if VENDOR_MAC_DIST_DOMAIN[origin] and \
+                               base_prob > VENDOR_MAC_DIST_DOMAIN[origin]:
+                                break
+                    line = fd.readline()
 
     def gen_mac_addr_from_distribution(self, sip=None, dip=None,
                                        dist_file=None):
-        if len(VENDOR_MAC_DIST) <= 0:
-            if dist_file is None:
-                self.gen_random_mac_addrs(sip, dip)
+
+        global VENDOR_MAC_DIST
+
+        if not VENDOR_MAC_DIST:
+            paths = dist_file.split(":")
+            lenPaths = len(paths)
+            source = None
+            dest = None
+            if lenPaths == 1:
+                source = dest = paths[0]
+            elif lenPaths == 2:
+                if paths[0] != "?" and paths[1] != "?":
+                    source = paths[0]
+                    dest = paths[1]
+                elif paths[0] != "?":
+                    source = paths[0]
+                elif paths[1] != "?":
+                    dest = paths[1]
             else:
-                self.create_vendor_mac_dist(dist_file)
+                print("Invalid format for mac distribution file: " + dist_file)
+                sys.exit(0)
+
+            self.create_vendor_mac_dist(source, dest)
+
+        if 'src' in VENDOR_MAC_DIST and 'dest' in VENDOR_MAC_DIST:
+            option = -1
+        elif 'src' in VENDOR_MAC_DIST:
+            option = 2
+        elif 'dest' in VENDOR_MAC_DIST:
+            option = 1
+        else:
+            option = 0
+
+        if option in [0, 1, 2]:
+            self.gen_random_mac_addrs(sip, dip, option)
 
         self.test_mac_addr_exists(sip, dip)
         if not self.s_mac:
-            self.s_mac = self.get_random_octets(self.get_dist_mac_oui())
+            self.s_mac = self.get_random_octets(self.get_dist_mac_oui('src'))
             self.map_mac_addr_to_ip(self.s_mac, sip)
         if not self.d_mac:
-            self.d_mac = self.get_random_octets(self.get_dist_mac_oui())
+            self.d_mac = self.get_random_octets(self.get_dist_mac_oui('dest'))
             self.map_mac_addr_to_ip(self.d_mac, dip)
 
-    def gen_random_mac_addrs(self, sip=None, dip=None):
+    def gen_random_mac_addrs(self, sip=None, dip=None, option=0):
+
+        # option 0: change both s_mac and d_mac
+        # option 1: change s_mac only
+        # option 2: change d_mac only
+
         global VENDOR_MAC_OUI
         self.test_mac_addr_exists(sip, dip)
-        if not self.s_mac:
+        if not self.s_mac and (option == 0 or option == 1):
             self.s_mac = \
                 self.get_random_octets(random.choice(VENDOR_MAC_OUI))
             self.map_mac_addr_to_ip(self.s_mac, sip)
-        if not self.d_mac:
+
+        if not self.d_mac and (option == 0 or option == 2):
             self.d_mac = self.get_random_octets(random.choice(VENDOR_MAC_OUI))
             self.map_mac_addr_to_ip(self.d_mac, dip)
 
     def get_d_mac(self):
         return self.d_mac
 
-    def get_dist_mac_oui(self):
-
-        # this one should support both mac address
-        # for source and destination
-        # we will support by
-        # VENDOR_MAC_DIST
-
-        dist_map = VENDOR_MAC_DIST.keys()
-        pick = random.randint(1, VENDOR_MAC_DIST_DOMAIN)
+    def get_dist_mac_oui(self, origin):
+        dist_map = VENDOR_MAC_DIST[origin].keys()
+        pick = random.randint(1, VENDOR_MAC_DIST_DOMAIN[origin])
         prefix = []
         last_key = 0
+
         for i in dist_map:
             if i > pick:
-                prefix = VENDOR_MAC_DIST[last_key]
+                prefix = VENDOR_MAC_DIST[origin][last_key]
                 break
             elif i == pick:
-                prefix = VENDOR_MAC_DIST[i]
+                prefix = VENDOR_MAC_DIST[origin][i]
                 break
             else:
                 last_key = i
 
-        # [] is not same as None
         if not prefix:
-            prefix = VENDOR_MAC_DIST[last_key]
+            prefix = VENDOR_MAC_DIST[origin][last_key]
         return prefix
 
     def get_datalink_hdr_size(self):

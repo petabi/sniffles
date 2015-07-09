@@ -209,7 +209,15 @@ Command Line Options:
       distribution in the traffic. By default, it will not use MAC
       distribution file but it will generate a random address. More
       information about the MAC definition file can be found in the
-      the examples/mac_definition_file.txt .
+      the examples/mac_definition_file.txt . If you only specify
+      one file, it will change both source and destination MAC
+      definition using one file. If you want to have a single destination
+      MAC and a single source MAC file, specify the argument as
+      "path1:path2". Path1 will be MAC definition file for source,
+      path2 will be MAC definition file for destination. If you want
+      the source MAC is random value, specify argument as "?:path2".
+      If you want the destination MAC is random value, specify argument
+      as "path1:?".  (? represent random values)
 
   - -o output file: designate the name of the output file.  By default,
      the file is named: sniffles.pcap.

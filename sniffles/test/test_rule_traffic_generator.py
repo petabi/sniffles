@@ -20,6 +20,10 @@ class TestRuleTrafficGenerator(TestCase):
         self.assertNotEqual(myehdrstr1, str(myehdr))
 
     def test_build_ethernet_header_dist(self):
+        testVENDOR_MAC_OUI = [''.join(['%02x' % i for i in addr])
+                              for addr in VENDOR_MAC_OUI]
+
+        # source is 0800, destination is 0800
         myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
                                ETHERNET_HDR_GEN_DISTRIBUTION,
                                'examples/mac_definition_file.txt')
@@ -41,11 +45,87 @@ class TestRuleTrafficGenerator(TestCase):
                                'examples/mac_definition_file.txt')
         self.assertNotEqual(mystr1, str(myehdr))
 
+        myehdr.clear_globals()
+
+        # source is 0070, destination is 0080
+        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
+                               ETHERNET_HDR_GEN_DISTRIBUTION,
+                               'examples/mac_definition_file.txt:'
+                               'examples/mac_definition_file1.txt')
+
+        self.assertEqual(''.join(['%02x' % i
+                                  for i in myehdr.get_d_mac()[0:2]]),
+                         '0070')
+
+        self.assertEqual(''.join(['%02x' % i
+                                  for i in myehdr.get_s_mac()[0:2]]),
+                         '0080')
+        myehdr.clear_globals()
+
+        # source is randomly, destination is 0070
+        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
+                               ETHERNET_HDR_GEN_DISTRIBUTION,
+                               '?:'
+                               'examples/mac_definition_file1.txt')
+
+        self.assertTrue(''.join(['%02x' % i
+                                for i in myehdr.get_s_mac()[0:3]])
+                        in testVENDOR_MAC_OUI)
+
+        self.assertEqual(''.join(['%02x' % i
+                                  for i in myehdr.get_d_mac()[0:2]]),
+                         '0070')
+        myehdr.clear_globals()
+
+        # source is 0800, destination is randomly
+        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
+                               ETHERNET_HDR_GEN_DISTRIBUTION,
+                               'examples/mac_definition_file.txt:'
+                               '?')
+
+        self.assertEqual(''.join(['%02x' % i
+                                  for i in myehdr.get_s_mac()[0:2]]),
+                         '0080')
+
+        self.assertTrue(''.join(['%02x' % i
+                                for i in myehdr.get_d_mac()[0:3]])
+                        in testVENDOR_MAC_OUI)
+
+        # if we dont clear the global, it will be the same
+        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
+                               ETHERNET_HDR_GEN_DISTRIBUTION,
+                               'examples/mac_definition_file1.txt:'
+                               'examples/mac_definition_file.txt')
+
+        self.assertEqual(''.join(['%02x' % i
+                                 for i in myehdr.get_s_mac()[0:2]]),
+                         '0080')
+
+        self.assertTrue(''.join(['%02x' % i
+                                for i in myehdr.get_d_mac()[0:3]])
+                        in testVENDOR_MAC_OUI)
+        myehdr.clear_globals()
+
+        # both is randomly
+        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
+                               ETHERNET_HDR_GEN_DISTRIBUTION,
+                               '?:'
+                               '?')
+
+        self.assertTrue(''.join(['%02x' % i
+                                for i in myehdr.get_s_mac()[0:3]])
+                        in testVENDOR_MAC_OUI)
+
+        self.assertTrue(''.join(['%02x' % i
+                                for i in myehdr.get_d_mac()[0:3]])
+                        in testVENDOR_MAC_OUI)
+        myehdr.clear_globals()
+
     def test_get_dist_mac_oui_with_empty_dist(self):
         ef = EthernetFrame('10.2.2.2', '10.3.3.3',
                            ETHERNET_HDR_GEN_DISTRIBUTION)
         with self.assertRaises(KeyError):
-            ef.get_dist_mac_oui()
+            ef.get_dist_mac_oui('src')
 
     def test_build_ip_header(self):
         myipv4a = IPV4(None, None)
