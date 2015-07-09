@@ -365,7 +365,7 @@ def write_packets(queue, traffic_writer, time_lapse=1,
 def handlerKeyboardInterupt(signum, frame):
     '''
     When Sniffles is killed through a keyboard interrupt, it will
-    be gracefully shutdown. It was handled using interupt handler
+    be gracefully shutdown. It was handled using interrupt handler
     '''
     sys.exit(0)
 
