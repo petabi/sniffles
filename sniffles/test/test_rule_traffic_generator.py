@@ -44,6 +44,7 @@ class TestRuleTrafficGenerator(TestCase):
                                ETHERNET_HDR_GEN_DISTRIBUTION,
                                'examples/mac_definition_file.txt')
         self.assertNotEqual(mystr1, str(myehdr))
+
         myehdr.clear_globals()
 
         # source is 0070, destination is 0080
@@ -119,6 +120,12 @@ class TestRuleTrafficGenerator(TestCase):
                                 for i in myehdr.get_d_mac()[0:3]])
                         in testVENDOR_MAC_OUI)
         myehdr.clear_globals()
+
+    def test_get_dist_mac_oui_with_empty_dist(self):
+        ef = EthernetFrame('10.2.2.2', '10.3.3.3',
+                           ETHERNET_HDR_GEN_DISTRIBUTION)
+        with self.assertRaises(KeyError):
+            ef.get_dist_mac_oui('src')
 
     def test_build_ip_header(self):
         myipv4a = IPV4(None, None)

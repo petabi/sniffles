@@ -5,6 +5,7 @@ import sys
 import datetime
 import re
 import random
+import math
 from sniffles.regex_generator import *
 
 
@@ -20,6 +21,35 @@ class AmbiguousNotation(object):
         return self.notation
 
 
+class SetNotation(AmbiguousNotation):
+    # Set notation should be expressed as {x1,x2,x3...}
+    # toString will return a subset of x(i) with
+    # the length of subset should be at least 1
+    # requirement: length of set should be at least 1
+    # for example: {5,6,9}
+    # it can return [5,6] or [5,9] or [6,9]
+    def __init__(self, notation):
+        self.notation = notation
+        mystr = notation[1:-1]
+        self.values = mystr.split(",")
+        self.max_list_size = len(self.values)
+
+    def __str__(self):
+        return self.toString()
+
+    def toString(self):
+        num_elements = random.randint(1, self.max_list_size)
+        myelements = self.values
+        random.shuffle(myelements)
+        myString = "["
+        for index, elem in enumerate(myelements[0:num_elements]):
+            myString += elem
+            if index != num_elements - 1:
+                myString += ","
+        myString += "]"
+        return myString
+
+
 class RangeNotation(AmbiguousNotation):
 
     # Range notation should be expressed as [x:y] where
@@ -33,17 +63,18 @@ class RangeNotation(AmbiguousNotation):
         bounds = myrange.split(self.separator)
         self.lower_bound = int(bounds[0])
         self.upper_bound = int(bounds[1])
-        if self.upper_bound < 1:
-            self.upper_bound = 1
-        if self.lower_bound > self.upper_bound:
-            self.lower_bound = self.upper_bound - 1
+        if self.upper_bound - self.lower_bound < 1:
+            print("RangeNotation: Upper bound has to be greater than"
+                  " the lower bound." + str(self.upper_bound) + " > "
+                  + str(self.lower_bound))
+            sys.exit(0)
 
     def __str__(self):
         return self.toString()
 
     def toString(self):
         mylower = random.randint(self.lower_bound, self.upper_bound-1)
-        myupper = random.randint(mylower, self.upper_bound)
+        myupper = random.randint(mylower + 1, self.upper_bound)
         mystring = self.prefix + str(mylower) + self.separator + \
             str(myupper) + self.suffix
         return mystring
@@ -53,6 +84,11 @@ class ListNotation(AmbiguousNotation):
 
     # list notation should be [x,y] where x is lower bound and
     # y is upper bound.
+    # it will generate a random list of values falling between
+    # lower bound and upper bound
+    # for example: [5,10] can generate [5,7,9]
+    # for [20,20], it will be converted into [19,20]
+
     def __init__(self, notation):
         self.separator = notation
         self.prefix = notation[0:1]
@@ -65,7 +101,7 @@ class ListNotation(AmbiguousNotation):
         self.max_list_size = 100
         if self.upper_bound < 1:
             self.upper_bound = 1
-        if self.lower_bound > self.upper_bound:
+        if self.lower_bound >= self.upper_bound:
             self.lower_bound = self.upper_bound - 1
 
     def __str__(self):
@@ -73,14 +109,36 @@ class ListNotation(AmbiguousNotation):
 
     def toString(self):
         num_elements = random.randint(2, self.max_list_size)
-        if num_elements > (self.upper_bound - self.lower_bound):
-            print("Error!!!!!")
+        num_elements = min(num_elements,
+                           self.upper_bound - self.lower_bound + 1
+                           )
+
+        sample_size = int((self.upper_bound - self.lower_bound) / num_elements) - 1
+
         myelements = []
-        while len(myelements) < num_elements:
-            mypick = random.randint(self.lower_bound, self.upper_bound)
-            if mypick not in myelements:
-                myelements.append(mypick)
-        myelements = sorted(myelements)
+
+        # if the width of range is not big enough
+        if sample_size <= 20:
+            for i in range(self.lower_bound, self.upper_bound + 1):
+                myelements.append(i)
+            random.shuffle(myelements)
+            myelements = myelements[0:num_elements]
+            myelements = sorted(myelements)
+        else:
+            boundarylist = []
+            lower = self.lower_bound
+            for i in range(1, num_elements):
+                upper = lower + sample_size
+                boundarylist.append([lower, upper])
+                lower = upper + 1
+            boundarylist.append([lower, self.upper_bound])
+
+            for bounds in boundarylist:
+                if bounds[0] - bounds[1] <= 1:
+                    myelements.append(bounds[0])
+                else:
+                    myelements.append(random.randint(bounds[0], bounds[1]))
+
         mystring = self.prefix
         while myelements:
             myelement = myelements.pop(0)
@@ -111,7 +169,8 @@ class Feature(object):
     def toString(self):
         complex = False
         mystring = self.feature_name + "="
-        if self.complexity_prob > 0 and len(self.ambiguity_list) > 0:
+        if self.complexity_prob > 0 and self.ambiguity_list is \
+           not None and len(self.ambiguity_list) > 0:
             pick = random.randint(0, 100)
             if pick <= self.complexity_prob:
                 complex = True
@@ -144,16 +203,16 @@ class ContentFeature(Feature):
             mystring += "/"
 
         if complex:
-            mystring += regex_generator.generate_regex(self.length, 0,
-                                                       [60, 30, 10],
-                                                       None, None,
-                                                       [20, 20, 40, 20],
-                                                       50, 30)
+            mystring += generate_regex(self.length, 0,
+                                       [60, 30, 10],
+                                       None, None,
+                                       [20, 20, 40, 20],
+                                       50, 30)
         else:
-            mystring += regex_generator.generate_regex(self.length, 0,
-                                                       [100, 0, 0],
-                                                       [20, 35, 20, 20, 0],
-                                                       None, None, 0, 0)
+            mystring += generate_regex(self.length, 0,
+                                       [100, 0, 0],
+                                       [20, 35, 20, 20, 0],
+                                       None, None, 0, 0)
         if self.regex:
             mystring += "/"
             if complex:
@@ -217,11 +276,15 @@ class IPFeature(Feature):
             totalbytes = 4
             if self.version == 6:
                 totalbytes = 16
-            mynetmask = random.randint(0, totalbytes*8)
+            mynetmask = random.randint(0, totalbytes * 8)
+
             myprefixbytes = int(mynetmask / 8)
             myremainder = mynetmask % 8
+
             mask = ((2**myremainder)-1) << (8 - myremainder)
+
             index = 0
+
             while index < myprefixbytes:
                 if self.version == 4:
                     myip.append(random.randint(0, 255))
@@ -232,25 +295,37 @@ class IPFeature(Feature):
                     else:
                         break
                 index += 1
+
             mypartialbyte = (random.randint(0, 255) & mask)
             last_bytes = totalbytes - myprefixbytes
+
             if (myprefixbytes - index) == 1:
                 mypartialbyte += (random.randint(0, 255)) << 8
+
             elif self.version == 6:
                 mypartialbyte = mypartialbyte << 8
+
             if mypartialbyte > 0:
                 myip.append(mypartialbyte)
                 last_bytes -= 1
-            while last_bytes > 0:
-                myip.append(0)
-                last_bytes -= 1
-                if self.version == 6:
+
+            if self.version == 6:
+                remain = 8 - len(myip)
+                for i in range(0, remain):
+                    myip.append(0)
+            else:
+                while last_bytes > 0:
+                    myip.append(0)
                     last_bytes -= 1
+                    if self.version == 6:
+                        last_bytes -= 1
+
             if self.version == 4:
                 myipstring = '.'.join(['%d' % byte for byte in myip])
             else:
                 myipstring = ':'.join(['%04x' % byte for byte in myip])
             myipstring += "/" + str(mynetmask)
+
         else:
             if self.version == 4:
                 for i in range(0, 4):
@@ -290,19 +365,26 @@ class FeatureParser(object):
         self.features = []
         self.parseFile(filename)
 
-    def parseFile(self, filename):
-        try:
-            fd = codecs.open(filename, 'r', encoding='utf-8')
-        except Exception as err:
-            print("Could not read feature file.")
-            print(err)
-            return False
-        line = fd.readline()
-        while line:
-            self.parseLine(line)
+    def parseFile(self, filename=None):
+        if filename is not None:
+            try:
+                fd = codecs.open(filename, 'r', encoding='utf-8')
+            except Exception as err:
+                print("Could not read feature file.")
+                print("FeatureParser-parseFile: " + str(err))
+                raise Exception("The program will stop.")
+                return False
             line = fd.readline()
-        fd.close()
-        return True
+            while line:
+                try:
+                    self.parseLine(line)
+                except Exception as err:
+                    print("FeatureParser-parseFile: " + str(err))
+                    raise Exception("The program will stop.")
+                line = fd.readline()
+            fd.close()
+            return True
+        return False
 
     def getFeatures(self):
         return self.features
@@ -335,10 +417,10 @@ class FeatureParser(object):
             if 'complexity_prob' in mypairs:
                 complexity_prob = int(mypairs['complexity_prob'])
             if 'ambiguity_list' in mypairs:
-                myambiguity_list = self.buildAmbiguityList(
+                ambiguity_list = self.buildAmbiguityList(
                     mypairs['ambiguity_list'])
             if 'regex' in mypairs:
-                if mypairs['regex'] == 'True':
+                if mypairs['regex'].lower() == 'true':
                     regex = True
             if 'len' in mypairs:
                 len = int(mypairs['len'])
@@ -357,27 +439,73 @@ class FeatureParser(object):
                 return None
             if mypairs['type'].lower() == 'feature':
                 myfeature = Feature(name, lower_bound, upper_bound,
-                                    complexity_prob, myambiguity_list)
+                                    complexity_prob, ambiguity_list)
             elif mypairs['type'].lower() == 'content':
                 myfeature = ContentFeature(name, regex, complexity_prob, len)
             elif mypairs['type'].lower() == 'ip':
                 myfeature = IPFeature(name, version, complexity_prob)
             elif mypairs['type'].lower() == 'protocol':
                 myfeature = ProtocolFeature(name, proto_list, complexity_prob,
-                                            myambiguity_list)
+                                            ambiguity_list)
             else:
                 print("Unrecognized feature type.", line)
                 return None
             self.features.append(myfeature)
 
+    def tokenizeAmbiguityList(self, list):
+        listAsString = list[1:-1]
+        parsedlist = ""
+        # remove all space
+        # currently, sniffles support no space
+        for i in range(0, len(listAsString)):
+            if listAsString[i] != " ":
+                parsedlist += listAsString[i]
+        values = []
+        currentIndex = 0
+        beginIndex = 0
+        lastIndex = len(parsedlist) - 1
+        while currentIndex <= lastIndex:
+            if parsedlist[currentIndex] == ",":
+                tmpStr = parsedlist[beginIndex: currentIndex]
+                values.append(tmpStr)
+                currentIndex += 1
+                beginIndex = currentIndex
+            elif parsedlist[currentIndex] == "[":
+                beginIndex = currentIndex
+                while parsedlist[currentIndex] != "]":
+                    currentIndex += 1
+                currentIndex += 1
+                tmpStr = parsedlist[beginIndex: currentIndex]
+                values.append(tmpStr)
+                currentIndex += 1
+                beginIndex = currentIndex
+            elif parsedlist[currentIndex] == "{":
+                beginIndex = currentIndex
+                while parsedlist[currentIndex] != "}":
+                    currentIndex += 1
+                currentIndex += 1
+                tmpStr = parsedlist[beginIndex: currentIndex]
+                values.append(tmpStr)
+                currentIndex += 1
+                beginIndex = currentIndex
+            else:
+                currentIndex += 1
+                if currentIndex > lastIndex and \
+                   currentIndex > beginIndex:
+                    tmpStr = parsedlist[beginIndex: currentIndex]
+                    values.append(tmpStr)
+        return values
+
     def buildAmbiguityList(self, list):
         mylist = []
-        parsedlist = list[1:-1]
-        values = re.split(r",\s", parsedlist)
+        values = self.tokenizeAmbiguityList(list)
         myamb = None
         for val in values:
             if ',' in val:
-                myamb = ListNotation(val)
+                if "[" in val:
+                    myamb = ListNotation(val)
+                elif "{" in val:
+                    myamb = SetNotation(val)
             elif ':' in val:
                 myamb = RangeNotation(val)
             else:

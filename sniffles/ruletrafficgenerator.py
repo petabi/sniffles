@@ -1639,6 +1639,7 @@ class EthernetFrame:
     def create_vendor_mac_dist(self, src=None, dest=None):
         global VENDOR_MAC_DIST_DOMAIN
         global VENDOR_MAC_DIST
+
         origins = ['src', 'dest']
         for origin in origins:
             if origin == 'src':

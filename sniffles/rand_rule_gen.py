@@ -36,10 +36,14 @@ def main():
             usage()
         else:
             print("Unrecognized Option: ", opt)
-    myfp = FeatureParser(featurefile)
-    myfeatures = myfp.getFeatures()
-    myrules = generateRules(myfeatures, count)
-    printRules(myrules, outfile, rfmt)
+    try:
+        myfp = FeatureParser(featurefile)
+        myfeatures = myfp.getFeatures()
+        myrules = generateRules(myfeatures, count)
+        printRules(myrules, outfile, rfmt)
+    except Exception as err:
+        print("There is error, program will stop.")
+        print("RandRuleGen-main: " + str(err))
 
 
 def generateRules(feature_list=None, count=1):
@@ -68,12 +72,12 @@ def getRuleWithFormat(rule=None, fmt=None):
     if rule:
         if fmt is not None:
             if fmt == "snort":
-                rulefmt = rule_formats.SnortRuleFormat(
+                rulefmt = SnortRuleFormat(
                     rule, getRuleWithFormat.rule_counter)
                 getRuleWithFormat.rule_counter += 1
 
         if rulefmt is None:
-            rulefmt = rule_formats.RuleFormat(rule)
+            rulefmt = RuleFormat(rule)
     return rulefmt
 getRuleWithFormat.rule_counter = 1
 

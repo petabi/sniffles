@@ -11,7 +11,7 @@ elif [ "$1" = "test" ]; then
 	echo "=========== Begin to install and build ========="
 	sudo python3.4 setup.py build
 	echo "=========== Begin to tests ========="
-	sudo python3.4 runtests.py
+	python3.4 runtests.py
 	echo "=========== Tested the sniffles ========="
 	echo
 elif [ "$1" = "pep8" ]; then
@@ -36,6 +36,38 @@ elif [ "$1" = "pep8" ]; then
 	echo
 	echo "==== Verifying test_rule_reader.py ===="
 	pep8 sniffles/test/test_rule_reader.py
+	echo "==== Verified ===="
+	echo
+	echo "==== Verifying feature.py ===="
+	pep8 sniffles/feature.py
+	echo "==== Verified ===="
+	echo
+	echo "==== Verifying test_feature.py ===="
+	pep8 sniffles/test/test_feature.py
+	echo "==== Verified ===="
+	echo
+	echo "==== Verifying rule_formats.py ===="
+	pep8 sniffles/rule_formats.py
+	echo "==== Verified ===="
+	echo
+	echo "==== Verifying test_ruleformats.py ===="
+	pep8 sniffles/test/test_ruleformat.py
+	echo "==== Verified ===="
+	echo
+	echo "==== Verifying regex_generator.py ===="
+	pep8 sniffles/regex_generator.py
+	echo "==== Verified ===="
+	echo
+	echo "==== Verifying test_regex_generator.py ===="
+	pep8 sniffles/test/test_regex_generator.py
+	echo "==== Verified ===="
+	echo
+	echo "==== Verifying rand_rule_gen.py ===="
+	pep8 sniffles/rand_rule_gen.py
+	echo "==== Verified ===="
+	echo
+	echo "==== Verifying test_rand_rule_gen.py ===="
+	pep8 sniffles/test/test_rand_rule_gen.py
 	echo "==== Verified ===="
 	echo
 	echo "=========== End of verification ========="
