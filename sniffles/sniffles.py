@@ -145,8 +145,7 @@ def start_generation(sconf):
         lapse = current
         mycon = None
         if allrules:
-            myrand = random.randrange(0, len(allrules))
-            mycon = copy.deepcopy(allrules[myrand])
+            mycon = copy.deepcopy(random.choice(allrules))
             if sconf.getVerbosity():
                 print(mycon)
         conversation = Conversation(mycon, sconf.getFullMatch(), False,
