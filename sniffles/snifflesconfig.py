@@ -167,107 +167,212 @@ class SnifflesConfig(object):
     def getBi(self):
         return self.bi
 
+    def setBi(self, value):
+        self.bi = value
+
     def getConcurrentFlows(self):
         return self.concurrent_flows
+
+    def setConcurrentFlows(self, value):
+        self.concurrent_flows = value
 
     def getEval(self):
         return self.eval
 
+    def setEval(self, value):
+        self.eval = value
+
     def getFirstTimestamp(self):
         return self.pcap_start_sec
+
+    def setFirstTimestamp(self, value):
+        self.pcap_start_sec = value
 
     def getFullEval(self):
         return self.full_eval
 
+    def setFullEval(self, value):
+        self.full_eval = value
+
     def getFullMatch(self):
         return self.full_match
+
+    def setFullMatch(self, value):
+        self.full_match = value
 
     def getIntensity(self):
         return self.intensity
 
+    def setIntensity(self, value):
+        self.intensity = value
+
     def getIPV4Home(self):
         return self.ipv4_home
+
+    def setIPV4Home(self, value):
+        self.ipv4_home = value
 
     def getIPV6Home(self):
         return self.ipv6_home
 
+    def setIPV6Home(self, value):
+        self.ipv6_home = value
+
     def getIPV6Percent(self):
         return self.ipv6_percent
+
+    def setIPV6Percent(self, value):
+        self.ipv6_percent = value
 
     def getMacAddrDef(self):
         return self.mac_addr_def
 
+    def setMacAddrDef(self, value):
+        self.mac_addr_def = value
+
     def getOutputFile(self):
         return self.output_file
+
+    def setOutputFile(self, value):
+        self.output_file = value
 
     def getPktLength(self):
         return self.pkt_length
 
+    def setPktLength(self, value):
+        self.pkt_length = value
+
     def getPktsPerStream(self):
         return self.pkts_per_stream
+
+    def setPktsPerStream(self, value):
+        self.pkts_per_stream = value
 
     def getRandom(self):
         return self.rand
 
+    def setRandom(self, value):
+        self.rand = value
+
     def getRuleDir(self):
         return self.rule_dir
+
+    def setRuleDir(self, value):
+        self.rule_dir = value
 
     def getRuleFile(self):
         return self.rule_file
 
+    def setRuleFile(self, value):
+        self.rule_file = value
+
     def getScan(self):
         return self.scan
+
+    def setScan(self, value):
+        self.scan = value
 
     def getScanDuration(self):
         return self.scan_duration
 
+    def setScanDuration(self, value):
+        self.scan_duration = value
+
     def getScanOffset(self):
         return self.scan_offset
+
+    def setScanOffset(self, value):
+        self.scan_offset = value
 
     def getRandomizeOffset(self):
         return self.scan_randomize_offset
 
+    def setRandomizeOffset(self, value):
+        self.scan_randomize_offset = value
+
     def getScanTargets(self):
         return self.scan_targets
+
+    def setScanTargets(self, value):
+        self.scan_targets = value
 
     def getScanType(self):
         return self.scan_type
 
+    def setScanType(self, value):
+        self.scan_type = value
+
     def getScanReplyChance(self):
         return self.scan_reply_chance
+
+    def setScanReplyChance(self, value):
+        self.scan_reply_chance = value
 
     def getSplitFile(self):
         return self.split_file
 
+    def setSplitFile(self, value):
+        self.split_file = value
+
     def getSQLLiteDB(self):
         return self.is_sqllite_db
+
+    def setSQLLiteDB(self, value):
+        self.is_sqllite_db = value
 
     def getTargetPorts(self):
         return self.target_ports
 
+    def setTargetPorts(self, value):
+        self.target_ports = value
+
     def getTCPACK(self):
         return self.tcp_ack
+
+    def setTCPACK(self, value):
+        self.tcp_ack = value
 
     def getTCPHandshake(self):
         return self.tcp_handshake
 
+    def setTCPHandshake(self, value):
+        self.tcp_handshake = value
+
     def getTCPTeardown(self):
         return self.tcp_teardown
+
+    def setTCPTeardown(self, value):
+        self.tcp_teardown = value
 
     def getTimeLapse(self):
         return self.time_lapse
 
+    def setTimeLapse(self, value):
+        self.time_lapse = value
+
     def getTotalStreams(self):
         return self.total_streams
+
+    def setTotalStreams(self, value):
+        self.total_streams = value
 
     def getTrafficDuration(self):
         return self.traffic_duration
 
+    def setTrafficDuration(self, value):
+        self.traffic_duration = value
+
     def getVerbosity(self):
         return self.verbosity
 
+    def setVerbosity(self, value):
+        self.verbosity = value
+
     def getWriteRegEx(self):
         return self.write_reg_ex
+
+    def setWriteRegExe(self, value):
+        self.write_reg_ex = value
 
     def parse_cmd(self, cmd):
         cmd_options = "abc:C:d:D:eEf:F:g:h:H:i:I:l:L:" + \

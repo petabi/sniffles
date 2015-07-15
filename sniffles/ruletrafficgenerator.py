@@ -82,10 +82,20 @@ class Conversation(object):
         communications.
     """
 
-    def __init__(self, con=None, full_match=False, full_eval=False,
-                 packets_per_stream=1, tcp_ack=False,
-                 handshake=False, teardown=False, ipv6_percent=0,
-                 rand=False, pkt_length=-1, mac_def_file=None, bi=False):
+    def __init__ (self, con, sconf):
+
+        full_match = sconf.getFullMatch()
+        full_eval = sconf.getFullEval()
+        packets_per_stream = sconf.getPktsPerStream()
+        tcp_ack = sconf.getTCPACK()
+        handshake = sconf.getTCPHandshake()
+        teardown = sconf.getTCPTeardown()
+        ipv6_percent = sconf.getIPV6Percent()
+        rand = sconf.getRandom()
+        pkt_length = sconf.getPktLength()
+        mac_def_file = sconf.getMacAddrDef()
+        bi = sconf.getBi()
+
         self.ts = []
         self.ts_active = []
         self.started = False
@@ -95,12 +105,13 @@ class Conversation(object):
         else:
             tsrules = [None]
         while tsrules:
-            hs = handshake
-            td = teardown
+            hs = sconf.getTCPHandshake()
+            td = sconf.getTCPTeardown()
             ooo = False
             synch = False
             myrule = tsrules.pop(0)
             mypkts = [RulePkt()]
+            
             if myrule:
                 mypkts = myrule.getPkts()
                 hs = myrule.getHandshake()
@@ -110,12 +121,17 @@ class Conversation(object):
             if myrule and myrule.getIPV() == "6":
                 ipv6_percent = 100
             cur_len = pkt_length
+
             if myrule and myrule.getLength() < 0 and pkt_length >= 0:
                 cur_len = myrule.getLength()
+
+            # TrafficStream
+
             myts = TrafficStream(myrule, cur_len, ipv6_percent,
                                  len(mypkts), mac_def_file, tcp_ack,
                                  hs, td, rand, full_match,
                                  full_eval, bi, ooo, synch, mypkts)
+
             if synch:
                 if len(self.ts_active) == 0:
                     self.ts_active.append(myts)
@@ -290,6 +306,9 @@ class TrafficStream(object):
                 temp = self.dport
                 self.dport = self.sport
                 self.sport = temp
+
+    def construct(self, config):
+        pass
 
     def __str__(self):
         mystr = "Traffic Stream\n"

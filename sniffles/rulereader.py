@@ -419,6 +419,7 @@ class TrafficStreamRule(object):
         self.ooo_prob = ooo_prob
         self.loss = loss
         self.content = []
+        self.typets = None
 
     def __str__(self):
         mystr = "Traffic Stream Rule\n"
@@ -454,6 +455,9 @@ class TrafficStreamRule(object):
         return mystr
 
     # accessors
+    def getTypeTS(self):
+        return self.typets
+
     def getDport(self):
         return self.dport
 
@@ -506,6 +510,10 @@ class TrafficStreamRule(object):
                 self.content.append(pktrule)
             else:
                 self.content = [pktrule]
+
+    def setTypeTS(self, value):
+        print(value)
+        self.typets = value
 
     def setDPort(self, p="any"):
         self.dport = p
@@ -977,6 +985,8 @@ class PetabiRuleParser(RuleParser):
                 if 'handshake' in ts.attrib:
                     if ts.attrib['handshake'].lower() == 'true':
                         mytsrule.setHandshake(True)
+                if 'typets' in ts.attrib:
+                    mytsrule.setTypeTS(ts.attrib['typets'])
                 if 'teardown' in ts.attrib:
                     if ts.attrib['teardown'].lower() == 'true':
                         mytsrule.setTeardown(True)
