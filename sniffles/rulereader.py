@@ -512,7 +512,6 @@ class TrafficStreamRule(object):
                 self.content = [pktrule]
 
     def setTypeTS(self, value):
-        print(value)
         self.typets = value
 
     def setDPort(self, p="any"):

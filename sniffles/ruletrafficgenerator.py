@@ -75,6 +75,14 @@ def set_ipv6_home(list):
     global HOME_IP_PREFIXESv6
     HOME_IP_PREFIXESv6 = list
 
+def get_all_subclasses(myCls):
+    all_subclasses = []
+
+    for subclass in myCls.__subclasses__():
+        all_subclasses.append(subclass)
+        all_subclasses.extend(get_all_subclasses(subclass))
+
+    return all_subclasses
 
 class Conversation(object):
     """
@@ -83,6 +91,9 @@ class Conversation(object):
     """
 
     def __init__ (self, con, sconf):
+
+        subclasses = get_all_subclasses(globals()["TrafficStream"])
+
 
         self.ts = []
         self.ts_active = []
@@ -103,7 +114,19 @@ class Conversation(object):
             if myrule:
                 synch = myrule.getSynch()
 
-            myts = TrafficStream(myrule, sconf)
+            if myrule and myrule.getTypeTS() is not None:
+                useSubclass = False
+                for subclass in subclasses:
+                    subInstance = subclass()
+                    if subInstance.testTypeTS(myrule.getTypeTS()):
+                        myts = subclass(myrule, sconf)
+                        useSubclass = True
+                        break
+
+                if not useSubclass:
+                    myts = TrafficStream(myrule, sconf)
+            else:
+                myts = TrafficStream(myrule, sconf)
 
             if synch:
                 if len(self.ts_active) == 0:
@@ -193,18 +216,25 @@ class TrafficStream(object):
 
         ooo = False
         synch = False
-        handshake = sconf.getTCPHandshake()
-        teardown = sconf.getTCPTeardown()
+
+        handshake = False
+        teardown = False
+
+        if sconf:
+            handshake = sconf.getTCPHandshake()
+            teardown = sconf.getTCPTeardown()
         myp = None
 
-        if rule:
+        if rule and sconf:
             handshake = rule.getHandshake()
             teardown = rule.getTeardown()
             ooo = rule.getOutOfOrder()
             synch = rule.getSynch()
             myp = rule.getPkts()
 
-        pkt_len = sconf.getPktLength()
+        pkt_len = -1
+        if sconf:
+            pkt_len = sconf.getPktLength()
         if rule and rule.getLength() < 0 and pkt_len >= 0:
             pkt_len = rule.getLength()
         self.pkt_len = pkt_len
@@ -214,12 +244,22 @@ class TrafficStream(object):
             self.packets_in_stream = len(rule.getPkts())
 
         self.rule = rule
-        self.mac_def_file = sconf.getMacAddrDef()
-        self.flow_ack = sconf.getTCPACK()
-        self.rand = sconf.getRandom()
-        self.full_eval = sconf.getFullEval()
-        self.full_match = sconf.getFullMatch()
-        self.bi = sconf.getBi()
+
+        if sconf:
+            self.mac_def_file = sconf.getMacAddrDef()
+            self.flow_ack = sconf.getTCPACK()
+            self.rand = sconf.getRandom()
+            self.full_eval = sconf.getFullEval()
+            self.full_match = sconf.getFullMatch()
+            self.bi = sconf.getBi()
+        else:
+            self.mac_def_file = None
+            self.flow_ack = False
+            self.rand = False
+            self.full_eval = False
+            self.full_match = False
+            self.bi = False
+        
         self.stream_ooo = ooo
         self.synch = synch
         self.myp = myp
@@ -303,8 +343,9 @@ class TrafficStream(object):
                 self.dport = self.sport
                 self.sport = temp
 
-    def construct(self, config):
-        pass
+
+    def testTypeTS(self, value):
+        return True
 
     def __str__(self):
         mystr = "Traffic Stream\n"
@@ -367,9 +408,9 @@ class TrafficStream(object):
             ip_generator = IPV6()
         else:
             ip_generator = IPV4()
-        if ip.lower() == 'any' or ip == '*':
+        if ip and (ip.lower() == 'any' or ip == '*'):
             return ip_generator.gen_ip(home)
-        elif ip.find('/') > 0:
+        elif ip and ip.find('/') > 0:
             ip = ip[:ip.find('/')]
             mynewip = ""
             splitter = '.'
@@ -387,17 +428,17 @@ class TrafficStream(object):
                     break
                 spcounter += 1
             return ip_generator.gen_ip(home, mynewip)
-        elif ip.lower() == '$HOME_NET':
+        elif ip and ip.lower() == '$HOME_NET':
             return ip_generator.gen_ip(True)
-        elif ip.lower() == '$EXTERNAL_NET':
+        elif ip and ip.lower() == '$EXTERNAL_NET':
             return ip_generator.gen_ip(False)
-        elif ',' in ip:
+        elif ip and ',' in ip:
             mychoices = ip.split(',')
             target = random.choice(mychoices)
             return ip_generator.gen_ip(home, target)
-        elif '.' in ip and self.ip_type == 4:
+        elif ip and '.' in ip and self.ip_type == 4:
             return ip_generator.gen_ip(True, ip)
-        elif ':' in ip and self.ip_type == 6:
+        elif ip and ':' in ip and self.ip_type == 6:
             return ip_generator.gen_ip(True, ip)
         else:
             return ip_generator.gen_ip(home)
@@ -843,6 +884,12 @@ class TrafficStream(object):
                 self.current_seq_b_to_a += data_len
                 self.current_ack_a_to_b = self.current_seq_b_to_a
 
+class myTestTS(TrafficStream):
+
+    def testTypeTS(self, value):
+        if str(value) == "myTestTS":
+            return True
+        return False
 
 class ScanAttack(TrafficStream):
     """
@@ -881,6 +928,11 @@ class ScanAttack(TrafficStream):
             self.sport = Port('any')
         else:
             self.sport = Port(base_port)
+
+    def testTypeTS(self, value):
+        if value == "ScanAttack":
+            return True
+        return False
 
     def get_duration(self):
         return self.duration
