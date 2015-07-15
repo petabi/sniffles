@@ -84,18 +84,6 @@ class Conversation(object):
 
     def __init__ (self, con, sconf):
 
-        full_match = sconf.getFullMatch()
-        full_eval = sconf.getFullEval()
-        packets_per_stream = sconf.getPktsPerStream()
-        tcp_ack = sconf.getTCPACK()
-        handshake = sconf.getTCPHandshake()
-        teardown = sconf.getTCPTeardown()
-        ipv6_percent = sconf.getIPV6Percent()
-        rand = sconf.getRandom()
-        pkt_length = sconf.getPktLength()
-        mac_def_file = sconf.getMacAddrDef()
-        bi = sconf.getBi()
-
         self.ts = []
         self.ts_active = []
         self.started = False
@@ -104,33 +92,18 @@ class Conversation(object):
             tsrules = con.getTS()
         else:
             tsrules = [None]
+
         while tsrules:
-            hs = sconf.getTCPHandshake()
-            td = sconf.getTCPTeardown()
-            ooo = False
+
             synch = False
+
             myrule = tsrules.pop(0)
             mypkts = [RulePkt()]
-            
+
             if myrule:
-                mypkts = myrule.getPkts()
-                hs = myrule.getHandshake()
-                td = myrule.getTeardown()
-                ooo = myrule.getOutOfOrder()
                 synch = myrule.getSynch()
-            if myrule and myrule.getIPV() == "6":
-                ipv6_percent = 100
-            cur_len = pkt_length
 
-            if myrule and myrule.getLength() < 0 and pkt_length >= 0:
-                cur_len = myrule.getLength()
-
-            # TrafficStream
-
-            myts = TrafficStream(myrule, cur_len, ipv6_percent,
-                                 len(mypkts), mac_def_file, tcp_ack,
-                                 hs, td, rand, full_match,
-                                 full_eval, bi, ooo, synch, mypkts)
+            myts = TrafficStream(myrule, sconf)
 
             if synch:
                 if len(self.ts_active) == 0:
@@ -210,20 +183,43 @@ class TrafficStream(object):
           is_finished() returns true if the stream has no packets, or false
           otherwise (deprecated).
     """
-    def __init__(self, rule=None, pkt_len=-1, ipv6_percent=0, pps=1,
-                 mac_def_file=None, ack=False, handshake=False, teardown=False,
-                 rand=False, full_match=False, full_eval=False, bi=False,
-                 ooo=False, synch=False, myp=None):
-        # Members set from input
-        self.rule = rule
+
+    def __init__(self, rule=None, sconf=None):
+
+        ipv6_percent = 0
+
+        if rule and rule.getIPV() == "6":
+          ipv6_percent = 100
+
+        ooo = False
+        synch = False
+        handshake = sconf.getTCPHandshake()
+        teardown = sconf.getTCPTeardown()
+        myp = None
+
+        if rule:
+            handshake = rule.getHandshake()
+            teardown = rule.getTeardown()
+            ooo = rule.getOutOfOrder()
+            synch = rule.getSynch()
+            myp = rule.getPkts()
+
+        pkt_len = sconf.getPktLength()
+        if rule and rule.getLength() < 0 and pkt_len >= 0:
+            pkt_len = rule.getLength()
         self.pkt_len = pkt_len
-        self.packets_in_stream = pps
-        self.mac_def_file = mac_def_file
-        self.flow_ack = ack
-        self.rand = rand
-        self.full_eval = full_eval
-        self.full_match = full_match
-        self.bi = bi
+
+        self.packets_in_stream = 1
+        if rule:
+            self.packets_in_stream = len(rule.getPkts())
+
+        self.rule = rule
+        self.mac_def_file = sconf.getMacAddrDef()
+        self.flow_ack = sconf.getTCPACK()
+        self.rand = sconf.getRandom()
+        self.full_eval = sconf.getFullEval()
+        self.full_match = sconf.getFullMatch()
+        self.bi = sconf.getBi()
         self.stream_ooo = ooo
         self.synch = synch
         self.myp = myp
