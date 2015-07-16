@@ -3,6 +3,38 @@ from sniffles.rulereader import *
 
 
 class TestRuleReader(TestCase):
+
+    def test_scan_attack_rule(self):
+        myrule = ScanAttackRule(1,2,3,4,5,6,7)
+
+        self.assertEqual(myrule.getScanType(), 1)
+        myrule.setScanType(-1)
+        self.assertEqual(myrule.getScanType(), -1)
+
+        self.assertEqual(myrule.getTarget(), 2)
+        myrule.setTarget(-2)
+        self.assertEqual(myrule.getTarget(), -2)
+
+        self.assertEqual(myrule.getTargetPorts(), 3)
+        myrule.setTargetPorts(-3)
+        self.assertEqual(myrule.getTargetPorts(), -3)
+
+        self.assertEqual(myrule.getBasePort(), 4)
+        myrule.setBasePort(-4)
+        self.assertEqual(myrule.getBasePort(), -4)
+
+        self.assertEqual(myrule.getDuration(), 5)
+        myrule.setDuration(-5)
+        self.assertEqual(myrule.getDuration(), -5)
+
+        self.assertEqual(myrule.getIntensity(), 6)
+        myrule.setIntensity(-6)
+        self.assertEqual(myrule.getIntensity(), -6)
+
+        self.assertEqual(myrule.getOffset(), 7)
+        myrule.setOffset(-7)
+        self.assertEqual(myrule.getOffset(), -7)
+
     def test_ttl_expiry_value(self):
         myprule = Rule('Petabi')
         mytsrule1 = TrafficStreamRule('udp')

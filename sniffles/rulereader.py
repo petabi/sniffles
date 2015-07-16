@@ -563,7 +563,7 @@ class ScanAttackRule(TrafficStreamRule):
                  target_ports=None, base_port=None, duration=1,
                  intensity=5, offset=0.0 ):
         self.scan_type = scan_type
-        sel.target = target
+        self.target = target
         self.target_ports = target_ports
         self.base_port = base_port
         self.duration = duration
