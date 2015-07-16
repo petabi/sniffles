@@ -592,31 +592,18 @@ class TestRuleTrafficGenerator(TestCase):
         while mypkt.get_proto() != 'tcp':
             myts = TrafficStream(None, myConfig)
             mypkt = myts.getNextPacket()[0]
-
-        print("1/ " + str(mypkt))
-
         myseq = mypkt.transport_hdr.get_seq_num()
         
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
         mypkt = myts.getNextPacket()[0]
-
-        print("2/ " + str(mypkt))
-
         self.assertEqual(mypkt.transport_hdr.get_flags(), (SYN + ACK))
         myack = mypkt.transport_hdr.get_seq_num()
         mypkt = myts.getNextPacket()[0]
-
-        print("3/ " + str(mypkt))
-
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
         self.assertEqual(mypkt.transport_hdr.get_seq_num(), myseq+1)
         self.assertEqual(mypkt.transport_hdr.get_ack_num(), myack+1)
         self.assertEqual(mypkt.get_size(), 254)
         mypkt = myts.getNextPacket()[0]
-
-        print("4/ " + str(mypkt))
-
-        self.assertEqual(mypkt.transport_hdr.get_ack_num(), myack+201)
         self.assertEqual(mypkt.transport_hdr.get_ack_num(), (myseq + 201))
         self.assertEqual(mypkt.get_size(), 54)
         self.assertEqual(mypkt.get_content().get_size(), 0)

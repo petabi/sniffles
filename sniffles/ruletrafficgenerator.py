@@ -217,7 +217,7 @@ class TrafficStream(object):
         #member
         self.stream_ooo = False
         self.synch = False
-        self.myp = [RulePkt()]
+        self.myp = None
         self.pkt_len = -1
         self.packets_in_stream = 1
         self.mac_def_file = None
