@@ -18,6 +18,16 @@ SYN_SCAN = 0
 OPEN_PORT_CHANCE = 20
 
 
+def get_all_subclasses(myCls):
+    all_subclasses = []
+
+    for subclass in myCls.__subclasses__():
+        all_subclasses.append(subclass)
+        all_subclasses.extend(get_all_subclasses(subclass))
+
+    return all_subclasses
+
+
 class Rule(object):
     """
         The Rule class marks the base class for any rule.
@@ -456,6 +466,11 @@ class TrafficStreamRule(object):
             mystr += str(p)
         return mystr
 
+    def testTypeRule(self, value):
+        if value is None or value == "Standard":
+            return True
+        return False
+
     # accessors
     def getTypeTS(self):
         return self.typets
@@ -564,6 +579,7 @@ class ScanAttackRule(TrafficStreamRule):
     def __init__(self, scan_type=SYN_SCAN, target=None,
                  target_ports=None, base_port=None, duration=1,
                  intensity=5, offset=0.0, reply_chance=OPEN_PORT_CHANCE):
+        super().__init__()
         self.scan_type = scan_type
         self.target = target
         self.target_ports = target_ports
@@ -572,6 +588,11 @@ class ScanAttackRule(TrafficStreamRule):
         self.intensity = intensity
         self.offset = offset
         self.reply_chance = reply_chance
+
+    def testTypeRule(self, value):
+        if value == "ScanAttack":
+            return True
+        return False
 
     def getReplyChance(self):
         return self.reply_chance
@@ -1030,10 +1051,56 @@ class PetabiRuleParser(RuleParser):
             return False
         root = tree.getroot()
 
+        subclasses = get_all_subclasses(globals()["TrafficStreamRule"])
+
         for xmlrule in root.iter('rule'):
             myprule = Rule('Petabi')
             for ts in xmlrule.iter('traffic_stream'):
-                mytsrule = TrafficStreamRule()
+
+                mytsrule = None
+
+                if 'typets' in ts.attrib:
+                    typeRuleTS = ts.attrib['typets']
+                    useSubclass = False
+                    for subclass in subclasses:
+                        subInstance = subclass()
+                        if subInstance.testTypeRule(typeRuleTS):
+                            mytsrule = subclass()
+                            useSubclass = True
+                            break
+                    if not useSubclass:
+                        mytsrule = TrafficStreamRule()
+                    mytsrule.setTypeTS(typeRuleTS)
+                else:
+                    mytsrule = TrafficStreamRule()
+
+                if 'scantype' in ts.attrib:
+                    mytsrule.setScanType(int(ts.attrib['scantype']))
+                if 'baseport' in ts.attrib:
+                    mytsrule.setBasePort(ts.attrib['baseport'])
+                if 'duration' in ts.attrib:
+                    mytsrule.setDuration(int(ts.attrib['duration']))
+                if 'intensity' in ts.attrib:
+                    mytsrule.setIntensity(int(ts.attrib['intensity']))
+                if 'offset' in ts.attrib:
+                    mytsrule.setOffset(int(ts.attrib['offset']))
+                if 'replychance' in ts.attrib:
+                    mytsrule.setReplyChance(int(ts.attrib['replychance']))
+                if 'target' in ts.attrib:
+                    mytsrule.setTarget(ts.attrib['target'])
+                if 'targetports' in ts.attrib:
+                    values = ts.attrib['targetports']
+                    portList = None
+                    if values[0] == "[":
+                        values = values[1:-1]
+                        values = values.strip().split(",")
+                        portList = []
+                        for port in values:
+                            portList.append(port)
+                        mytsrule.setTargetPorts(ts.attrib['targetports'])
+                    else:
+                        portList = [values]
+                    mytsrule.setTargetPorts(portList)
                 if 'proto' in ts.attrib:
                     mytsrule.setProto(ts.attrib['proto'])
                 if 'src' in ts.attrib:
@@ -1050,8 +1117,6 @@ class PetabiRuleParser(RuleParser):
                 if 'handshake' in ts.attrib:
                     if ts.attrib['handshake'].lower() == 'true':
                         mytsrule.setHandshake(True)
-                if 'typets' in ts.attrib:
-                    mytsrule.setTypeTS(ts.attrib['typets'])
                 if 'teardown' in ts.attrib:
                     if ts.attrib['teardown'].lower() == 'true':
                         mytsrule.setTeardown(True)

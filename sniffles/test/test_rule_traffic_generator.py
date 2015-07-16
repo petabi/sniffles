@@ -542,14 +542,14 @@ class TestRuleTrafficGenerator(TestCase):
         scanner = ScanAttack(rule, None)
 
         self.assertEqual(scanner.get_number_of_packets(), 100)
-        mypkt = scanner.get_next_packet()
+        mypkt = scanner.getNextPacket()[0]
         self.assertEqual(scanner.get_number_of_packets(), 100)
         self.assertEqual(mypkt.get_content_length(), 0)
         self.assertEqual(mypkt.get_src_ip(), '192.168.1.1')
-        mypkt = scanner.get_next_packet()
+        ypkt = scanner.getNextPacket()[0]
         self.assertEqual(scanner.get_number_of_packets(), 99)
         for i in range(0, 197):
-            scanner.get_next_packet()
+            scanner.getNextPacket()
         self.assertEqual(scanner.get_number_of_packets(), 1)
 
         rule = ScanAttackRule(CONNECTION_SCAN, '192.168.1.2',
@@ -561,7 +561,7 @@ class TestRuleTrafficGenerator(TestCase):
 
         self.assertEqual(scanner.get_number_of_packets(), 100)
         for i in range(0, 299):
-            scanner.get_next_packet()
+            scanner.getNextPacket()
         self.assertEqual(scanner.get_number_of_packets(), 1)
 
     def test_traffic_stream_rand(self):

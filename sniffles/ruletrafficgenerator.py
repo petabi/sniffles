@@ -895,7 +895,7 @@ class ScanAttack(TrafficStream):
                 self.mac_gen = ETHERNET_HDR_GEN_DISTRIBUTION
                 self.mac_def_file = sconf.getMacAddrDef()
 
-            self.intensity = sconf.getScanIntensity()
+            self.intensity = sconf.getIntensity()
             self.duration = sconf.getScanDuration()
             self.num_packets = self.intensity * self.duration
 
@@ -914,7 +914,8 @@ class ScanAttack(TrafficStream):
         if src_ip is None:
             self.sip = self.calculateIP('any', False)
         else:
-            self.sip = src_ip
+            self.sip = self.calculateIP(src_ip, False)
+
         self.dip = self.calculateIP(self.targets, False)
 
         if base_port is None:
@@ -933,7 +934,7 @@ class ScanAttack(TrafficStream):
     def get_last_sent(self):
         return self.last_sent
 
-    def get_next_packet(self):
+    def getNextPacket(self):
         pkt = None
         if self.num_packets > 0:
             if self.next_is_ack:
@@ -958,7 +959,7 @@ class ScanAttack(TrafficStream):
                     self.next_is_ack = True
                 else:
                     self.num_packets -= 1
-        return pkt
+        return [pkt]
 
     def get_next_port(self, target_ports=None):
         next_port = 'any'
