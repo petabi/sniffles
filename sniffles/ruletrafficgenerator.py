@@ -866,34 +866,56 @@ class ScanAttack(TrafficStream):
         Creates the traffic for a specific scanning attack.  Works the same as
         a normal traffic stream, only packets returned are part of a scan.
     """
-    def __init__(self, src_ip=None, scan_type=SYN_SCAN, target=None,
-                 target_ports=None, base_port=None,
-                 mac_def_file=None, duration=1, intensity=5, offset=0.0,
-                 reply_chance=OPEN_PORT_CHANCE):
-        self.scan_type = scan_type
-        self.targets = target
-        self.t_ports = target_ports
+
+    def __init__(self, rule=None, sconf=None):
+
+        src_ip = None
+        base_port = None
+        self.scan_type = SYN_SCAN
+        self.targets = None
+        self.t_ports = None
         self.ip_type = 4
         self.proto = 'tcp'
         self.mac_gen = ETHERNET_HDR_GEN_RANDOM
         self.mac_def_file = None
-        self.intensity = intensity
-        self.duration = duration
+        self.intensity = 5
+        self.duration = 1
         self.last_sent = 0.0
-        self.offset = offset
-        self.reply_chance = reply_chance
-        self.num_packets = intensity * duration
+        self.offset = 0.0
+        self.reply_chance = OPEN_PORT_CHANCE
+        self.num_packets = self.intensity * self.duration
         self.next_is_ack = False
         self.finish_handshake = False
-        if mac_def_file:
-            self.mac_gen = ETHERNET_HDR_GEN_DISTRIBUTION
-            self.mac_def_file = mac_def_file
+
+        if sconf:
+            self.scan_type = sconf.getScanType()
+            self.t_ports = sconf.getTargetPorts()
+            if sconf.getMacAddrDef():
+                self.mac_gen = ETHERNET_HDR_GEN_DISTRIBUTION
+                self.mac_def_file = sconf.getMacAddrDef()
+            
+            self.intensity = sconf.getScanIntensity()
+            self.duration = sconf.getScanDuration()
+            self.num_packets = self.intensity * self.duration
+
+        if rule:
+            base_port = rule.getBasePort()
+            src_ip = rule.getSrcIp()
+            self.scan_type = rule.getScanType()
+            self.targets = rule.getTarget()
+            self.t_ports = rule.getTargetPorts()
+            self.intensity = rule.getIntensity()
+            self.duration = rule.getDuration()
+            self.offset = rule.getOffset()
+            self.reply_chance = rule.getReplyChance()
+            self.num_packets = self.intensity * self.duration
 
         if src_ip is None:
             self.sip = self.calculateIP('any', False)
         else:
             self.sip = src_ip
         self.dip = self.calculateIP(self.targets, False)
+
         if base_port is None:
             self.sport = Port('any')
         else:

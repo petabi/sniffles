@@ -15,6 +15,7 @@ CONTENT_MODIFIERS = ['distance', 'offset', 'nocase', 'fast_pattern',
 CONTENT_TAGS = ['content', 'pcre', 'uricontent']
 VALID_DIRECTIONS = ['to server', 'to client']
 SYN_SCAN = 0
+OPEN_PORT_CHANCE = 20
 
 class Rule(object):
     """
@@ -561,7 +562,7 @@ class ScanAttackRule(TrafficStreamRule):
 
     def __init__(self, scan_type=SYN_SCAN, target=None,
                  target_ports=None, base_port=None, duration=1,
-                 intensity=5, offset=0.0 ):
+                 intensity=5, offset=0.0, reply_chance=OPEN_PORT_CHANCE):
         self.scan_type = scan_type
         self.target = target
         self.target_ports = target_ports
@@ -569,6 +570,13 @@ class ScanAttackRule(TrafficStreamRule):
         self.duration = duration
         self.intensity = intensity
         self.offset = offset
+        self.reply_chance = reply_chance
+
+    def getReplyChance(self):
+        return self.reply_chance
+
+    def setReplyChance(self, value):
+        self.reply_chance = value
 
     def getScanType(self):
         return self.scan_type

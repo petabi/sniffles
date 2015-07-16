@@ -120,15 +120,16 @@ def start_generation(sconf):
             else:
                 base_offset += int(sconf.getScanOffset())
 
-            # need to update this
+            rule = ScanAttackRule(sconf.getScanType(), t,
+                                  sconf.getTargetPorts(),
+                                  None,
+                                  sconf.getScanDuration(),
+                                  sconf.getScanIntensity(),
+                                  base_offset,
+                                  sconf.getScanReplyChance())
+            rule.setSrcIp(None)
 
-            scanner = ScanAttack(None, sconf.getScanType(), t,
-                                 sconf.getTargetPorts(), None,
-                                 sconf.getMacAddrDef(),
-                                 sconf.getScanDuration(),
-                                 sconf.getIntensity(),
-                                 base_offset,
-                                 sconf.getScanReplyChance())
+            scanner = ScanAttack(rule, sconf)
             scanners.append(scanner)
 
     traffic_writer = TrafficWriter(sconf.getOutputFile(),
@@ -179,18 +180,20 @@ def start_generation(sconf):
            sconf.getRandomizeOffset():
             for t in sconf.getScanTargets():
 
-                # ??
-
-                scanner = ScanAttack(None, sconf.getScanType(), t,
-                                     sconf.getTargetPorts(), None,
-                                     sconf.getMacAddrDef(),
-                                     sconf.getScanDuration(),
-                                     sconf.getIntensity(),
-                                     (final + int(random.normalvariate(
+                rule = ScanAttackRule(sconf.getScanType(), t,
+                                      sconf.getTargetPorts(),
+                                      None,
+                                      sconf.getScanDuration(),
+                                      sconf.getScanIntensity(),
+                                      (final + int(random.normalvariate(
                                                   sconf.getScanOffset(),
                                                   sconf.getScanOffset()/4))),
-                                     sconf.getScanReplyChance())
+                                      sconf.getScanReplyChance())
+                rule.setSrcIp(None)
+
+                scanner = ScanAttack(rule, sconf)
                 scanners.append(scanner)
+                
         if sconf.getTrafficDuration() > 0:
             current = lapse
         elif sconf.getTrafficDuration() <= 0:

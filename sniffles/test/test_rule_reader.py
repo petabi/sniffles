@@ -5,7 +5,7 @@ from sniffles.rulereader import *
 class TestRuleReader(TestCase):
 
     def test_scan_attack_rule(self):
-        myrule = ScanAttackRule(1,2,3,4,5,6,7)
+        myrule = ScanAttackRule(1,2,3,4,5,6,7, 8)
 
         self.assertEqual(myrule.getScanType(), 1)
         myrule.setScanType(-1)
@@ -34,6 +34,10 @@ class TestRuleReader(TestCase):
         self.assertEqual(myrule.getOffset(), 7)
         myrule.setOffset(-7)
         self.assertEqual(myrule.getOffset(), -7)
+
+        self.assertEqual(myrule.getReplyChance(), 8)
+        myrule.setReplyChance(-8)
+        self.assertEqual(myrule.getReplyChance(), -8)
 
     def test_ttl_expiry_value(self):
         myprule = Rule('Petabi')

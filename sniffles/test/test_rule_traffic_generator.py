@@ -534,9 +534,26 @@ class TestRuleTrafficGenerator(TestCase):
         self.assertEqual(mypkt.get_content().get_data()[0:4], b'1234')
 
     def test_scan(self):
-        scanner = ScanAttack('192.168.1.1', SYN_SCAN, '192.168.1.2',
-                             ['1', '2', '3', '4'], '4567', None, 1, 100, 0,
-                             100)
+
+        # def __init__(self, src_ip=None, scan_type=SYN_SCAN, target=None,
+        #              target_ports=None, base_port=None,
+        #              mac_def_file=None, duration=1, intensity=5, offset=0.0,
+        #              reply_chance=OPEN_PORT_CHANCE):
+
+        # def __init__(self, scan_type=SYN_SCAN, target=None,
+                 # target_ports=None, base_port=None, duration=1,
+                 # intensity=5, offset=0.0, reply_chance=OPEN_PORT_CHANCE):
+
+        rule = ScanAttackRule(SYN_SCAN, '192.168.1.2', ['1', '2', '3', '4'],
+                              '4567', 1, 100, 0, 100)
+        rule.setSrcIp('192.168.1.1')
+
+        scanner = ScanAttack(rule, None)
+
+        # scanner = ScanAttack('192.168.1.1', SYN_SCAN, '192.168.1.2',
+        #                      ['1', '2', '3', '4'], '4567', None, 1, 100, 0,
+        #                      100)
+
         self.assertEqual(scanner.get_number_of_packets(), 100)
         mypkt = scanner.get_next_packet()
         self.assertEqual(scanner.get_number_of_packets(), 100)
@@ -547,9 +564,13 @@ class TestRuleTrafficGenerator(TestCase):
         for i in range(0, 197):
             scanner.get_next_packet()
         self.assertEqual(scanner.get_number_of_packets(), 1)
-        scanner = ScanAttack('192.168.1.1', CONNECTION_SCAN, '192.168.1.2',
-                             ['1', '2', '3', '4'], '4567', None, 1, 100, 0,
-                             100)
+
+        rule = ScanAttackRule(CONNECTION_SCAN, '192.168.1.2', ['1', '2', '3', '4'],
+                              '4567', 1, 100, 0, 100)
+        rule.setSrcIp('192.168.1.1')
+
+        scanner = ScanAttack(rule, None)
+
         self.assertEqual(scanner.get_number_of_packets(), 100)
         for i in range(0, 299):
             scanner.get_next_packet()
