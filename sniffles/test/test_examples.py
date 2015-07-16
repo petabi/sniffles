@@ -1,6 +1,6 @@
 from unittest import *
 from sniffles.ruletrafficgenerator import *
-
+from sniffles.snifflesconfig import *
 
 class TestExamples(TestCase):
 
@@ -9,14 +9,18 @@ class TestExamples(TestCase):
         mytsrule = TrafficStreamRule('udp', '1.2.3.6', '9.8.7.6', '9005',
                                      '105')
         mytsrule.addPktRule(myrpkt)
-        myts = TrafficStream(mytsrule, 25, 0, len(mytsrule.getPkts()), None,
-                             False, mytsrule.getHandshake(),
-                             mytsrule.getTeardown(), False, True, False, False,
-                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
-                             mytsrule.getPkts())
+
+        myConfig = SnifflesConfig()
+        myConfig.setPktLength(25)
+        myConfig.setIPV6Percent(0)
+        myConfig.setFullMatch(True)
+
+        myts = TrafficStream(mytsrule, myConfig)
+
         mycount = 0
         while myts.has_packets():
             mypkt = myts.getNextPacket()[0]
+            print(mypkt)
             self.assertEqual(mypkt.get_size(), 67)
             self.assertEqual(mypkt.get_src_ip(), '1.2.3.6')
             self.assertEqual(mypkt.get_dst_ip(), '9.8.7.6')
@@ -28,11 +32,14 @@ class TestExamples(TestCase):
         mytsrule = TrafficStreamRule('udp', '1.2.3.6', '9.8.7.6', '9005',
                                      '105')
         mytsrule.addPktRule(myrpkt)
-        myts = TrafficStream(mytsrule, 250, 0, len(mytsrule.getPkts()),
-                             None, False, mytsrule.getHandshake(),
-                             mytsrule.getTeardown(), False, True, False, False,
-                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
-                             mytsrule.getPkts())
+
+        myConfig = SnifflesConfig()
+        myConfig.setPktLength(250)
+        myConfig.setIPV6Percent(0)
+        myConfig.setFullMatch(True)
+
+        myts = TrafficStream(mytsrule, myConfig)
+
         mycount = 0
         while myts.has_packets():
             mypkt = myts.getNextPacket()[0]
@@ -50,11 +57,14 @@ class TestExamples(TestCase):
                                      '105', -1, 4, False, False, False, True,
                                      75)
         mytsrule.addPktRule(myrpkt)
-        myts = TrafficStream(mytsrule, 250, 0, len(mytsrule.getPkts()),
-                             None, False, mytsrule.getHandshake(),
-                             mytsrule.getTeardown(), False, True, False, False,
-                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
-                             mytsrule.getPkts())
+
+        myConfig = SnifflesConfig()
+        myConfig.setPktLength(250)
+        myConfig.setIPV6Percent(0)
+        myConfig.setFullMatch(True)
+
+        myts = TrafficStream(mytsrule, myConfig)
+
         mycount = 0
         myfragid = 0
         mylastoff = -1
@@ -85,11 +95,14 @@ class TestExamples(TestCase):
                                      '105', -1, 4, False, False, False, False,
                                      0, 95)
         mytsrule.addPktRule(myrpkt)
-        myts = TrafficStream(mytsrule, 250, 0, len(mytsrule.getPkts()),
-                             None, False, mytsrule.getHandshake(),
-                             mytsrule.getTeardown(), False, True, False, False,
-                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
-                             mytsrule.getPkts())
+
+        myConfig = SnifflesConfig()
+        myConfig.setPktLength(250)
+        myConfig.setIPV6Percent(0)
+        myConfig.setFullMatch(True)
+
+        myts = TrafficStream(mytsrule, myConfig)
+        
         mycount = 0
         while myts.has_packets():
             mypkt = myts.getNextPacket()[0]
@@ -101,11 +114,14 @@ class TestExamples(TestCase):
         mytsrule = TrafficStreamRule('tcp', '1.2.3.4', '9.8.7.5', '9000',
                                      '101', -1, 4, False, True, True)
         mytsrule.addPktRule(myrpkt)
-        myts = TrafficStream(mytsrule, 100, 0, len(mytsrule.getPkts()),
-                             None, False, mytsrule.getHandshake(),
-                             mytsrule.getTeardown(), False, True, False, False,
-                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
-                             mytsrule.getPkts())
+
+        myConfig = SnifflesConfig()
+        myConfig.setPktLength(100)
+        myConfig.setIPV6Percent(0)
+        myConfig.setFullMatch(True)
+
+        myts = TrafficStream(mytsrule, myConfig)
+        
         mycount = 0
         mypkt = myts.getNextPacket()[0]
         myseq = mypkt.transport_hdr.get_seq_num()
@@ -133,11 +149,13 @@ class TestExamples(TestCase):
         mytsrule = TrafficStreamRule('tcp', '1.2.3.4', '9.8.7.5', '9000',
                                      '101', -1, 4, False, True, True)
         mytsrule.addPktRule(myrpkt)
-        myts = TrafficStream(mytsrule, 140, 0, len(mytsrule.getPkts()),
-                             None, False, mytsrule.getHandshake(),
-                             mytsrule.getTeardown(), False, True, False, False,
-                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
-                             mytsrule.getPkts())
+
+        myConfig = SnifflesConfig()
+        myConfig.setPktLength(140)
+        myConfig.setIPV6Percent(0)
+
+        myts = TrafficStream(mytsrule, myConfig)
+        
         mycount = 0
         mypkt = myts.getNextPacket()[0]
         myseq = mypkt.transport_hdr.get_seq_num()
@@ -164,11 +182,14 @@ class TestExamples(TestCase):
         mytsrule = TrafficStreamRule('tcp', '1.2.3.4', '9.8.7.5', '9000',
                                      '101', -1, 4, False, True, True)
         mytsrule.addPktRule(myrpkt)
-        myts = TrafficStream(mytsrule, 140, 0, len(mytsrule.getPkts()),
-                             None, False, mytsrule.getHandshake(),
-                             mytsrule.getTeardown(), False, True, False,
-                             False, mytsrule.getOutOfOrder(),
-                             mytsrule.getSynch(), mytsrule.getPkts())
+
+        myConfig = SnifflesConfig()
+        myConfig.setPktLength(140)
+        myConfig.setIPV6Percent(0)
+        myConfig.setFullMatch(True)
+
+        myts = TrafficStream(mytsrule, myConfig)
+        
         mypkt = myts.getNextPacket()[0]
         myseq = mypkt.transport_hdr.get_seq_num()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
@@ -207,11 +228,14 @@ class TestExamples(TestCase):
         mytsrule = TrafficStreamRule('tcp', '1.2.3.6', '9.8.7.6', '9005',
                                      '105')
         mytsrule.addPktRule(myrpkt)
-        myts = TrafficStream(mytsrule, -1, 0, len(mytsrule.getPkts()),
-                             None, False, mytsrule.getHandshake(),
-                             mytsrule.getTeardown(), False, True, False, False,
-                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
-                             mytsrule.getPkts())
+
+        myConfig = SnifflesConfig()
+        myConfig.setPktLength(-1)
+        myConfig.setIPV6Percent(0)
+        myConfig.setFullMatch(True)
+
+        myts = TrafficStream(mytsrule, myConfig)
+
         mycount = 0
         while myts.has_packets():
             mypkt = myts.getNextPacket()[0]
@@ -228,11 +252,14 @@ class TestExamples(TestCase):
         mytsrule = TrafficStreamRule('tcp', '1.2.3.4', '9.8.7.5', '9000',
                                      '101', -1, 4, False, False, False)
         mytsrule.addPktRule(myrpkt)
-        myts = TrafficStream(mytsrule, -1, 0, len(mytsrule.getPkts()),
-                             None, False, mytsrule.getHandshake(),
-                             mytsrule.getTeardown(), False, True, False, False,
-                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
-                             mytsrule.getPkts())
+
+        myConfig = SnifflesConfig()
+        myConfig.setPktLength(140)
+        myConfig.setIPV6Percent(0)
+        myConfig.setFullMatch(True)
+
+        myts = TrafficStream(mytsrule, myConfig)
+
         mycount = 0
         while myts.has_packets():
             mypkt = myts.getNextPacket()[0]
@@ -249,11 +276,14 @@ class TestExamples(TestCase):
         mytsrule = TrafficStreamRule('tcp', '1.2.3.4', '9.8.7.5', '9000',
                                      '101', -1, 4, False, False, False)
         mytsrule.addPktRule(myrpkt)
-        myts = TrafficStream(mytsrule, -1, 0, len(mytsrule.getPkts()),
-                             None, False, mytsrule.getHandshake(),
-                             mytsrule.getTeardown(), False, True, False, False,
-                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
-                             mytsrule.getPkts())
+
+        myConfig = SnifflesConfig()
+        myConfig.setPktLength(140)
+        myConfig.setIPV6Percent(0)
+        myConfig.setFullMatch(True)
+
+        myts = TrafficStream(mytsrule, myConfig)
+
         mycount = 0
         while myts.has_packets():
             mypkt = myts.getNextPacket()[0]
@@ -272,11 +302,14 @@ class TestExamples(TestCase):
         mytsrule = TrafficStreamRule('tcp', '1.2.3.4', '9.8.7.5', '9000',
                                      '101', -1, 4, False, False, False)
         mytsrule.addPktRule(myrpkt)
-        myts = TrafficStream(mytsrule, -1, 0, len(mytsrule.getPkts()),
-                             None, False, mytsrule.getHandshake(),
-                             mytsrule.getTeardown(), False, True, False, False,
-                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
-                             mytsrule.getPkts())
+
+        myConfig = SnifflesConfig()
+        myConfig.setPktLength(140)
+        myConfig.setIPV6Percent(0)
+        myConfig.setFullMatch(True)
+
+        myts = TrafficStream(mytsrule, myConfig)
+        
         mycount = 0
         while myts.has_packets():
             mypkt = myts.getNextPacket()[0]
@@ -297,11 +330,14 @@ class TestExamples(TestCase):
         mytsrule = TrafficStreamRule('tcp', '1.2.3.4', '9.8.7.5', '9000',
                                      '101', -1, 4, False, False, False)
         mytsrule.addPktRule(myrpkt)
-        myts = TrafficStream(mytsrule, -1, 0, len(mytsrule.getPkts()),
-                             None, False, mytsrule.getHandshake(),
-                             mytsrule.getTeardown(), False, True, False, False,
-                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
-                             mytsrule.getPkts())
+
+        myConfig = SnifflesConfig()
+        myConfig.setPktLength(140)
+        myConfig.setIPV6Percent(0)
+        myConfig.setFullMatch(True)
+
+        myts = TrafficStream(mytsrule, myConfig)
+
         mycount = 0
         while myts.has_packets():
             mypkt = myts.getNextPacket()[0]
@@ -320,11 +356,14 @@ class TestExamples(TestCase):
         mytsrule = TrafficStreamRule('tcp', '1.2.3.4', '9.8.7.5', '9000',
                                      '101', -1, 4, False, False, False)
         mytsrule.addPktRule(myrpkt)
-        myts = TrafficStream(mytsrule, -1, 0, len(mytsrule.getPkts()),
-                             None, False, mytsrule.getHandshake(),
-                             mytsrule.getTeardown(), False, True, False, False,
-                             mytsrule.getOutOfOrder(), mytsrule.getSynch(),
-                             mytsrule.getPkts())
+
+        myConfig = SnifflesConfig()
+        myConfig.setPktLength(140)
+        myConfig.setIPV6Percent(0)
+        myConfig.setFullMatch(True)
+
+        myts = TrafficStream(mytsrule, myConfig)
+        
         mycount = 0
         while myts.has_packets():
             mypkt = myts.getNextPacket()[0]

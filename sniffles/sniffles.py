@@ -160,14 +160,6 @@ def start_generation(sconf):
         sconf.setFullEval(False)
         conversation = Conversation(mycon, sconf)
 
-        # conversation = Conversation(mycon, sconf.getFullMatch(), False,
-        #                             sconf.getPktsPerStream(),
-        #                             sconf.getTCPACK(), sconf.getTCPHandshake(),
-        #                             sconf.getTCPTeardown(),
-        #                             sconf.getIPV6Percent(),
-        #                             rand, sconf.getPktLength(),
-        #                             sconf.getMacAddrDef(), sconf.getBi())
-
         if slow_flows is None or slow_flow_counter != SLOW_FLOW_COUNT:
             traffic_queue.append(conversation)
         else:
@@ -250,24 +242,6 @@ def build_eval_pcap(rules, traffic_writer, sconf):
         sconf.setBi(False)
         sconf.setPktsPerStream(1)
         mycon = Conversation(rule, sconf)
-
-        # mycon = Conversation(rule, sconf.getEval(), sconf.getFullEval(), 1,
-        #                      sconf.getTCPACK(), sconf.getTCPHandshake(),
-        #                      sconf.getTCPTeardown())
-
-        # conversation = Conversation(mycon, sconf.getFullMatch(), False,
-        #                             sconf.getPktsPerStream(),
-        #                             sconf.getTCPACK(), sconf.getTCPHandshake(),
-        #                             sconf.getTCPTeardown(),
-
-        #                             sconf.getIPV6Percent(),
-        #                             rand, sconf.getPktLength(),
-        #                             sconf.getMacAddrDef(), sconf.getBi())
-
-        # def __init__(self, con=None, full_match=False, full_eval=False,
-        #              packets_per_stream=1, tcp_ack=False,
-        #              handshake=False, teardown=False, ipv6_percent=0,
-        #              rand=False, pkt_length=-1, mac_def_file=None, bi=False):
 
         traffic_queue.append(mycon)
     print("Now write the traffic")

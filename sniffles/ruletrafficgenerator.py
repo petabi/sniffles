@@ -208,63 +208,25 @@ class TrafficStream(object):
     """
 
     def __init__(self, rule=None, sconf=None):
-
-        ipv6_percent = 0
-
-        if rule and rule.getIPV() == "6":
-          ipv6_percent = 100
-
-        ooo = False
-        synch = False
-
+        #local
+        flow_opts = None
         handshake = False
+        ipv6_percent = 0
         teardown = False
 
-        if sconf:
-            handshake = sconf.getTCPHandshake()
-            teardown = sconf.getTCPTeardown()
-        myp = None
-
-        if rule and sconf:
-            handshake = rule.getHandshake()
-            teardown = rule.getTeardown()
-            ooo = rule.getOutOfOrder()
-            synch = rule.getSynch()
-            myp = rule.getPkts()
-
-        pkt_len = -1
-        if sconf:
-            pkt_len = sconf.getPktLength()
-        if rule and rule.getLength() < 0 and pkt_len >= 0:
-            pkt_len = rule.getLength()
-        self.pkt_len = pkt_len
-
+        #member
+        self.stream_ooo = False
+        self.synch = False
+        self.myp = [RulePkt()]
+        self.pkt_len = -1
         self.packets_in_stream = 1
-        if rule:
-            self.packets_in_stream = len(rule.getPkts())
-
-        self.rule = rule
-
-        if sconf:
-            self.mac_def_file = sconf.getMacAddrDef()
-            self.flow_ack = sconf.getTCPACK()
-            self.rand = sconf.getRandom()
-            self.full_eval = sconf.getFullEval()
-            self.full_match = sconf.getFullMatch()
-            self.bi = sconf.getBi()
-        else:
-            self.mac_def_file = None
-            self.flow_ack = False
-            self.rand = False
-            self.full_eval = False
-            self.full_match = False
-            self.bi = False
-        
-        self.stream_ooo = ooo
-        self.synch = synch
-        self.myp = myp
-
-        # Derived members
+        self.mac_def_file = None
+        self.flow_ack = False
+        self.rand = False
+        self.full_eval = False
+        self.full_match = False
+        self.bi = False
+        self.rule = rule 
         self.ack_dir = "to client"
         self.advance_pkt = False
         self.content_string = None
@@ -273,10 +235,6 @@ class TrafficStream(object):
         self.frag_id = 0
         self.footer = 0
         self.header = 0
-        if handshake:
-            self.header = 3
-        if teardown:
-            self.footer = 4
         self.ip_type = 4
         self.lost_pkt_string = None
         self.last_off = 0
@@ -287,51 +245,70 @@ class TrafficStream(object):
         self.order = None
         self.dropped = False
         self.frag_con_size = 0
+        self.rand = False
+
+        if sconf:
+            handshake = sconf.getTCPHandshake()
+            teardown = sconf.getTCPTeardown()
+            self.pkt_len = sconf.getPktLength()
+            self.mac_def_file = sconf.getMacAddrDef()
+            if sconf.getPktsPerStream() > 1:
+                self.packets_in_stream = sconf.getPktsPerStream()
+            self.flow_ack = sconf.getTCPACK()
+            self.rand = sconf.getRandom()
+            self.full_eval = sconf.getFullEval()
+            self.full_match = sconf.getFullMatch()
+            self.bi = sconf.getBi()
+            if self.mac_def_file:
+                self.mac_gen = ETHERNET_HDR_GEN_DISTRIBUTION
 
         if rule:
+            handshake = rule.getHandshake()
+            teardown = rule.getTeardown()
+            if rule.getLength() >= 0:
+                self.pkt_len = rule.getLength()
+            self.stream_ooo = rule.getOutOfOrder()
+            self.synch = rule.getSynch()
+            self.myp = rule.getPkts()
+            self.packets_in_stream = len(rule.getPkts())
+            flow_opts = rule.getFlowOptions()
+            if rule.getIPV() == "6":
+                ipv6_percent = 100
             self.proto = rule.getProto()
             if self.proto.lower() not in SUPPORTED_PROTOCOLS:
                 pick = random.randint(0, len(SUPPORTED_PROTOCOLS)-1)
                 protos = list(SUPPORTED_PROTOCOLS.keys())
                 self.proto = protos[pick]
-        else:
-            pick = random.randint(0, len(SUPPORTED_PROTOCOLS)-1)
-            protos = list(SUPPORTED_PROTOCOLS.keys())
-            self.proto = protos[pick]
-            self.rand = True
-        if self.proto == 'tcp':
-            self.current_seq_a_to_b = random.randint(0, 4000000000)
-            self.current_ack_a_to_b = 0
-            self.current_seq_b_to_a = random.randint(0, 4000000000)
-            self.current_ack_b_to_a = 0
-        else:
-            self.header = 0
-            self.footer = 0
-            self.flow_ack = False
-
-        if self.mac_def_file:
-            self.mac_gen = ETHERNET_HDR_GEN_DISTRIBUTION
-
-        if ipv6_percent > 0 and ipv6_percent <= 100:
-            ip_pick = random.randint(0, 99) + 1
-            if ip_pick > (100 - ipv6_percent):
-                self.ip_type = 6
-
-        # All streams are assumed to have started from inside home network to
-        # outside.
-        if rule:
             self.sip = self.calculateIP(rule.getSrcIp(), True)
             self.dip = self.calculateIP(rule.getDstIp(), False)
             self.sport = Port(rule.getSport())
             self.dport = Port(rule.getDport())
         else:
+            pick = random.randint(0, len(SUPPORTED_PROTOCOLS)-1)
+            protos = list(SUPPORTED_PROTOCOLS.keys())
+            self.proto = protos[pick]
+            self.rand = True
+
+        if self.rand:
             self.sip = self.calculateIP('any', True)
             self.dip = self.calculateIP('any', False)
             self.sport = Port('any')
             self.dport = Port('any')
-        flow_opts = None
-        if rule:
-            flow_opts = rule.getFlowOptions()
+        if handshake:
+            self.header = 3
+        if teardown:
+            self.footer = 4
+        if self.proto == 'tcp':
+            self.current_seq_a_to_b = random.randint(0, 4000000000)
+            self.current_ack_a_to_b = 0
+            self.current_seq_b_to_a = random.randint(0, 4000000000)
+            self.current_ack_b_to_a = 0
+
+        if ipv6_percent > 0 and ipv6_percent <= 100:
+            pick = random.randint(0, 99) + 1
+            if pick > (100 - ipv6_percent):
+                self.ip_type = 6
+
         # Always orient flow from client
         if flow_opts:
             change_dir = re.compile("/(to[_\\s]?client|from[_\\s]?server)/i")
@@ -1236,7 +1213,10 @@ class ContentGenerator:
         else:
             generated = self.generate_nfa_data(rule)
             if length < 0:
-                length = len(generated)
+                if rule and rule.getLength() > 0:
+                    length = rule.getLength()
+                else:
+                    length = len(generated)
             self.published.append(
                 Content(generated, length, full_match, False))
 
