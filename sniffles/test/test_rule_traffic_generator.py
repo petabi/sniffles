@@ -674,12 +674,11 @@ class TestRuleTrafficGenerator(TestCase):
         myrpkt = RulePkt("to server", "/abcdef/i", 0, 5, 100, True, True)
         mytsrule = TrafficStreamRule('tcp', '1.1.1', '2.2.2', '[100:200]',
                                      '[10,20,30,40,50]', -1, 4, False, True,
-                                     True, True)
+                                     False, True)
         mytsrule.addPktRule(myrpkt)
 
         myConfig = SnifflesConfig()
         myConfig.setPktLength(100)
-        myConfig.setIPV6Percent(0)
         myConfig.setTCPACK(True)
         myConfig.setTCPHandshake(True)
 
@@ -704,14 +703,15 @@ class TestRuleTrafficGenerator(TestCase):
         myrpkt = RulePkt("to server", "/abcdef/i", 0, 8, 10, False, False)
         mytsrule = TrafficStreamRule('tcp', '1.1.1', '2.2.2', '[100:200]',
                                      '[10,20,30,40,50]', -1, 4, False, True,
-                                     True, False, 0, 50)
+                                     False, False, 0, 50)
         mytsrule.addPktRule(myrpkt)
 
         myConfig = SnifflesConfig()
         myConfig.setPktLength(10)
-        myConfig.setIPV6Percent(0)
+        myConfig.setPktsPerStream(1)
         myConfig.setTCPACK(True)
         myConfig.setTCPHandshake(True)
+        myConfig.setFullMatch(True)
 
         myts = TrafficStream(mytsrule, myConfig)
 

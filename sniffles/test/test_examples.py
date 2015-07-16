@@ -20,7 +20,6 @@ class TestExamples(TestCase):
         mycount = 0
         while myts.has_packets():
             mypkt = myts.getNextPacket()[0]
-            print(mypkt)
             self.assertEqual(mypkt.get_size(), 67)
             self.assertEqual(mypkt.get_src_ip(), '1.2.3.6')
             self.assertEqual(mypkt.get_dst_ip(), '9.8.7.6')

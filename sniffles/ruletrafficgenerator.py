@@ -861,13 +861,6 @@ class TrafficStream(object):
                 self.current_seq_b_to_a += data_len
                 self.current_ack_a_to_b = self.current_seq_b_to_a
 
-class myTestTS(TrafficStream):
-
-    def testTypeTS(self, value):
-        if str(value) == "myTestTS":
-            return True
-        return False
-
 class ScanAttack(TrafficStream):
     """
         Creates the traffic for a specific scanning attack.  Works the same as
