@@ -14,7 +14,7 @@ CONTENT_MODIFIERS = ['distance', 'offset', 'nocase', 'fast_pattern',
                      'http_stat_msg', 'http_encode']
 CONTENT_TAGS = ['content', 'pcre', 'uricontent']
 VALID_DIRECTIONS = ['to server', 'to client']
-
+SYN_SCAN = 0
 
 class Rule(object):
     """
@@ -557,6 +557,61 @@ class TrafficStreamRule(object):
         self.teardown = td
 
 
+class ScanAttackRule(TrafficStreamRule):
+
+    def __init__(self, scan_type=SYN_SCAN, target=None,
+                 target_ports=None, base_port=None, duration=1,
+                 intensity=5, offset=0.0 ):
+        self.scan_type = scan_type
+        sel.target = target
+        self.target_ports = target_ports
+        self.base_port = base_port
+        self.duration = duration
+        self.intensity = intensity
+        self.offset = offset
+
+    def getScanType(self):
+        return self.scan_type
+
+    def setScanType(self, value):
+        self.scan_type = value
+
+    def getTarget(self):
+        return self.target
+
+    def setTarget(self, value):
+        self.target = value
+
+    def getTargetPorts(self):
+        return self.target_ports
+
+    def setTargetPorts(self, value):
+        self.target_ports = value
+
+    def getBasePort(self):
+        return self.base_port
+
+    def setBasePort(self, value):
+        self.base_port = value  
+
+    def getDuration(self):
+        return self.duration
+
+    def setDuration(self, value):
+        self.duration = value  
+
+    def getIntensity(self):
+        return self.intensity
+
+    def setIntensity(self, value):
+        self.intensity = value  
+
+    def getOffset(self):
+        return self.offset
+
+    def setOffset(self, value):
+        self.offset = value 
+
 class SnortRuleContent(RuleContent):
     def __init__(self, type=None, content=None):
         self.name = "Snort Rule Content"
@@ -950,8 +1005,8 @@ class SnortRuleParser(RuleParser):
             return False
         return True
 
-
 class PetabiRuleParser(RuleParser):
+
     def getRules(self):
         return self.rules
 
