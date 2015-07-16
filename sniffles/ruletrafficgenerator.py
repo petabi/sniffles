@@ -75,6 +75,7 @@ def set_ipv6_home(list):
     global HOME_IP_PREFIXESv6
     HOME_IP_PREFIXESv6 = list
 
+
 def get_all_subclasses(myCls):
     all_subclasses = []
 
@@ -84,16 +85,16 @@ def get_all_subclasses(myCls):
 
     return all_subclasses
 
+
 class Conversation(object):
     """
         Dictates rules for a particular communication or series of
         communications.
     """
 
-    def __init__ (self, con, sconf):
+    def __init__(self, con, sconf):
 
         subclasses = get_all_subclasses(globals()["TrafficStream"])
-
 
         self.ts = []
         self.ts_active = []
@@ -208,13 +209,13 @@ class TrafficStream(object):
     """
 
     def __init__(self, rule=None, sconf=None):
-        #local
+        # local
         flow_opts = None
         handshake = False
         ipv6_percent = 0
         teardown = False
 
-        #member
+        # member
         self.stream_ooo = False
         self.synch = False
         self.myp = None
@@ -226,7 +227,7 @@ class TrafficStream(object):
         self.full_eval = False
         self.full_match = False
         self.bi = False
-        self.rule = rule 
+        self.rule = rule
         self.ack_dir = "to client"
         self.advance_pkt = False
         self.content_string = None
@@ -319,7 +320,6 @@ class TrafficStream(object):
                 temp = self.dport
                 self.dport = self.sport
                 self.sport = temp
-
 
     def testTypeTS(self, value):
         return True
@@ -861,6 +861,7 @@ class TrafficStream(object):
                 self.current_seq_b_to_a += data_len
                 self.current_ack_a_to_b = self.current_seq_b_to_a
 
+
 class ScanAttack(TrafficStream):
     """
         Creates the traffic for a specific scanning attack.  Works the same as
@@ -893,7 +894,7 @@ class ScanAttack(TrafficStream):
             if sconf.getMacAddrDef():
                 self.mac_gen = ETHERNET_HDR_GEN_DISTRIBUTION
                 self.mac_def_file = sconf.getMacAddrDef()
-            
+
             self.intensity = sconf.getScanIntensity()
             self.duration = sconf.getScanDuration()
             self.num_packets = self.intensity * self.duration

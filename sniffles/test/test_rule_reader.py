@@ -5,7 +5,7 @@ from sniffles.rulereader import *
 class TestRuleReader(TestCase):
 
     def test_scan_attack_rule(self):
-        myrule = ScanAttackRule(1,2,3,4,5,6,7, 8)
+        myrule = ScanAttackRule(1, 2, 3, 4, 5, 6, 7, 8)
 
         self.assertEqual(myrule.getScanType(), 1)
         myrule.setScanType(-1)

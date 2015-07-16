@@ -17,6 +17,7 @@ VALID_DIRECTIONS = ['to server', 'to client']
 SYN_SCAN = 0
 OPEN_PORT_CHANCE = 20
 
+
 class Rule(object):
     """
         The Rule class marks the base class for any rule.
@@ -600,25 +601,26 @@ class ScanAttackRule(TrafficStreamRule):
         return self.base_port
 
     def setBasePort(self, value):
-        self.base_port = value  
+        self.base_port = value
 
     def getDuration(self):
         return self.duration
 
     def setDuration(self, value):
-        self.duration = value  
+        self.duration = value
 
     def getIntensity(self):
         return self.intensity
 
     def setIntensity(self, value):
-        self.intensity = value  
+        self.intensity = value
 
     def getOffset(self):
         return self.offset
 
     def setOffset(self, value):
-        self.offset = value 
+        self.offset = value
+
 
 class SnortRuleContent(RuleContent):
     def __init__(self, type=None, content=None):
@@ -1012,6 +1014,7 @@ class SnortRuleParser(RuleParser):
             print("Error: ", err)
             return False
         return True
+
 
 class PetabiRuleParser(RuleParser):
 

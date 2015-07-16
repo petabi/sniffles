@@ -3,6 +3,7 @@ from sniffles.ruletrafficgenerator import *
 from sniffles.vendor_mac_list import VENDOR_MAC_OUI
 from sniffles.snifflesconfig import *
 
+
 class TestRuleTrafficGenerator(TestCase):
     def test_build_random_ethernet_header(self):
         random.seed()
@@ -535,24 +536,10 @@ class TestRuleTrafficGenerator(TestCase):
 
     def test_scan(self):
 
-        # def __init__(self, src_ip=None, scan_type=SYN_SCAN, target=None,
-        #              target_ports=None, base_port=None,
-        #              mac_def_file=None, duration=1, intensity=5, offset=0.0,
-        #              reply_chance=OPEN_PORT_CHANCE):
-
-        # def __init__(self, scan_type=SYN_SCAN, target=None,
-                 # target_ports=None, base_port=None, duration=1,
-                 # intensity=5, offset=0.0, reply_chance=OPEN_PORT_CHANCE):
-
         rule = ScanAttackRule(SYN_SCAN, '192.168.1.2', ['1', '2', '3', '4'],
                               '4567', 1, 100, 0, 100)
         rule.setSrcIp('192.168.1.1')
-
         scanner = ScanAttack(rule, None)
-
-        # scanner = ScanAttack('192.168.1.1', SYN_SCAN, '192.168.1.2',
-        #                      ['1', '2', '3', '4'], '4567', None, 1, 100, 0,
-        #                      100)
 
         self.assertEqual(scanner.get_number_of_packets(), 100)
         mypkt = scanner.get_next_packet()
@@ -565,7 +552,8 @@ class TestRuleTrafficGenerator(TestCase):
             scanner.get_next_packet()
         self.assertEqual(scanner.get_number_of_packets(), 1)
 
-        rule = ScanAttackRule(CONNECTION_SCAN, '192.168.1.2', ['1', '2', '3', '4'],
+        rule = ScanAttackRule(CONNECTION_SCAN, '192.168.1.2',
+                              ['1', '2', '3', '4'],
                               '4567', 1, 100, 0, 100)
         rule.setSrcIp('192.168.1.1')
 
@@ -614,7 +602,7 @@ class TestRuleTrafficGenerator(TestCase):
             myts = TrafficStream(None, myConfig)
             mypkt = myts.getNextPacket()[0]
         myseq = mypkt.transport_hdr.get_seq_num()
-        
+
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
         mypkt = myts.getNextPacket()[0]
         self.assertEqual(mypkt.transport_hdr.get_flags(), (SYN + ACK))
@@ -787,7 +775,6 @@ class TestRuleTrafficGenerator(TestCase):
         myConfig = SnifflesConfig()
 
         myts = TrafficStream(mytsrule, myConfig)
-
 
         for i in range(0, 5):
             mypkt = myts.getNextPacket()[0]

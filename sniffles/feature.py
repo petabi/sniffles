@@ -113,7 +113,8 @@ class ListNotation(AmbiguousNotation):
                            self.upper_bound - self.lower_bound + 1
                            )
 
-        sample_size = int((self.upper_bound - self.lower_bound) / num_elements) - 1
+        sample_size = int((self.upper_bound - self.lower_bound)
+                          / num_elements) - 1
 
         myelements = []
 

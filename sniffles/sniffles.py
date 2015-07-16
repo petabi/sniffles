@@ -180,20 +180,22 @@ def start_generation(sconf):
            sconf.getRandomizeOffset():
             for t in sconf.getScanTargets():
 
+                myOffset = final + \
+                    int(random.normalvariate(sconf.getScanOffset(),
+                                             sconf.getScanOffset()/4))
+
                 rule = ScanAttackRule(sconf.getScanType(), t,
                                       sconf.getTargetPorts(),
                                       None,
                                       sconf.getScanDuration(),
                                       sconf.getScanIntensity(),
-                                      (final + int(random.normalvariate(
-                                                  sconf.getScanOffset(),
-                                                  sconf.getScanOffset()/4))),
+                                      myOffset,
                                       sconf.getScanReplyChance())
                 rule.setSrcIp(None)
 
                 scanner = ScanAttack(rule, sconf)
                 scanners.append(scanner)
-                
+
         if sconf.getTrafficDuration() > 0:
             current = lapse
         elif sconf.getTrafficDuration() <= 0:
