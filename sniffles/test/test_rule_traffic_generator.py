@@ -546,7 +546,7 @@ class TestRuleTrafficGenerator(TestCase):
         self.assertEqual(scanner.get_number_of_packets(), 100)
         self.assertEqual(mypkt.get_content_length(), 0)
         self.assertEqual(mypkt.get_src_ip(), '192.168.1.1')
-        ypkt = scanner.getNextPacket()[0]
+        mypkt = scanner.getNextPacket()[0]
         self.assertEqual(scanner.get_number_of_packets(), 99)
         for i in range(0, 197):
             scanner.getNextPacket()
