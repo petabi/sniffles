@@ -391,9 +391,7 @@ class IPFeature(Feature):
         if self.feature_name is None:
             valid = False
             print("Feature at line " + str(line) + " missing name parameter.")
-
-        if not (self.version is int and (self.version == 4 or
-                                         self.version == 6)):
+        if not (int(self.version) == 4 or int(self.version) == 6):
             print("Feature at line " + str(line) + " has invalid version.")
             valid = False
         return valid
