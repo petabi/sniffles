@@ -1,0 +1,1 @@
+type=feature; complexity_prob=5; ambiguity_list=[alert, log, pass, activate, dynamic, drop, reject, sdrop]
