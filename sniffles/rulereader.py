@@ -652,18 +652,18 @@ class SnortRuleContent(RuleContent):
         self.offset = None
         self.depth = None
         self.within = None
-        self.fast_pattern = None
-        self.nocase = None
-        self.http_client_body = None
-        self.http_cookie = None
-        self.http_raw_cookie = None
-        self.http_header = None
-        self.http_raw_header = None
-        self.http_method = None
-        self.http_uri = None
-        self.http_raw_uri = None
-        self.http_stat_code = None
-        self.http_stat_msg = None
+        self.fast_pattern = False
+        self.nocase = False
+        self.http_client_body = False
+        self.http_cookie = False
+        self.http_raw_cookie = False
+        self.http_header = False
+        self.http_raw_header = False
+        self.http_method = False
+        self.http_uri = False
+        self.http_raw_uri = False
+        self.http_stat_code = False
+        self.http_stat_msg = False
         self.http_encode = None
         if content is not None:
             self.handleContent(content)
@@ -846,75 +846,35 @@ class SnortRuleContent(RuleContent):
     def setNoCase(self, nc=False):
         self.no_case = nc
 
-    def setHttpClientBody(self, h=None):
-        if h is not None:
-            if self.http_client_body:
-                self.http_client_body += h
-            else:
-                self.http_client_body = h
+    def setHttpClientBody(self, h=False):
+        self.http_client_body = h
 
-    def setHttpCookie(self, h=None):
-        if h is not None:
-            if self.http_cookie:
-                self.http_cookie += h
-            else:
-                self.http_cookie = h
+    def setHttpCookie(self, h=False):
+        self.http_cookie = h
 
-    def setHttpRawCookie(self, h=None):
-        if h is not None:
-            if self.http_raw_cookie:
-                self.http_raw_cookie += h
-            else:
-                self.http_raw_cookie = h
+    def setHttpRawCookie(self, h=False):
+        self.http_raw_cookie = h
 
-    def setHttpHeader(self, h=None):
-        if h is not None:
-            if self.http_header:
-                self.http_header += h
-            else:
-                self.http_header = h
+    def setHttpHeader(self, h=False):
+        self.http_header = h
 
-    def setHttpRawHeader(self, h=None):
-        if h is not None:
-            if self.http_raw_header:
-                self.http_raw_header += h
-            else:
-                self.http_raw_header = h
+    def setHttpRawHeader(self, h=False):
+        self.http_raw_header = h
 
-    def setHttpMethod(self, h=None):
-        if h is not None:
-            if self.http_method:
-                self.http_method += h
-            else:
-                self.http_method = h
+    def setHttpMethod(self, h=False):
+        self.http_method = h
 
-    def setHttpUri(self, h=None):
-        if h is not None:
-            if self.http_uri:
-                self.http_uri += h
-            else:
-                self.http_uri = h
+    def setHttpUri(self, h=False):
+        self.http_uri = h
 
-    def setHttpRawUri(self, h=None):
-        if h is not None:
-            if self.http_raw_uri:
-                self.http_raw_uri += h
-            else:
-                self.http_raw_uri = h
+    def setHttpRawUri(self, h=False):
+        self.http_raw_uri = h
 
-    def setHttpStatCode(self, h=None):
-        if h is not None:
-            if self.http_stat_code:
-                self.http_stat_code += h
-            else:
-                self.http_stat_code = h
+    def setHttpStatCode(self, h=False):
+        self.http_stat_code = h
 
-    def setHttpStatMsg(self, h=None):
-        if h is not None:
-            if self.http_stat_msg:
-                self.http_stat_msg += h
-            else:
-                self.http_stat_msg = h
+    def setHttpStatMsg(self, h=False):
+        self.http_stat_msg = h
 
     def setHttpEncode(self, h=None):
         if h is not None:
