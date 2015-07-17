@@ -290,11 +290,15 @@ class TrafficStream(object):
             self.proto = protos[pick]
             self.rand = True
 
+        if sconf is None and rule is None:
+            self.rand = True
+
         if self.rand:
             self.sip = self.calculateIP('any', True)
             self.dip = self.calculateIP('any', False)
             self.sport = Port('any')
             self.dport = Port('any')
+
         if handshake:
             self.header = 3
         if teardown:
@@ -385,9 +389,9 @@ class TrafficStream(object):
             ip_generator = IPV6()
         else:
             ip_generator = IPV4()
-        if ip and (ip.lower() == 'any' or ip == '*'):
+        if (ip.lower() == 'any' or ip == '*'):
             return ip_generator.gen_ip(home)
-        elif ip and ip.find('/') > 0:
+        elif ip.find('/') > 0:
             ip = ip[:ip.find('/')]
             mynewip = ""
             splitter = '.'
@@ -405,17 +409,17 @@ class TrafficStream(object):
                     break
                 spcounter += 1
             return ip_generator.gen_ip(home, mynewip)
-        elif ip and ip.lower() == '$HOME_NET':
+        elif ip.lower() == '$HOME_NET':
             return ip_generator.gen_ip(True)
-        elif ip and ip.lower() == '$EXTERNAL_NET':
+        elif ip.lower() == '$EXTERNAL_NET':
             return ip_generator.gen_ip(False)
-        elif ip and ',' in ip:
+        elif ',' in ip:
             mychoices = ip.split(',')
             target = random.choice(mychoices)
             return ip_generator.gen_ip(home, target)
-        elif ip and '.' in ip and self.ip_type == 4:
+        elif '.' in ip and self.ip_type == 4:
             return ip_generator.gen_ip(True, ip)
-        elif ip and ':' in ip and self.ip_type == 6:
+        elif ':' in ip and self.ip_type == 6:
             return ip_generator.gen_ip(True, ip)
         else:
             return ip_generator.gen_ip(home)
@@ -911,12 +915,18 @@ class ScanAttack(TrafficStream):
             self.reply_chance = rule.getReplyChance()
             self.num_packets = self.intensity * self.duration
 
+        if not self.t_ports:
+            self.t_ports = [str(random.randint(1, 65535))]
+
         if src_ip is None:
             self.sip = self.calculateIP('any', False)
         else:
             self.sip = self.calculateIP(src_ip, False)
 
-        self.dip = self.calculateIP(self.targets, False)
+        if self.targets is not None:
+            self.dip = self.calculateIP(self.targets, False)
+        else:
+            self.sip = self.calculateIP('any', False)
 
         if base_port is None:
             self.sport = Port('any')

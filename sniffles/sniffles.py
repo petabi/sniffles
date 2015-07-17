@@ -45,10 +45,6 @@ def main():
     signal.signal(signal.SIGINT, handlerKeyboardInterupt)
     sconf = SnifflesConfig(sys.argv[1:])
     start = datetime.datetime.now()
-
-    # for p in TrafficStream.__subclasses__():
-    #     print(p.__class_na
-
     print("")
     print("!^!Sniffles v" + getVersion() +
           " -- Traffic Generation for NIDS evaluation.")
@@ -240,12 +236,6 @@ def build_eval_pcap(rules, traffic_writer, sconf):
     for rule in rules:
 
         sconf.setFullMatch(sconf.getEval())
-        sconf.setIPV6Percent(0)
-        sconf.setRandom(False)
-        sconf.setPktLength(-1)
-        sconf.setMacAddrDef(None)
-        sconf.setBi(False)
-        sconf.setPktsPerStream(1)
         mycon = Conversation(rule, sconf)
 
         traffic_queue.append(mycon)
