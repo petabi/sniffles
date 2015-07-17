@@ -1436,7 +1436,7 @@ class ContentGenerator:
         space = [32]
         for rule in rules:
             if rule.getName() == 'Snort Rule Content':
-                if rule.getHttpMethod() is not None:
+                if rule.getHttpMethod():
                     if rule.getType() == 'content':
                         http_method = self.generate_from_content_strings(
                             rule.getContentString()
@@ -1444,9 +1444,7 @@ class ContentGenerator:
                     else:
                         http_method = self.generate_from_regex(
                             rule.getContentString())
-                elif (
-                    rule.getHttpStatCode() is not None
-                ):
+                elif rule.getHttpStatCode():
                     if rule.getType() == 'content':
                         http_stat_code = self.generate_from_content_strings(
                             rule.getContentString()
@@ -1454,9 +1452,7 @@ class ContentGenerator:
                     else:
                         http_stat_code = self.generate_from_regex(
                             rule.getContentString())
-                elif (
-                    rule.getHttpStatMsg() is not None
-                ):
+                elif rule.getHttpStatMsg():
                     if rule.getType() == 'content':
                         http_stat_msg = self.generate_from_content_strings(
                             rule.getContentString()
@@ -1464,10 +1460,7 @@ class ContentGenerator:
                     else:
                         http_stat_msg = self.generate_from_regex(
                             rule.getContentString())
-                elif (
-                    rule.getHttpUri() is not None or
-                    rule.getHttpRawUri() is not None
-                ):
+                elif rule.getHttpUri() or rule.getHttpRawUri():
                     if rule.getType() == 'content':
                         http_uri = self.generate_from_content_strings(
                             rule.getContentString()
@@ -1475,10 +1468,7 @@ class ContentGenerator:
                     else:
                         http_uri = self.generate_from_regex(
                             rule.getContentString())
-                elif (
-                    rule.getHttpCookie() is not None or
-                    rule.getHttpRawCookie() is not None
-                ):
+                elif rule.getHttpCookie() or rule.getHttpRawCookie():
                     if rule.getType() == 'content':
                         http_cookie = self.generate_from_content_strings(
                             rule.getContentString()
@@ -1486,10 +1476,7 @@ class ContentGenerator:
                     else:
                         http_cookie = self.generate_from_regex(
                             rule.getContentString())
-                elif (
-                    rule.getHttpHeader() is not None or
-                    rule.getHttpRawHeader() is not None
-                ):
+                elif rule.getHttpHeader() or rule.getHttpRawHeader():
                     if rule.getType() == 'content':
                         http_header = self.generate_from_content_strings(
                             rule.getContentString()
@@ -1497,7 +1484,7 @@ class ContentGenerator:
                     else:
                         http_header = self.generate_from_regex(
                             rule.getContentString())
-                elif rule.getHttpClientBody() is not None:
+                elif rule.getHttpClientBody():
                     body = ""
                     if rule.getType() == 'content':
                         body = self.generate_from_content_strings(
