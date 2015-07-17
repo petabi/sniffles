@@ -42,7 +42,6 @@ def main():
         myrules = generateRules(myfeatures, count)
         printRules(myrules, outfile, rfmt)
     except Exception as err:
-        print("There is error, program will stop.")
         print("RandRuleGen-main: " + str(err))
 
 

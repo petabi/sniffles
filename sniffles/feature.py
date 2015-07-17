@@ -182,6 +182,20 @@ class Feature(object):
             mystring += str(random.randint(self.lower_bound, self.upper_bound))
         return mystring
 
+    def testValidFeature(self, line=0):
+        valid = True
+
+        if self.feature_name is None:
+            valid = False
+            print("Feature at line " + str(line) + " missing name parameter.")
+
+        if self.complexity_prob > 0 and self.ambiguity_list is None:
+            print("Feature at line " + str(line) + " having complexity")
+            print("probability greater than 0 but there is no ambiguity_list.")
+            valid = False
+
+        return valid
+
 
 class ContentFeature(Feature):
     def __init__(self, name="content", regex=True, complexity_prob=0, len=0):
@@ -226,6 +240,15 @@ class ContentFeature(Feature):
                     mystring += "s"
         return mystring
 
+    def testValidFeature(self, line=0):
+        valid = True
+
+        if self.feature_name is None:
+            valid = False
+            print("Feature at line " + str(line) + " missing name parameter.")
+
+        return valid
+
 
 class ProtocolFeature(Feature):
 
@@ -254,11 +277,27 @@ class ProtocolFeature(Feature):
         mystring = self.feature_name + "=" + myproto
         return mystring
 
+    def testValidFeature(self, line=0):
+        valid = True
+
+        if self.feature_name is None:
+            valid = False
+            print("Feature at line " + str(line) + " missing name parameter.")
+        if self.proto_list is None:
+            valid = False
+            print("Feature at line " + str(line) +
+                  " missing proto_list parameter.")
+        if self.complexity_prob > 0 and self.ambiguity_list is None:
+            print("Feature at line " + str(line) + " having complexity")
+            print("probability greater than 0 but there is no ambiguity_list.")
+            valid = False
+        return valid
+
 
 class IPFeature(Feature):
 
     def __init__(self, name="ip", version=4, complexity_prob=0):
-        self.name = name
+        self.feature_name = name
         self.version = version
         self.complexity_prob = complexity_prob
 
@@ -266,7 +305,7 @@ class IPFeature(Feature):
         return self.toString()
 
     def toString(self):
-        mystring = self.name + "="
+        mystring = self.feature_name + "="
         myip = []
         complex = False
         if self.complexity_prob > 0:
@@ -346,6 +385,19 @@ class IPFeature(Feature):
         mystring += myipstring
         return mystring
 
+    def testValidFeature(self, line=0):
+        valid = True
+
+        if self.feature_name is None:
+            valid = False
+            print("Feature at line " + str(line) + " missing name parameter.")
+
+        if not (self.version is int and (self.version == 4 or
+                                         self.version == 6)):
+            print("Feature at line " + str(line) + " has invalid version.")
+            valid = False
+        return valid
+
 # Features are defined in a semi-colon separated list one feature per line
 #   type=feature; list of arguments in key=value pairs, lists using
 #                 python formatting (i.e. [a, ..., z]
@@ -376,13 +428,15 @@ class FeatureParser(object):
                 raise Exception("The program will stop.")
                 return False
             line = fd.readline()
+            lineNumber = 1
             while line:
                 try:
-                    self.parseLine(line)
+                    self.parseLine(line, lineNumber)
                 except Exception as err:
                     print("FeatureParser-parseFile: " + str(err))
                     raise Exception("The program will stop.")
                 line = fd.readline()
+                lineNumber += 1
             fd.close()
             return True
         return False
@@ -390,7 +444,7 @@ class FeatureParser(object):
     def getFeatures(self):
         return self.features
 
-    def parseLine(self, line=None):
+    def parseLine(self, line=None, lineNumber=0):
         if line:
             myelements = line.split(';')
             mypairs = {}
@@ -434,10 +488,8 @@ class FeatureParser(object):
                     proto_list.append(p)
             if 'version' in mypairs:
                 version = int(mypairs['version'])
-
             if 'type' not in mypairs:
-                print("feature type Not specified:", line)
-                return None
+                raise Exception("Feature type Not specified:", line)
             if mypairs['type'].lower() == 'feature':
                 myfeature = Feature(name, lower_bound, upper_bound,
                                     complexity_prob, ambiguity_list)
@@ -449,8 +501,9 @@ class FeatureParser(object):
                 myfeature = ProtocolFeature(name, proto_list, complexity_prob,
                                             ambiguity_list)
             else:
-                print("Unrecognized feature type.", line)
-                return None
+                raise Exception("Unrecognized feature type." + str(line))
+            if not myfeature.testValidFeature(lineNumber):
+                sys.exit()
             self.features.append(myfeature)
 
     def tokenizeAmbiguityList(self, list):
