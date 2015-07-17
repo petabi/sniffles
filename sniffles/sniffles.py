@@ -96,7 +96,8 @@ def start_generation(sconf):
         myrulelist.readRuleFiles(sconf.getRuleDir())
     else:
         print("Random Content and Random headers")
-        rand = True
+        sconf.setRandom(True)
+
     if sconf.getIPV4Home() is not None:
         set_ipv4_home(sconf.getIPV4Home())
     if sconf.getIPV6Home() is not None:
@@ -114,13 +115,17 @@ def start_generation(sconf):
                                          sconf.getScanOffset()/4))
             else:
                 base_offset += int(sconf.getScanOffset())
-            scanner = ScanAttack(None, sconf.getScanType(), t,
-                                 sconf.getTargetPorts(), None,
-                                 sconf.getMacAddrDef(),
-                                 sconf.getScanDuration(),
-                                 sconf.getIntensity(),
-                                 base_offset,
-                                 sconf.getScanReplyChance())
+
+            rule = ScanAttackRule(sconf.getScanType(), t,
+                                  sconf.getTargetPorts(),
+                                  None,
+                                  sconf.getScanDuration(),
+                                  sconf.getScanIntensity(),
+                                  base_offset,
+                                  sconf.getScanReplyChance())
+            rule.setSrcIp(None)
+
+            scanner = ScanAttack(rule, sconf)
             scanners.append(scanner)
 
     traffic_writer = TrafficWriter(sconf.getOutputFile(),
@@ -148,13 +153,10 @@ def start_generation(sconf):
             mycon = copy.deepcopy(random.choice(allrules))
             if sconf.getVerbosity():
                 print(mycon)
-        conversation = Conversation(mycon, sconf.getFullMatch(), False,
-                                    sconf.getPktsPerStream(),
-                                    sconf.getTCPACK(), sconf.getTCPHandshake(),
-                                    sconf.getTCPTeardown(),
-                                    sconf.getIPV6Percent(),
-                                    rand, sconf.getPktLength(),
-                                    sconf.getMacAddrDef(), sconf.getBi())
+
+        sconf.setFullEval(False)
+        conversation = Conversation(mycon, sconf)
+
         if slow_flows is None or slow_flow_counter != SLOW_FLOW_COUNT:
             traffic_queue.append(conversation)
         else:
@@ -173,16 +175,23 @@ def start_generation(sconf):
         if sconf.getScan() and len(scanners) < 1 and \
            sconf.getRandomizeOffset():
             for t in sconf.getScanTargets():
-                scanner = ScanAttack(None, sconf.getScanType(), t,
-                                     sconf.getTargetPorts(), None,
-                                     sconf.getMacAddrDef(),
-                                     sconf.getScanDuration(),
-                                     sconf.getIntensity(),
-                                     (final + int(random.normalvariate(
-                                                  sconf.getScanOffset(),
-                                                  sconf.getScanOffset()/4))),
-                                     sconf.getScanReplyChance())
+
+                myOffset = final + \
+                    int(random.normalvariate(sconf.getScanOffset(),
+                                             sconf.getScanOffset()/4))
+
+                rule = ScanAttackRule(sconf.getScanType(), t,
+                                      sconf.getTargetPorts(),
+                                      None,
+                                      sconf.getScanDuration(),
+                                      sconf.getScanIntensity(),
+                                      myOffset,
+                                      sconf.getScanReplyChance())
+                rule.setSrcIp(None)
+
+                scanner = ScanAttack(rule, sconf)
                 scanners.append(scanner)
+
         if sconf.getTrafficDuration() > 0:
             current = lapse
         elif sconf.getTrafficDuration() <= 0:
@@ -225,9 +234,10 @@ def build_eval_pcap(rules, traffic_writer, sconf):
     traffic_queue = []
     total_pkts = 0
     for rule in rules:
-        mycon = Conversation(rule, sconf.getEval(), sconf.getFullEval(), 1,
-                             sconf.getTCPACK(), sconf.getTCPHandshake(),
-                             sconf.getTCPTeardown())
+
+        sconf.setFullMatch(sconf.getEval())
+        mycon = Conversation(rule, sconf)
+
         traffic_queue.append(mycon)
     print("Now write the traffic")
     while traffic_queue:

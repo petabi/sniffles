@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<petabi_rules>
+  <rule name="test1" >
+    <traffic_stream typets="ScanAttack" scantype="0" target="192.168.1.2" duration="1" intensity="100" offset="0" replychance="100">
+    </traffic_stream>
+  </rule>
+</petabi_rules>

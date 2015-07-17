@@ -14,6 +14,18 @@ CONTENT_MODIFIERS = ['distance', 'offset', 'nocase', 'fast_pattern',
                      'http_stat_msg', 'http_encode']
 CONTENT_TAGS = ['content', 'pcre', 'uricontent']
 VALID_DIRECTIONS = ['to server', 'to client']
+SYN_SCAN = 0
+OPEN_PORT_CHANCE = 20
+
+
+def get_all_subclasses(myCls):
+    all_subclasses = []
+
+    for subclass in myCls.__subclasses__():
+        all_subclasses.append(subclass)
+        all_subclasses.extend(get_all_subclasses(subclass))
+
+    return all_subclasses
 
 
 class Rule(object):
@@ -419,6 +431,7 @@ class TrafficStreamRule(object):
         self.ooo_prob = ooo_prob
         self.loss = loss
         self.content = []
+        self.typets = None
 
     def __str__(self):
         mystr = "Traffic Stream Rule\n"
@@ -453,7 +466,15 @@ class TrafficStreamRule(object):
             mystr += str(p)
         return mystr
 
+    def testTypeRule(self, value):
+        if value is None or value == "Standard":
+            return True
+        return False
+
     # accessors
+    def getTypeTS(self):
+        return self.typets
+
     def getDport(self):
         return self.dport
 
@@ -507,6 +528,9 @@ class TrafficStreamRule(object):
             else:
                 self.content = [pktrule]
 
+    def setTypeTS(self, value):
+        self.typets = value
+
     def setDPort(self, p="any"):
         self.dport = p
 
@@ -548,6 +572,75 @@ class TrafficStreamRule(object):
 
     def setTeardown(self, td=False):
         self.teardown = td
+
+
+class ScanAttackRule(TrafficStreamRule):
+
+    def __init__(self, scan_type=SYN_SCAN, target=None,
+                 target_ports=None, base_port=None, duration=1,
+                 intensity=5, offset=0.0, reply_chance=OPEN_PORT_CHANCE):
+        super().__init__()
+        self.scan_type = scan_type
+        self.target = target
+        self.target_ports = target_ports
+        self.base_port = base_port
+        self.duration = duration
+        self.intensity = intensity
+        self.offset = offset
+        self.reply_chance = reply_chance
+
+    def testTypeRule(self, value):
+        if value == "ScanAttack":
+            return True
+        return False
+
+    def getReplyChance(self):
+        return self.reply_chance
+
+    def setReplyChance(self, value):
+        self.reply_chance = value
+
+    def getScanType(self):
+        return self.scan_type
+
+    def setScanType(self, value):
+        self.scan_type = value
+
+    def getTarget(self):
+        return self.target
+
+    def setTarget(self, value):
+        self.target = value
+
+    def getTargetPorts(self):
+        return self.target_ports
+
+    def setTargetPorts(self, value):
+        self.target_ports = value
+
+    def getBasePort(self):
+        return self.base_port
+
+    def setBasePort(self, value):
+        self.base_port = value
+
+    def getDuration(self):
+        return self.duration
+
+    def setDuration(self, value):
+        self.duration = value
+
+    def getIntensity(self):
+        return self.intensity
+
+    def setIntensity(self, value):
+        self.intensity = value
+
+    def getOffset(self):
+        return self.offset
+
+    def setOffset(self, value):
+        self.offset = value
 
 
 class SnortRuleContent(RuleContent):
@@ -945,6 +1038,7 @@ class SnortRuleParser(RuleParser):
 
 
 class PetabiRuleParser(RuleParser):
+
     def getRules(self):
         return self.rules
 
@@ -957,10 +1051,56 @@ class PetabiRuleParser(RuleParser):
             return False
         root = tree.getroot()
 
+        subclasses = get_all_subclasses(globals()["TrafficStreamRule"])
+
         for xmlrule in root.iter('rule'):
             myprule = Rule('Petabi')
             for ts in xmlrule.iter('traffic_stream'):
-                mytsrule = TrafficStreamRule()
+
+                mytsrule = None
+
+                if 'typets' in ts.attrib:
+                    typeRuleTS = ts.attrib['typets']
+                    useSubclass = False
+                    for subclass in subclasses:
+                        subInstance = subclass()
+                        if subInstance.testTypeRule(typeRuleTS):
+                            mytsrule = subclass()
+                            useSubclass = True
+                            break
+                    if not useSubclass:
+                        mytsrule = TrafficStreamRule()
+                    mytsrule.setTypeTS(typeRuleTS)
+                else:
+                    mytsrule = TrafficStreamRule()
+
+                if 'scantype' in ts.attrib:
+                    mytsrule.setScanType(int(ts.attrib['scantype']))
+                if 'baseport' in ts.attrib:
+                    mytsrule.setBasePort(ts.attrib['baseport'])
+                if 'duration' in ts.attrib:
+                    mytsrule.setDuration(int(ts.attrib['duration']))
+                if 'intensity' in ts.attrib:
+                    mytsrule.setIntensity(int(ts.attrib['intensity']))
+                if 'offset' in ts.attrib:
+                    mytsrule.setOffset(int(ts.attrib['offset']))
+                if 'replychance' in ts.attrib:
+                    mytsrule.setReplyChance(int(ts.attrib['replychance']))
+                if 'target' in ts.attrib:
+                    mytsrule.setTarget(ts.attrib['target'])
+                if 'targetports' in ts.attrib:
+                    values = ts.attrib['targetports']
+                    portList = None
+                    if values[0] == "[":
+                        values = values[1:-1]
+                        values = values.strip().split(",")
+                        portList = []
+                        for port in values:
+                            portList.append(port)
+                        mytsrule.setTargetPorts(ts.attrib['targetports'])
+                    else:
+                        portList = [values]
+                    mytsrule.setTargetPorts(portList)
                 if 'proto' in ts.attrib:
                     mytsrule.setProto(ts.attrib['proto'])
                 if 'src' in ts.attrib:

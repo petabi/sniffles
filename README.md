@@ -409,6 +409,26 @@ In detail, the tags work as follows:
           the same rule may have different end-points or not depending on the
           settings below.
             - Options:
+                - typets: Specify which type of traffic stream we will use to
+                  generate packet. Currently, we have Standard and ScanAttack.
+                - scantype: 1==Syn scan (default) 2 == Connection scan.
+                  It is used with ScanAttack.
+                - target: Specify the target ip address for Scan Attack.
+                - targetports: For a scan attack. Provide a comma-sep list of
+                  possible ports, or a single starting port.  Otherwise ports will
+                  be scanned at random.  If a single starting port is provided,
+                  then ports will be scanned in order from that point to 65535,
+                  after which it will roll back to the starting point. This option
+                  is used together with typets being 'ScanAttack'
+                - baseport: Specify the base port for Scan Attack.
+                - duration: The window, or duration, in seconds of a scan attack
+                  if typets is 'ScanAttack'
+                - intensity: Intensity of scan attack if typets is 'ScanAttack'.
+                - offset: Offset before starting a scan attack.  Also used when
+                  inserting multiple scans into the traffic.
+                - replychance: Chance that a scan will have a reply.
+                  In other words, chance the targer port is open
+                  (default 20%). It is used with ScanAttack.
                 - proto: Designates the protocol of this traffic stream.
                   Should be TCP or or UDP or ICMP (not tested).
                 - src: Source IP address.  May be an address in xxx.xxx.xxx.xxx
