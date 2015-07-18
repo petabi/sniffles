@@ -13,8 +13,8 @@ setup(name='sniffles',
       entry_points={
           'console_scripts': [
               'sniffles = sniffles.sniffles:main',
-              'rule_gen = sniffles.rand_rule_gen:main',
-              'regex_gen = sniffles.regex_generator:main'
+              'rulegen = sniffles.rand_rule_gen:main',
+              'regexgen = sniffles.regex_generator:main'
           ],
           'gui_scripts': [
           ],

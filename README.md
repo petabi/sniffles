@@ -594,7 +594,7 @@ Will be automatically installed with the rest of Sniffles.
 Options
 -------
 
-regex_gen--Random Regular Expression Generator.
+regexgen--Random Regular Expression Generator.
 
     usage: regex_gen [-C char distribution] [-c number regex]
     [-D class distribution] [-f output re file]
@@ -700,7 +700,7 @@ Options
 
 Random Rule Generator
 
-usage: rule_gen -c [number of rules] -f [feature set]
+usage: rulegen -c [number of rules] -f [feature set]
         -o [outfile] [-s]
 
 - -c  Number of rules: The number of rules to generate.
@@ -760,7 +760,7 @@ for a range, [x,y] for a list, {x1,x2,x3} for a set
 or just * for a wildcard or similar single option.
 
 Example about ambiguous list:
-'''
+```
 ambiguity_list=[[2:9]]
 it will generate [3:4], [5:6], etc (any [x:y] such that
 x <= y and x >= 2 and y <= 9).
@@ -775,7 +775,7 @@ it will generate a subset of {5,6,10} such as {5,10}, {5}.
 ambiguity_list=[[2:9],[3,20],{5,6,11}]
 it will pick one of [2:9], [3,20], and {5,6,11} and
 generate a corresponding instance (see above)
-'''
+```
 
 Example for feature file:
 ```
@@ -796,7 +796,7 @@ Generic Feature Attributes:
                 the rule formatter.
 - lower_bound: The lower boundary of possible values.  Assumes
                the feature is a number.
-- uppder_bound: Opposite of lower_bound.
+- upper_bound: Opposite of lower_bound.
 - complexity_prob: The probability of using complex features for a
                    rule.  From 0 to 100.  Defaults to 0.
                    When complex features are used, an ambigous notation
