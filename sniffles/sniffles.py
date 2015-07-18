@@ -9,6 +9,11 @@ from sniffles.ruletrafficgenerator import *
 from sniffles.traffic_writer import *
 from sniffles.snifflesconfig import *
 from sniffles.traffic_splitter import *
+TOTAL_GENERATED_PACKETS = 0
+TOTAL_GENERATED_STREAMS = 0
+GLOBAL_SCONF = None
+START = None
+FINAL = 0
 
 """Sniffles.py
    Traffic generator for IDS evaluation.  Please see the usage section
@@ -42,9 +47,13 @@ SLOW_FLOW_THRESHOLD = 1000000
 
 
 def main():
+    global GLOBAL_SCONF
+    global START
     signal.signal(signal.SIGINT, handlerKeyboardInterupt)
     sconf = SnifflesConfig(sys.argv[1:])
+    GLOBAL_SCONF = sconf
     start = datetime.datetime.now()
+    START = start
     print("")
     print("!^!Sniffles v" + getVersion() +
           " -- Traffic Generation for NIDS evaluation.")
@@ -82,6 +91,9 @@ def start_generation(sconf):
     """ This function controls the reading of rules and the actual
         generation of traffic.
     """
+    global TOTAL_GENERATED_STREAMS
+    global TOTAL_GENERATED_PACKETS
+    global FINAL
     rand = sconf.getRandom()
     myrulelist = RuleList()
     slow_flows = None
@@ -131,6 +143,10 @@ def start_generation(sconf):
     traffic_writer = TrafficWriter(sconf.getOutputFile(),
                                    sconf.getFirstTimestamp())
     traffic_queue = []
+
+    TOTAL_GENERATED_STREAMS = 0
+    TOTAL_GENERATED_PACKETS = 0
+
     total_generated_streams = 0
     total_generated_packets = 0
     final = 0
@@ -166,12 +182,16 @@ def start_generation(sconf):
         slow_flow_counter += 1
 
         total_generated_streams += conversation.getNumberOfStreams()
+        TOTAL_GENERATED_STREAMS = total_generated_streams
+
         con_flows = len(traffic_queue) + (len(slow_flows) if slow_flows else 0)
         if con_flows >= sconf.getConcurrentFlows():
             pkts, lapse = write_packets(traffic_queue, traffic_writer,
                                         sconf.getTimeLapse(), sconf.getScan(),
                                         scanners, slow_flows)
             total_generated_packets += pkts
+            TOTAL_GENERATED_PACKETS = total_generated_packets
+            FINAL = lapse
         if sconf.getScan() and len(scanners) < 1 and \
            sconf.getRandomizeOffset():
             for t in sconf.getScanTargets():
@@ -202,10 +222,14 @@ def start_generation(sconf):
                                     sconf.getTimeLapse(), sconf.getScan(),
                                     scanners, slow_flows)
         total_generated_packets += pkts
+        TOTAL_GENERATED_PACKETS = total_generated_packets
+        FINAL = lapse
     while slow_flows and len(slow_flows) > 0:
         pkts, final = write_packets(slow_flows, traffic_writer,
                                     sconf.getTimeLapse())
         total_generated_packets += pkts
+        TOTAL_GENERATED_PACKETS = total_generated_packets
+        FINAL = lapse
     traffic_writer.close_save_file()
     return [total_generated_streams, total_generated_packets, final]
 
@@ -377,6 +401,26 @@ def handlerKeyboardInterupt(signum, frame):
     When Sniffles is killed through a keyboard interrupt, it will
     be gracefully shutdown. It was handled using interrupt handler
     '''
+    global TOTAL_GENERATED_PACKETS
+    global TOTAL_GENERATED_STREAMS
+    global GLOBAL_SCONF
+    global START
+    global FINAL
+    print()
+    if TOTAL_GENERATED_STREAMS:
+        print("Generated Streams: ",TOTAL_GENERATED_STREAMS)
+    if TOTAL_GENERATED_PACKETS:
+        print("Generated Packets: ", TOTAL_GENERATED_PACKETS)
+    if GLOBAL_SCONF:
+        tduration = FINAL - GLOBAL_SCONF.getFirstTimestamp()
+        if tduration < 0:
+            tduration = 0
+        print("Traffic Duration: ", tduration)
+    if START:
+        end = datetime.datetime.now()
+        print("Ending at: ", end)
+        duration = end - START
+        print("Generation Time: ", duration)
     sys.exit(0)
 
 if __name__ == "__main__":
