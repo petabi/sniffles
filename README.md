@@ -596,7 +596,7 @@ Options
 
 regexgen--Random Regular Expression Generator.
 
-    usage: regex_gen [-C char distribution] [-c number regex]
+    usage: regexgen [-C char distribution] [-c number regex]
     [-D class distribution] [-f output re file]
     [-l lambda for length generation] [-n negation probability]
     [-o options chance] [-R repetition chance] [-r repetition distribution]
@@ -673,7 +673,7 @@ regexgen--Random Regular Expression Generator.
     classes like [ab@%], [^123], or [a-z].  The final slot is the probability
     of alternation occuring like (ab|cd).  With these three slots you can tune
     how often you would like the structures to appear in your regular
-    expressions.  For example, regex_gen -c 10 -t "80,10,10" would create
+    expressions.  For example, regexgen -c 10 -t "80,10,10" would create
     10 regular expressions where 80% of the structures used would be
     characters, 10 percent would be character classes, and 10% alternation.
 
