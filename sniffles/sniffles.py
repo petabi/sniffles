@@ -144,9 +144,6 @@ def start_generation(sconf):
                                    sconf.getFirstTimestamp())
     traffic_queue = []
 
-    TOTAL_GENERATED_STREAMS = 0
-    TOTAL_GENERATED_PACKETS = 0
-
     total_generated_streams = 0
     total_generated_packets = 0
     final = 0
