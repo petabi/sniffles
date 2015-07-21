@@ -1082,8 +1082,8 @@ class PetabiRuleParser(RuleParser):
                 if 'dport' in ts.attrib:
                     mytsrule.setDPort(ts.attrib['dport'])
                 if 'synch' in ts.attrib:
-                    if ts.attrib['synch'].lower() == 'false':
-                        mytsrule.setSynch(False)
+                    if ts.attrib['synch'].lower() == 'true':
+                        mytsrule.setSynch(True)
                 if 'handshake' in ts.attrib:
                     if ts.attrib['handshake'].lower() == 'true':
                         mytsrule.setHandshake(True)
