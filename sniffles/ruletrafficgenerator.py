@@ -249,7 +249,6 @@ class TrafficStream(object):
         self.rand = False
 
         self.tcp_overlap = False
-
         self.shift_seq = False
 
         if sconf:
@@ -378,8 +377,12 @@ class TrafficStream(object):
             elif ack_no is None and dir == "to server":
                 ack_no = self.current_ack_a_to_b
 
+        # if we turn on tcp_overlap and we need
+        # to shift the sequence number
+        # and direction is to server
+        # content is not None
         if self.tcp_overlap and self.shift_seq and \
-           content is not None:
+           content is not None and dir=="to server":
             seq_no -= 1
             newContent = [48]
             newContent.extend(content.data)
@@ -874,7 +877,8 @@ class TrafficStream(object):
             return False
 
     def updateSequence(self, dir="to server", data_len=1):
-        if self.tcp_overlap and self.shift_seq:
+        if self.tcp_overlap and self.shift_seq and \
+           data_len > 0:
             data_len -= 1
         if self.proto == 'tcp':
             if dir == "to server":
@@ -910,6 +914,9 @@ class ScanAttack(TrafficStream):
         self.num_packets = self.intensity * self.duration
         self.next_is_ack = False
         self.finish_handshake = False
+
+        self.shift_seq = False
+        self.tcp_overlap = False
 
         if sconf:
             self.scan_type = sconf.getScanType()
@@ -1157,6 +1164,14 @@ class Packet(object):
     def set_ttl(self, ttl):
         self.network_hdr.set_ttl(ttl)
 
+    def get_seq_num(self):
+        return self.transport_hdr.get_seq_num()
+
+    def get_ack_num(self):
+        return self.transport_hdr.get_ack_num()
+
+    def get_data_len(self):
+        return self.content
 
 class Content(object):
     """
@@ -2335,7 +2350,6 @@ class TCP(TransportLayer):
 
     def set_flags(self, flags=0):
         self.flags = flags
-
 
 class UDP(TransportLayer):
 
