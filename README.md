@@ -451,6 +451,10 @@ In detail, the tags work as follows:
                   traffic stream must finish prior to the next traffic stream
                   starting.  When false, all contiguous streams that are false
                   (i.e. asynchronous) will execute at the same time.
+                - tcp_overlap: The default value is false. When true, from the
+                  second packet will be appended one extra content and the tcp
+                  sequence number will be reduced by one to simulate the tcp
+                  overlapping sequence number.
                 - ip: Designate IPv4 or IPv6.  Valid options are 4, or 6.
                   Default is 4.
                 - out_of_order: Randomly have packets arrive out-of-order.
