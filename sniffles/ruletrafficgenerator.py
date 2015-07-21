@@ -608,11 +608,14 @@ class TrafficStream(object):
         if self.header > 0:
             pkt = self.getNextHandshakePacket()
             self.shift_seq = False
+            print("header")
         elif self.packets_in_stream > 0:
             pkt = self.getNextContentPacket()
+            print("stream")
             if not self.shift_seq and self.tcp_overlap:
                 self.shift_seq = True
         elif self.footer > 0:
+            print("footer")
             self.shift_seq = False
             pkt = self.getNextTeardownPacket()
         else:
