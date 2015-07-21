@@ -248,6 +248,10 @@ class TrafficStream(object):
         self.frag_con_size = 0
         self.rand = False
 
+        self.tcp_overlap = False
+
+        self.shift_seq = False
+
         if sconf:
             handshake = sconf.getTCPHandshake()
             teardown = sconf.getTCPTeardown()
@@ -268,6 +272,7 @@ class TrafficStream(object):
             teardown = rule.getTeardown()
             if rule.getLength() >= 0:
                 self.pkt_len = rule.getLength()
+            self.tcp_overlap = rule.getTCPOverlap()
             self.stream_ooo = rule.getOutOfOrder()
             self.synch = rule.getSynch()
             self.myp = rule.getPkts()
@@ -372,6 +377,16 @@ class TrafficStream(object):
                 ack_no = self.current_ack_b_to_a
             elif ack_no is None and dir == "to server":
                 ack_no = self.current_ack_a_to_b
+
+        if self.tcp_overlap and self.shift_seq and \
+           content is not None:
+            print("come here")
+            print(seq_no)
+            seq_no -= 1
+            newContent = [48]
+            newContent.extend(content.data)
+            content = Content(newContent, len(content.data) + 1)
+
         pkt = Packet(self.proto, sip, dip, self.ip_type, sport, dport, flags,
                      seq_no, ack_no, self.mac_gen, self.mac_def_file, content)
         if self.proto == 'tcp' or self.proto == 'udp':
@@ -592,9 +607,13 @@ class TrafficStream(object):
         pkt = None
         if self.header > 0:
             pkt = self.getNextHandshakePacket()
+            self.shift_seq = False
         elif self.packets_in_stream > 0:
             pkt = self.getNextContentPacket()
+            if not self.shift_seq and self.tcp_overlap:
+                self.shift_seq = True
         elif self.footer > 0:
+            self.shift_seq = False
             pkt = self.getNextTeardownPacket()
         else:
             pass
@@ -857,6 +876,8 @@ class TrafficStream(object):
             return False
 
     def updateSequence(self, dir="to server", data_len=1):
+        if self.tcp_overlap and self.shift_seq:
+            data_len -= 1
         if self.proto == 'tcp':
             if dir == "to server":
                 self.current_seq_a_to_b += data_len
