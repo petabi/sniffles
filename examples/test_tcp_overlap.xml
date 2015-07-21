@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<petabi_rules>
+  <rule name="testall" >
+    <traffic_stream proto="tcp" src="1.2.3.1" dst="9.8.7.1" sport="9000"
+      dport="100" handshake="True" teardown="True" ip="4" tcp_overlap="True">
+        <pkt dir="to server" content="/abcdef/i" fragment="0" times="2" />
+        <pkt dir="to server" content="/abcdef/i" fragment="0" times="5" />
+    </traffic_stream>
+    <traffic_stream proto="tcp" src="1.2.3.1" dst="9.8.7.1" sport="9000"
+      dport="100" handshake="True" teardown="True" synch="True" ip="4" tcp_overlap="True">
+        <pkt dir="to server" content="/abcdef/i" fragment="0" times="2" />
+        <pkt dir="to server" content="/abcdef/i" fragment="0" times="4" />
+    </traffic_stream>
+  </rule>
+</petabi_rules>

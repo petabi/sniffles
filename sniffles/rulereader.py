@@ -432,6 +432,7 @@ class TrafficStreamRule(object):
         self.loss = loss
         self.content = []
         self.typets = None
+        self.tcp_overlap = False
 
     def __str__(self):
         mystr = "Traffic Stream Rule\n"
@@ -446,7 +447,8 @@ class TrafficStreamRule(object):
         mystr += "Dst IP: " + self.dst_ip + "\n"
         mystr += "Src Port: " + self.sport + "\n"
         mystr += "Dst Port: " + self.dport + "\n"
-        mystr += "flow: " + self.flow + "\n"
+        mystr += "Flow: " + self.flow + "\n"
+        mystr += "TCP overlap: " + str(self.tcp_overlap) + "\n"
         if self.synch:
             mystr += "Synchronized Stream.\n"
         else:
@@ -472,6 +474,9 @@ class TrafficStreamRule(object):
         return False
 
     # accessors
+    def getTCPOverlap(self):
+        return self.tcp_overlap
+
     def getTypeTS(self):
         return self.typets
 
@@ -527,6 +532,9 @@ class TrafficStreamRule(object):
                 self.content.append(pktrule)
             else:
                 self.content = [pktrule]
+
+    def setTCPOverlap(self, value):
+        self.tcp_overlap = value
 
     def setTypeTS(self, value):
         self.typets = value
@@ -1033,7 +1041,9 @@ class PetabiRuleParser(RuleParser):
                     mytsrule.setTypeTS(typeRuleTS)
                 else:
                     mytsrule = TrafficStreamRule()
-
+                if 'tcp_overlap' in ts.attrib:
+                    if ts.attrib['tcp_overlap'].lower() == 'true':
+                        mytsrule.setTCPOverlap(True)
                 if 'scantype' in ts.attrib:
                     mytsrule.setScanType(int(ts.attrib['scantype']))
                 if 'baseport' in ts.attrib:
@@ -1072,8 +1082,8 @@ class PetabiRuleParser(RuleParser):
                 if 'dport' in ts.attrib:
                     mytsrule.setDPort(ts.attrib['dport'])
                 if 'synch' in ts.attrib:
-                    if ts.attrib['synch'].lower() == 'false':
-                        mytsrule.setSynch(False)
+                    if ts.attrib['synch'].lower() == 'true':
+                        mytsrule.setSynch(True)
                 if 'handshake' in ts.attrib:
                     if ts.attrib['handshake'].lower() == 'true':
                         mytsrule.setHandshake(True)

@@ -17,7 +17,7 @@ class TestXMLRuleReader(TestCase):
             self.assertEqual('9.8.7.1', tsrules[0].getDstIp())
             self.assertEqual('100', tsrules[0].getDport())
             self.assertEqual("to server", tsrules[0].getFlowOptions())
-            self.assertEqual(False, tsrules[0].getSynch())
+            self.assertEqual(True, tsrules[0].getSynch())
             self.assertEqual(True, tsrules[0].getTeardown())
             self.assertEqual(True, tsrules[0].getHandshake())
             self.assertEqual(4, tsrules[0].getIPV())

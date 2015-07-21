@@ -5,6 +5,45 @@ from sniffles.snifflesconfig import *
 
 
 class TestRuleTrafficGenerator(TestCase):
+    def test_tcp_overlap(self):
+        myurl = RuleList()
+        myurl.readRuleFile('examples/test_tcp_overlap.xml')
+        rules = myurl.getParsedRules()
+        self.assertEqual(len(rules), 1)
+        rules = myurl.getParsedRules()
+        tsrules = rules[0].getTS()
+        firstTSRule = tsrules[0]
+        self.assertEqual(firstTSRule.getTCPOverlap(), True)
+        self.assertEqual(firstTSRule.getHandshake(), True)
+        self.assertEqual(firstTSRule.getTeardown(), True)
+        myTS = TrafficStream(firstTSRule)
+        pkt = myTS.getNextPacket()[0]
+        initSeqClient = pkt.get_seq_num()
+        pkt = myTS.getNextPacket()[0]
+        initSeqServer = pkt.get_seq_num()
+        pkt = myTS.getNextPacket()[0]
+        self.assertEqual(pkt.get_seq_num() - initSeqClient, 1)
+        pkt = myTS.getNextPacket()[0]
+        self.assertEqual(pkt.get_seq_num() - initSeqClient, 7)
+        pkt = myTS.getNextPacket()[0]
+        self.assertEqual(pkt.get_seq_num() - initSeqClient, 12)
+        pkt = myTS.getNextPacket()[0]
+        self.assertEqual(pkt.get_seq_num() - initSeqClient, 18)
+        pkt = myTS.getNextPacket()[0]
+        self.assertEqual(pkt.get_seq_num() - initSeqClient, 24)
+        pkt = myTS.getNextPacket()[0]
+        self.assertEqual(pkt.get_seq_num() - initSeqClient, 30)
+        pkt = myTS.getNextPacket()[0]
+        self.assertEqual(pkt.get_seq_num() - initSeqClient, 36)
+        pkt = myTS.getNextPacket()[0]
+        self.assertEqual(pkt.get_seq_num() - initSeqClient, 43)
+        pkt = myTS.getNextPacket()[0]
+        self.assertEqual(pkt.get_seq_num() - initSeqServer, 1)
+        pkt = myTS.getNextPacket()[0]
+        self.assertEqual(pkt.get_seq_num() - initSeqServer, 1)
+        pkt = myTS.getNextPacket()[0]
+        self.assertEqual(pkt.get_seq_num() - initSeqClient, 44)
+
     def test_build_random_ethernet_header(self):
         random.seed()
         myehdr = EthernetFrame('10.0.0.1', '10.1.1.1', ETHERNET_HDR_GEN_RANDOM)
