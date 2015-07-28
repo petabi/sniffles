@@ -272,7 +272,7 @@ def build_eval_pcap(rules, traffic_writer, sconf):
                 total_pkts += len(pkts)
 
     traffic_writer.close_save_file()
-    return [num_rules, total_pkts, current_time]
+    return [len(rules), total_pkts, current_time]
 
 
 def printRegEx(rules):

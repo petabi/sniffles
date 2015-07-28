@@ -778,16 +778,16 @@ class SnortRuleContent(RuleContent):
                 tag = con.pop(0)
                 if tag == 'distance':
                     if con:
-                        self.setDistance(int(con.pop(0)))
+                        self.setDistance(con.pop(0))
                 elif tag == 'offset':
                     if con:
-                        self.setOffset(int(con.pop(0)))
+                        self.setOffset(con.pop(0))
                 elif tag == 'depth':
                     if con:
-                        self.setDepth(int(con.pop(0)))
+                        self.setDepth(con.pop(0))
                 elif tag == 'within':
                     if con:
-                        self.setWithin(int(con.pop(0)))
+                        self.setWithin(con.pop(0))
                 elif tag == 'fast_pattern':
                     self.setFastPattern(True)
                 elif tag == 'nocase':
@@ -829,22 +829,30 @@ class SnortRuleContent(RuleContent):
         return False
 
     def setDistance(self, d=0):
-        if d < 0:
+        try:
+            d = int(d)
+        except:
             d = 0
         self.distance = d
 
     def setOffset(self, o=0):
-        if o < 0:
+        try:
+            o = int(o)
+        except:
             o = 0
         self.offset = o
 
     def setDepth(self, d=0):
-        if d < 0:
+        try:
+            d = int(d)
+        except:
             d = 0
         self.depth = d
 
     def setWithin(self, w=0):
-        if w < 0:
+        try:
+            w = int(w)
+        except:
             w = 0
         self.within = w
 
@@ -1227,6 +1235,7 @@ class RuleList:
                 if isfile(join(dirname, f)):
                     if f.find("rules") >= 0:
                         self.readRuleFile(join(dirname, f))
-        except:
+        except Exception as err:
             print("Error: Could not read from directory: ", dirname)
+            print(err)
             sys.exit(1)
