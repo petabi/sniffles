@@ -267,8 +267,10 @@ class TrafficStream(object):
                 self.mac_gen = ETHERNET_HDR_GEN_DISTRIBUTION
 
         if rule:
-            handshake = rule.getHandshake()
-            teardown = rule.getTeardown()
+            if not handshake and rule.getTCPHandshake():
+                handshake = True
+            if not teardown and rule.getTCPTeardown():
+                teardown = True
             if rule.getLength() >= 0:
                 self.pkt_len = rule.getLength()
             self.tcp_overlap = rule.getTCPOverlap()
