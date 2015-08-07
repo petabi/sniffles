@@ -267,9 +267,9 @@ class TrafficStream(object):
                 self.mac_gen = ETHERNET_HDR_GEN_DISTRIBUTION
 
         if rule:
-            if not handshake and rule.getTCPHandshake():
+            if not handshake and rule.getHandshake():
                 handshake = True
-            if not teardown and rule.getTCPTeardown():
+            if not teardown and rule.getTeardown():
                 teardown = True
             if rule.getLength() >= 0:
                 self.pkt_len = rule.getLength()
