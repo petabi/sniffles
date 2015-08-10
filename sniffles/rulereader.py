@@ -1,6 +1,7 @@
 import re
 import sys
 import codecs
+import random
 from os import listdir
 from os.path import isfile, join
 import xml.etree.ElementTree as ET
@@ -1135,6 +1136,8 @@ class PetabiRuleParser(RuleParser):
                     if 'times' in pkt.attrib:
                         if int(pkt.attrib['times']) > 1:
                             mypkt.setTimes(int(pkt.attrib['times']))
+                        elif int(pkt.attrib['times']) < -1:
+                            mypkt.setTimes(random.randint(1, abs(int(pkt.attrib['times']))))
                     if 'length' in pkt.attrib:
                         if int(pkt.attrib['length']) > -1:
                             mypkt.setLength(int(pkt.attrib['length']))
