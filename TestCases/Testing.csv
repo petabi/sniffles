@@ -32,4 +32,3 @@ Id,Group,Description,Procedure,Round 1,Comment
 32,Rule File - Sniffles,"TCP overlap with ack turn on",sniffles -f TestCases/Id32,Possibly Failed, I dont have clear understanding of it, but i guess it failed
 33,Rule File - Sniffles,"Scan Attack with connection type, targert 10.0.0.1, targets port as 15, 20, 25; baseport is 10 with duration 10, intensity 100",sniffles -f TestCases/Id33,Passed
 34,Rule File - Sniffles,"Scan Attack with sconf turn on, however, duration and intensity does not turn on in rule file, it will be overwrite",sniffles -f TestCases/Id34 -W 5 -I 100,Failed, the rule overwrote the sconf in ScanAttack class
-35,

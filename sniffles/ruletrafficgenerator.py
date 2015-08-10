@@ -279,15 +279,13 @@ class TrafficStream(object):
             self.myp = rule.getPkts()
             self.packets_in_stream = len(rule.getPkts())
             flow_opts = rule.getFlowOptions()
-            if rule.getIPV() == "6":
+            if rule.getIPV() == 6:
                 ipv6_percent = 100
             self.proto = rule.getProto()
             if self.proto.lower() not in SUPPORTED_PROTOCOLS:
                 pick = random.randint(0, len(SUPPORTED_PROTOCOLS)-1)
                 protos = list(SUPPORTED_PROTOCOLS.keys())
                 self.proto = protos[pick]
-            self.sip = self.calculateIP(rule.getSrcIp(), True)
-            self.dip = self.calculateIP(rule.getDstIp(), False)
             self.sport = Port(rule.getSport())
             self.dport = Port(rule.getDport())
         else:
@@ -298,12 +296,6 @@ class TrafficStream(object):
 
         if sconf is None and rule is None:
             self.rand = True
-
-        if self.rand:
-            self.sip = self.calculateIP('any', True)
-            self.dip = self.calculateIP('any', False)
-            self.sport = Port('any')
-            self.dport = Port('any')
 
         if handshake:
             self.header = 3
@@ -319,6 +311,16 @@ class TrafficStream(object):
             pick = random.randint(0, 99) + 1
             if pick > (100 - ipv6_percent):
                 self.ip_type = 6
+
+        if rule:
+            self.sip = self.calculateIP(rule.getSrcIp(), True)
+            self.dip = self.calculateIP(rule.getDstIp(), False)
+
+        if self.rand:
+            self.sip = self.calculateIP('any', True)
+            self.dip = self.calculateIP('any', False)
+            self.sport = Port('any')
+            self.dport = Port('any')
 
         # Always orient flow from client
         if flow_opts:

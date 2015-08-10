@@ -455,7 +455,7 @@ In detail, the tags work as follows:
                   second packet will be appended one extra content and the tcp
                   sequence number will be reduced by one to simulate the tcp
                   overlapping sequence number.
-                - ip: Designate IPv4 or IPv6.  Valid options are 4, or 6.
+                - ipv: Designate IPv4 or IPv6.  Valid options are 4, or 6.
                   Default is 4.
                 - out_of_order: Randomly have packets arrive out-of-order.
                   Note, this only works with packets that use the 'times'

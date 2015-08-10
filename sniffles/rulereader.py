@@ -1100,7 +1100,7 @@ class PetabiRuleParser(RuleParser):
                     if ts.attrib['teardown'].lower() == 'true':
                         mytsrule.setTeardown(True)
                 if 'ipv' in ts.attrib:
-                    if int(ts.attribg['ipv']) == 6:
+                    if int(ts.attrib['ipv']) == 6:
                         mytsrule.setIPV(6)
                 if 'out_of_order' in ts.attrib:
                     if ts.attrib['out_of_order'].lower() == 'true':
