@@ -252,8 +252,8 @@ class TrafficStream(object):
         self.shift_seq = False
 
         if sconf:
-            handshake = sconf.getTCPHandshake()
-            teardown = sconf.getTCPTeardown()
+            handshake = sconf.getHandshake()
+            teardown = sconf.getTeardown()
             self.pkt_len = sconf.getPktLength()
             self.mac_def_file = sconf.getMacAddrDef()
             if sconf.getPktsPerStream() > 1:
