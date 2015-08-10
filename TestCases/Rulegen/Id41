@@ -1,0 +1,1 @@
+type=protocol; name=proto; proto_list=[IP,TCP]; complexity_prob=60; ambiguity_list=[{IP,UDP,ICMP}];

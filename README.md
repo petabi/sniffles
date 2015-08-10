@@ -821,12 +821,12 @@ Generic Feature Attributes:
 Content Feature -- Inherits from Feature:
 - regex: True or False.  If True, will use pcre formatting for
          regex as well as possible add the options, i, s, or
-         m to the regex.  If False,
+         m to the regex.
 - length: Defines the average length of the generated
           content.
 
 Protocol Feature -- Inherits from Feature:
-- protocol_list: Defines the list of possible protocols,
+- proto_list: Defines the list of possible protocols,
                  as a comma-separated list (i.e [TCP,
                  UDP]).
 

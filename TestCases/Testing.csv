@@ -32,3 +32,15 @@ Id,Group,Description,Procedure,Round 1,Comment
 32,Rule File - Sniffles,"TCP overlap with ack turn on",sniffles -f TestCases/Id32,Possibly Failed, I dont have clear understanding of it, but i guess it failed
 33,Rule File - Sniffles,"Scan Attack with connection type, targert 10.0.0.1, targets port as 15, 20, 25; baseport is 10 with duration 10, intensity 100",sniffles -f TestCases/Id33,Passed
 34,Rule File - Sniffles,"Scan Attack with sconf turn on, however, duration and intensity does not turn on in rule file, it will be overwrite",sniffles -f TestCases/Id34 -W 5 -I 100,Failed, the rule overwrote the sconf in ScanAttack class
+35,Rulegen,"Number of rule default one","rulegen -f example_features/hdr_features_simple.txt",Passed
+36,Rulegen,"Number of rule with option is 5","rulegen -f example_features/hdr_features_simple.txt -c 5",Passed
+37,Rulegen,"Output file option","rulegen -f example_features/hdr_features_simple.txt -o test.txt",Passed
+38,Rulegen,"Ouput file with snort rule option","rulegen -f example_features/hdr_features_simple.txt -o test.txt -s",Passed
+39,Rulegen,"Protocol - picking from proto_list with complexity_prob 0",rulegen -f TestCases/Rulegen/Id39,Passed
+40,Rulegen,"Protocol - picking from ambiguity_list with complexity prob 100","rulegen -f TestCases/Rulegen/Id40",Passed
+41,Rulegen,"Protocol - picking with probability from ambuigty list or proto_list","rulegen -f TestCases/Rulegen/Id41 -c 10",Passed
+42,Rulegen,"All Ip version 4","rulegen -f TestCases/Rulegen/Id42 -c 10",Passed
+43,Rulegen,"All Ip version 6","rulegen -f TestCases/Rulegen/Id43 -c 10",Passed
+44,Rulegen,"Content with regex is True, len is 10","rulegen -f TestCases/Rulegen/Id44 -c 10",Passed
+45,Rulegen,"Content with regex is False, len is 10","rulegen -f TestCases/Rulegen/Id45 -c 5",Passed
+46,Rulegen,"Feature with lower_bound and upper_bound","rulegen -f TestCases/Id47 -c 10",Passed
