@@ -252,8 +252,8 @@ class TrafficStream(object):
         self.shift_seq = False
 
         if sconf:
-            handshake = sconf.getHandshake()
-            teardown = sconf.getTeardown()
+            handshake = sconf.getTCPHandshake()
+            teardown = sconf.getTCPTeardown()
             self.pkt_len = sconf.getPktLength()
             self.mac_def_file = sconf.getMacAddrDef()
             if sconf.getPktsPerStream() > 1:
@@ -279,15 +279,13 @@ class TrafficStream(object):
             self.myp = rule.getPkts()
             self.packets_in_stream = len(rule.getPkts())
             flow_opts = rule.getFlowOptions()
-            if rule.getIPV() == "6":
+            if rule.getIPV() == 6:
                 ipv6_percent = 100
             self.proto = rule.getProto()
             if self.proto.lower() not in SUPPORTED_PROTOCOLS:
                 pick = random.randint(0, len(SUPPORTED_PROTOCOLS)-1)
                 protos = list(SUPPORTED_PROTOCOLS.keys())
                 self.proto = protos[pick]
-            self.sip = self.calculateIP(rule.getSrcIp(), True)
-            self.dip = self.calculateIP(rule.getDstIp(), False)
             self.sport = Port(rule.getSport())
             self.dport = Port(rule.getDport())
         else:
@@ -298,12 +296,6 @@ class TrafficStream(object):
 
         if sconf is None and rule is None:
             self.rand = True
-
-        if self.rand:
-            self.sip = self.calculateIP('any', True)
-            self.dip = self.calculateIP('any', False)
-            self.sport = Port('any')
-            self.dport = Port('any')
 
         if handshake:
             self.header = 3
@@ -319,6 +311,16 @@ class TrafficStream(object):
             pick = random.randint(0, 99) + 1
             if pick > (100 - ipv6_percent):
                 self.ip_type = 6
+
+        if rule:
+            self.sip = self.calculateIP(rule.getSrcIp(), True)
+            self.dip = self.calculateIP(rule.getDstIp(), False)
+
+        if self.rand:
+            self.sip = self.calculateIP('any', True)
+            self.dip = self.calculateIP('any', False)
+            self.sport = Port('any')
+            self.dport = Port('any')
 
         # Always orient flow from client
         if flow_opts:
@@ -926,7 +928,6 @@ class ScanAttack(TrafficStream):
             if sconf.getMacAddrDef():
                 self.mac_gen = ETHERNET_HDR_GEN_DISTRIBUTION
                 self.mac_def_file = sconf.getMacAddrDef()
-
             self.intensity = sconf.getIntensity()
             self.duration = sconf.getScanDuration()
             self.num_packets = self.intensity * self.duration
@@ -936,9 +937,12 @@ class ScanAttack(TrafficStream):
             src_ip = rule.getSrcIp()
             self.scan_type = rule.getScanType()
             self.targets = rule.getTarget()
-            self.t_ports = rule.getTargetPorts()
-            self.intensity = rule.getIntensity()
-            self.duration = rule.getDuration()
+            if rule.getTargetPorts():
+                self.t_ports = rule.getTargetPorts()
+            if rule.getIntensity() != 5:
+                self.intensity = rule.getIntensity()
+            if rule.getDuration() != 1:
+                self.duration = rule.getDuration()
             self.offset = rule.getOffset()
             self.reply_chance = rule.getReplyChance()
             self.num_packets = self.intensity * self.duration

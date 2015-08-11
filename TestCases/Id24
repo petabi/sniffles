@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<petabi_rules>
+  <rule name="testall" >
+    <traffic_stream proto="tcp" src="any" dst="$HOME_NET" sport="any" dport="50" handshake="true"
+    	teardown="true">
+        <pkt dir="to server" content="/abcdef/i" fragment="0" times="2" />
+        <pkt dir="to server" content="/abcdef/i" fragment="0" times="3" />
+    </traffic_stream>
+  </rule>
+</petabi_rules>

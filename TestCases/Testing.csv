@@ -1,0 +1,46 @@
+Id,Group,Description,Procedure,Round 1,Comment
+1,Command Line - Sniffles,Testing number of streams to create,sniffles -c 10,Passed,It generates exactly 10 streams
+2,Command Line - Sniffles,Testing Duration for 1 seconds,sniffles -D 1,Pending,It takes a long time to finish
+3,Command Line - Sniffles,Testing time stamp,sniffles -g 86400,Passed,Date on packet is 1970-01-01
+4,Command Line - Sniffles,Testing TCP handshake option,sniffles -t,Passed,Generate 3 packets SYN ACK/SYN ACK
+5,Command Line - Sniffles,Testing TCP teardown option,sniffles -T,Passed,Generate 4 packets ACK/FIN ACK ACK/FIN ACK
+6,Command Line - Sniffles,Testing TCP handshake and teardown together,sniffles -t -T,Passed,Work as expected
+7,Command Line - Sniffles,Testing TCP ack,sniffles -c 5 -a,Passed,Ack for every packets
+8,Command Line - Sniffles,Testing TCP bidirection,sniffles -b -c 10,Passed,Worked as expected
+9,Command Line - Sniffles,Testing concurrent flows,sniffles -C 10 -c 10000,Passed,10 concurrent flow at time
+10,Command Line - Sniffles,Testing IP home prefixes for IPv4,"sniffles -h 10.192.168,172.16 -c 10",Passed,all ip home coming
+11,Command Line - Sniffles,Testing IP Home prefixes for IPv6,"sniffles -H FE80:0000:0000:0000,B3FF:FE1E:8329 -c 10 -i 10",Passed,Worked as expected
+12,Command Line - Sniffles,Testing the content length,sniffles -I 10 -h,Passed,
+13,Command Line - Sniffles,Testing one MAC distribution file,sniffles -M examples/mac_definition_file1.txt,Passed,
+14,Command Line - Sniffles,Testing two MAC distribution file,sniffles -M examples/mac_definition_file1.txt:examples/mac_definition_file.txt -c 10,Passed,
+15,Command Line - Sniffles,Testing one MAC distribution file for source,sniffles -M examples/mac_definition_file1.txt:? -c 10,Passed,
+16,Command Line - Sniffles,Testing one MAC distribution file for destination,sniffles -M ?:examples/mac_definition_file.txt -c 10,Passed,
+17,Command Line - Sniffles,Testing output file,sniffles -c 100 -o result.pcap,Passed,
+18,Command Line - Sniffles,Testing streams with packets-per-stream,sniffles -p 15 -c 100,Passed,
+20,Command Line - Sniffles,Testing elapse time between packets,sniffles -L 100 -D 1,Passed,
+21,Command Line - Sniffles,Testing content length, sniffles -l 100, Passed,
+22,Command Line - Sniffles,Testing scan attack,sniffles -D 5 -O 2 -W 2 -I 1000 -L 50 -s 192.168.1.2 -P 80,Failed,Check the bug related to getScanIntensity on Userstories
+23,Rule File - Sniffles,"Testing proto tcp, src=$EXTERNAL_NET, dst, sport, dport, content, times, ip4",sniffles -f TestCases/Id23,Passed
+24,Rule File - Sniffles,"Testing proto tcp, src=10.0.0.1,dst=$HOME_NET,ip6 and handshake and teardown",sniffles -f TestCases/Id24,Failed, The ip version is 4 in wireshark, not 6 as expected
+25,Rule File - Sniffles,"Testing synch, out_of_order_prob, packet_loss",sniffles -f TestCases/Id25, Passed
+26,Rule File - Sniffles,"Testing dir, content, fragment, ack",sniffles -f TestCases/Id26, Passed
+27,Rule File - Sniffles,"Testing times negative number", sniffles -f TestCases/Id27, Possibly Failed,"Running multiple times the number of packets always 1"
+28,Rule File - Sniffles,"Testing time to live value is 25",sniffles -f TestCases/Id28,Passed,
+29,Rule File - Sniffles,"Testing time to live value is 25, ttl expiry is 11",sniffles -f TestCases/Id29,Passed,
+30,Rule File - Sniffles,"Testing ack",sniffles -f TestCases/Id30,Passed
+31,Rule File - Sniffles,"TCP overlap",sniffles -f TestCases/Id31,Passed
+32,Rule File - Sniffles,"TCP overlap with ack turn on",sniffles -f TestCases/Id32,Possibly Failed, I dont have clear understanding of it, but i guess it failed
+33,Rule File - Sniffles,"Scan Attack with connection type, targert 10.0.0.1, targets port as 15, 20, 25; baseport is 10 with duration 10, intensity 100",sniffles -f TestCases/Id33,Passed
+34,Rule File - Sniffles,"Scan Attack with sconf turn on, however, duration and intensity does not turn on in rule file, it will be overwrite",sniffles -f TestCases/Id34 -W 5 -I 100,Failed, the rule overwrote the sconf in ScanAttack class
+35,Rulegen,"Number of rule default one","rulegen -f example_features/hdr_features_simple.txt",Passed
+36,Rulegen,"Number of rule with option is 5","rulegen -f example_features/hdr_features_simple.txt -c 5",Passed
+37,Rulegen,"Output file option","rulegen -f example_features/hdr_features_simple.txt -o test.txt",Passed
+38,Rulegen,"Ouput file with snort rule option","rulegen -f example_features/hdr_features_simple.txt -o test.txt -s",Passed
+39,Rulegen,"Protocol - picking from proto_list with complexity_prob 0",rulegen -f TestCases/Rulegen/Id39,Passed
+40,Rulegen,"Protocol - picking from ambiguity_list with complexity prob 100","rulegen -f TestCases/Rulegen/Id40",Passed
+41,Rulegen,"Protocol - picking with probability from ambuigty list or proto_list","rulegen -f TestCases/Rulegen/Id41 -c 10",Passed
+42,Rulegen,"All Ip version 4","rulegen -f TestCases/Rulegen/Id42 -c 10",Passed
+43,Rulegen,"All Ip version 6","rulegen -f TestCases/Rulegen/Id43 -c 10",Passed
+44,Rulegen,"Content with regex is True, len is 10","rulegen -f TestCases/Rulegen/Id44 -c 10",Passed
+45,Rulegen,"Content with regex is False, len is 10","rulegen -f TestCases/Rulegen/Id45 -c 5",Passed
+46,Rulegen,"Feature with lower_bound and upper_bound","rulegen -f TestCases/Id47 -c 10",Passed

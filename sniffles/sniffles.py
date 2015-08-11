@@ -132,7 +132,7 @@ def start_generation(sconf):
                                   sconf.getTargetPorts(),
                                   None,
                                   sconf.getScanDuration(),
-                                  sconf.getScanIntensity(),
+                                  sconf.getIntensity(),
                                   base_offset,
                                   sconf.getScanReplyChance())
             rule.setSrcIp(None)
@@ -201,7 +201,7 @@ def start_generation(sconf):
                                       sconf.getTargetPorts(),
                                       None,
                                       sconf.getScanDuration(),
-                                      sconf.getScanIntensity(),
+                                      sconf.getIntensity(),
                                       myOffset,
                                       sconf.getScanReplyChance())
                 rule.setSrcIp(None)

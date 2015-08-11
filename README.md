@@ -455,7 +455,7 @@ In detail, the tags work as follows:
                   second packet will be appended one extra content and the tcp
                   sequence number will be reduced by one to simulate the tcp
                   overlapping sequence number.
-                - ip: Designate IPv4 or IPv6.  Valid options are 4, or 6.
+                - ipv: Designate IPv4 or IPv6.  Valid options are 4, or 6.
                   Default is 4.
                 - out_of_order: Randomly have packets arrive out-of-order.
                   Note, this only works with packets that use the 'times'
@@ -821,12 +821,12 @@ Generic Feature Attributes:
 Content Feature -- Inherits from Feature:
 - regex: True or False.  If True, will use pcre formatting for
          regex as well as possible add the options, i, s, or
-         m to the regex.  If False,
+         m to the regex.
 - length: Defines the average length of the generated
           content.
 
 Protocol Feature -- Inherits from Feature:
-- protocol_list: Defines the list of possible protocols,
+- proto_list: Defines the list of possible protocols,
                  as a comma-separated list (i.e [TCP,
                  UDP]).
 
