@@ -9,6 +9,7 @@ from os.path import isfile, join
 from sniffles.rulereader import *
 from sniffles.nfa import *
 from sniffles.vendor_mac_list import VENDOR_MAC_OUI
+from sortedcontainers import SortedDict
 
 ETHERNET_HDR_GEN_RANDOM = 0
 ETHERNET_HDR_GEN_DISTRIBUTION = 1
@@ -93,11 +94,11 @@ class Conversation(object):
     """
 
     def __init__(self, con, sconf):
-
+        
         subclasses = get_all_subclasses(globals()["TrafficStream"])
 
         self.ts = []
-        self.ts_active = []
+        self.ts_active = SortedDict()
         self.started = False
 
         if con:
@@ -106,14 +107,9 @@ class Conversation(object):
             tsrules = [None]
 
         while tsrules:
-
-            synch = False
-
             myrule = tsrules.pop(0)
             mypkts = [RulePkt()]
-
-            if myrule:
-                synch = myrule.getSynch()
+            myts = TrafficStream(myrule, sconf)
 
             if myrule and myrule.getTypeTS() is not None:
                 useSubclass = False
@@ -123,31 +119,26 @@ class Conversation(object):
                         myts = subclass(myrule, sconf)
                         useSubclass = True
                         break
-
-                if not useSubclass:
-                    myts = TrafficStream(myrule, sconf)
-            else:
-                myts = TrafficStream(myrule, sconf)
-
-            if synch:
-                if len(self.ts_active) == 0:
-                    self.ts_active.append(myts)
-                else:
-                    self.ts.append(myts)
-            else:
-                if len(self.ts) == 0:
-                    self.ts_active.append(myts)
-                else:
-                    self.ts.append(myts)
-
-    def getNextPkts(self):
-        pkts = []
-        if self.has_packets():
-            self.started = True
-            for ts in self.ts_active:
-                pkts.extend(ts.getNextPacket())
+            self.ts.append(myts)
         self.updateStreams()
-        return pkts
+
+    # Returns the timestamp and the packet of the next packet to
+    # send among the streams for this particular conversation.
+    def getNextPkt(self):
+        if not self.hasPackets():
+            return None
+        pkt = None
+        ts = self.ts_active.pop(0)
+        sec = 0
+        usec = 0
+        if ts.hasPackets():
+            sec, usec = ts.getNextTimeStamp()
+            pkt = ts.getNextPacket()
+            next_sec, next_usec = ts.getNextTimeStamp()
+            if ts.hasPackets():
+                self.ts_active[(next_sec + (next_usec/1000000))] = ts
+        self.updateStreams()
+        return sec, usec, pkt
 
     def getNextTS(self):
         if self.ts_active:
@@ -157,39 +148,46 @@ class Conversation(object):
         return None
 
     def getNumberOfStreams(self):
-        num_ts = (len(self.ts_active) if self.ts_active else 0) + \
-                 (len(self.ts) if self.ts else 0)
-        return num_ts
+        return len(self.ts_active) + len(self.ts)
 
-    def has_packets(self):
-        if (self.ts_active and len(self.ts_active) > 0) or \
-           (self.ts and len(self.ts) > 0):
-            return True
+    def getNextTimeStamp():
+        next_sec = -1
+        next_usec = 0
+        if self.ts_active:
+            next_sec, next_usec = self.ts_active.iloc[0].getNextTimeStamp()
         else:
-            return False
+            self.updateStream()
+            return self.getNextTimeStamp()
+        return next_sec, next_usec
 
-    def has_started(self):
+    def hasPackets(self):
+        if self.ts_active:
+            for ts in self.ts_active:
+                if ts.hasPackets():
+                    return True
+        if self.ts:
+            for ts in self.ts:
+                if ts.hasPackets():
+                    return True
+        return False
+
+    def hasStarted(self):
         return self.started
 
     def updateStreams(self):
-        if self.ts_active is not None:
-            self.ts_active[:] = [
-                s for s in self.ts_active if not s.isFinished()]
-        if len(self.ts_active) < 1:
-            if self.ts is not None and len(self.ts) > 0:
-                self.ts_active = []
-                ts = self.ts.pop(0)
-                while ts:
-                    self.ts_active.append(ts)
-                    if ts.getSynch():
+        if self.ts_active and len(self.ts_active) > 0:
+            for key in self.ts_active:
+                if self.ts_active[key].isFinished():
+                    del(self.ts_active[key])
+        if not self.ts_active or len(self.ts_active) < 1:
+            if self.ts and len(self.ts) > 0:
+                while self.ts:
+                    myts = self.ts.pop(0)
+                    sec, usec = ts.getNextTimeStamp()
+                    mytime = sec + usec/1000000
+                    self.ts_active[mytime] = myts
+                    if myts.getSynch():
                         break
-                    if self.ts:
-                        ts = self.ts.pop(0)
-                    else:
-                        ts = None
-            else:
-                self.ts_active = None
-
 
 class TrafficStream(object):
     """
@@ -208,7 +206,7 @@ class TrafficStream(object):
           otherwise (deprecated).
     """
 
-    def __init__(self, rule=None, sconf=None):
+    def __init__(self, rule=None, sconf=None, start_sec=-1, start_usec=0):
         # local
         flow_opts = None
         handshake = False
@@ -216,78 +214,85 @@ class TrafficStream(object):
         teardown = False
 
         # member
-        self.stream_ooo = False
-        self.synch = False
-        self.myp = None
-        self.pkt_len = -1
-        self.packets_in_stream = 1
-        self.mac_def_file = None
-        self.flow_ack = False
-        self.rand = False
-        self.full_eval = False
-        self.full_match = False
-        self.bi = False
-        self.rule = rule
         self.ack_dir = "to client"
         self.advance_pkt = False
+        self.bi = False
         self.content_string = None
-        self.fragments = []
-        self.split = []
-        self.frag_id = 0
+        self.dropped = False
+        self.eval_pkts = []
+        self.flow_ack = False
         self.footer = 0
+        self.frag_con_size = 0
+        self.frag_id = 0
+        self.fragments = []
+        self.full_eval = False
+        self.full_match = False
         self.header = 0
         self.ip_type = 4
-        self.lost_pkt_string = None
         self.last_off = 0
+        self.latency = random.randint(1,200)
+        self.lost_pkt_string = None
+        self.mac_def_file = None
         self.mac_gen = ETHERNET_HDR_GEN_RANDOM
+        self.myp = None
         self.next_is_ack = False
-        self.p_count = 0
-        self.window = 0
+        self.next_time_sec = 0
+        self.next_time_usec = 0
         self.order = None
-        self.dropped = False
-        self.frag_con_size = 0
+        self.p_count = 0
+        self.pkt_len = -1
+        self.packets_in_stream = 1
         self.rand = False
-
-        self.tcp_overlap = False
+        self.rule = rule
         self.shift_seq = False
+        self.split = []
+        self.stream_ooo = False
+        self.synch = False
+        self.tcp_overlap = False
+        self.window = 0
 
+        # Get values from sconf that affect stream generation
         if sconf:
             handshake = sconf.getTCPHandshake()
             teardown = sconf.getTCPTeardown()
-            self.pkt_len = sconf.getPktLength()
-            self.mac_def_file = sconf.getMacAddrDef()
-            if sconf.getPktsPerStream() > 1:
-                self.packets_in_stream = sconf.getPktsPerStream()
+            self.bi = sconf.getBi()
             self.flow_ack = sconf.getTCPACK()
-            self.rand = sconf.getRandom()
             self.full_eval = sconf.getFullEval()
             self.full_match = sconf.getFullMatch()
-            self.bi = sconf.getBi()
+            if sconf.getTimeLapse() > 0:
+                self.latency = sconf.getTimeLapse()
+            self.mac_def_file = sconf.getMacAddrDef()
             if self.mac_def_file:
                 self.mac_gen = ETHERNET_HDR_GEN_DISTRIBUTION
+            self.pkt_len = sconf.getPktLength()
+            if sconf.getPktsPerStream() > 1:
+                self.packets_in_stream = sconf.getPktsPerStream()
+            self.rand = sconf.getRandom()
 
         if rule:
             if not handshake and rule.getHandshake():
                 handshake = True
             if not teardown and rule.getTeardown():
                 teardown = True
-            if rule.getLength() >= 0:
-                self.pkt_len = rule.getLength()
-            self.tcp_overlap = rule.getTCPOverlap()
-            self.stream_ooo = rule.getOutOfOrder()
-            self.synch = rule.getSynch()
-            self.myp = rule.getPkts()
-            self.packets_in_stream = len(rule.getPkts())
-            flow_opts = rule.getFlowOptions()
             if rule.getIPV() == 6:
                 ipv6_percent = 100
+            if rule.getLength() >= 0:
+                self.pkt_len = rule.getLength()
+            if rule.getLatency() > 0:
+                self.latency = rule.getLatency()
+            flow_opts = rule.getFlowOptions()
+            self.myp = rule.getPkts()
+            self.packets_in_stream = len(rule.getPkts())
             self.proto = rule.getProto()
             if self.proto.lower() not in SUPPORTED_PROTOCOLS:
                 pick = random.randint(0, len(SUPPORTED_PROTOCOLS)-1)
                 protos = list(SUPPORTED_PROTOCOLS.keys())
                 self.proto = protos[pick]
-            self.sport = Port(rule.getSport())
             self.dport = Port(rule.getDport())
+            self.sport = Port(rule.getSport())
+            self.stream_ooo = rule.getOutOfOrder()
+            self.synch = rule.getSynch()
+            self.tcp_overlap = rule.getTCPOverlap()
         else:
             pick = random.randint(0, len(SUPPORTED_PROTOCOLS)-1)
             protos = list(SUPPORTED_PROTOCOLS.keys())
@@ -307,9 +312,9 @@ class TrafficStream(object):
             self.current_seq_b_to_a = random.randint(0, 4000000000)
             self.current_ack_b_to_a = 0
 
-        if ipv6_percent > 0 and ipv6_percent <= 100:
-            pick = random.randint(0, 99) + 1
-            if pick > (100 - ipv6_percent):
+        if ipv6_percent > 0:
+            pick = random.randint(0, 99)
+            if pick < ipv6_percent:
                 self.ip_type = 6
 
         if rule:
@@ -332,6 +337,16 @@ class TrafficStream(object):
                 temp = self.dport
                 self.dport = self.sport
                 self.sport = temp
+
+        # Get initial time stamp
+        if start_sec > 0:
+            self.next_time_sec = start_sec
+        else:
+            self.next_time_sec = sconf.getFirstTimestamp()
+        self.next_time_usec = start_usec
+        while self.next_time_usec > 1000000:
+            self.next_time_sec += 1
+            self.next_time_usec -= 1000000
 
     def testTypeTS(self, value):
         return True
@@ -494,18 +509,22 @@ class TrafficStream(object):
             myrule = self.rule
         pkt = None
         con = None
-        if not ack_only:
-            cg = ContentGenerator(myrule, self.pkt_len, self.rand,
+        if self.full_eval:
+            if len(self.eval_pkts) == 0:
+                cg = ContentGenerator(myrule, self.pkt_len, self.rand,
                                   self.full_match, self.full_eval)
-            con = cg.get_next_published_content()
-            if self.full_eval:
-                pkt = []
+                con = cg.get_next_published_content()
                 while con:
-                    pkt.append(self.buildPkt(dir, ACK, con))
+                    self.eval_pkts.append(self.buildPkt(dir, ACK, con))
                     con = cg.get_next_published_content()
-                return pkt
-
-        pkt = self.buildPkt(dir, ACK, con, seq, ack)
+                packets_in_stream = len(self.eval_pkts)
+            pkt = self.eval_pkts.pop(0)
+        else:
+            if not ack_only:
+                cg = ContentGenerator(myrule, self.pkt_len, self.rand,
+                                  self.full_match, self.full_eval)
+                con = cg.get_next_published_content()
+            pkt = self.buildPkt(dir, ACK, con, seq, ack)
         return pkt
 
     def getNextContentPacket(self):
@@ -623,10 +642,9 @@ class TrafficStream(object):
         else:
             pass
             # Nothing left.
-        if type(pkt) is not list:
-            return [pkt]
-        else:
-            return pkt
+        # Increment time stamp for next packet
+        self.incrementTime(int(round(random.expovariate(1/self.latency)))+1)
+        return pkt
 
     def getNextTeardownPacket(self):
         pkt = None
@@ -644,6 +662,14 @@ class TrafficStream(object):
             pass  # Finished, this stream should be done
         self.footer -= 1
         return pkt
+
+    # Returns a tuple with seconds:u seconds for the start time of the
+    # next packet in the stream.  Keep in mind that the imaginary pointer
+    # starts prior to the first packet.  Also, a stream that has no more
+    # packets will still have a next packet time.  Use the hasPackets()
+    # to make certain there are really packets remaining.
+    def getNextTimeStamp(self):
+        return self.next_time_sec, self.next_time_usec
 
     def getSynch(self):
         return self.synch
@@ -874,8 +900,14 @@ class TrafficStream(object):
         else:
             return False
 
+    def incrementTime(self, usec):
+        self.next_time_usec += usec
+        while self.next_time_usec > 1000000:
+            self.next_time_sec += 1
+            self.next_time_usec -= 1000000
+
     def isFinished(self):
-        if not self.has_packets():
+        if not self.hasPackets():
             return True
         else:
             return False
@@ -899,53 +931,55 @@ class ScanAttack(TrafficStream):
         a normal traffic stream, only packets returned are part of a scan.
     """
 
-    def __init__(self, rule=None, sconf=None):
+    def __init__(self, rule=None, sconf=None, start_sec=-1, u_sec=0):
 
         src_ip = None
-        base_port = None
+        src_port = None
+
+        # member values
+        self.duration = 1
+        self.finish_handshake = False
+        self.intensity = 5
+        self.ip_type = 4
+        self.last_sent = 0.0
+        self.latency = 0
+        self.mac_def_file = None
+        self.mac_gen = ETHERNET_HDR_GEN_RANDOM
+        self.next_is_ack = False
+        self.num_packets = self.intensity * self.duration
+        self.offset = 0.0
+        self.proto = 'tcp'
+        self.reply_chance = OPEN_PORT_CHANCE
         self.scan_type = SYN_SCAN
+        self.shift_seq = False
         self.targets = None
         self.t_ports = None
-        self.ip_type = 4
-        self.proto = 'tcp'
-        self.mac_gen = ETHERNET_HDR_GEN_RANDOM
-        self.mac_def_file = None
-        self.intensity = 5
-        self.duration = 1
-        self.last_sent = 0.0
-        self.offset = 0.0
-        self.reply_chance = OPEN_PORT_CHANCE
-        self.num_packets = self.intensity * self.duration
-        self.next_is_ack = False
-        self.finish_handshake = False
-
-        self.shift_seq = False
         self.tcp_overlap = False
 
         if sconf:
-            self.scan_type = sconf.getScanType()
-            self.t_ports = sconf.getTargetPorts()
+            self.duration = sconf.getScanDuration()
+            self.intensity = sconf.getIntensity()
             if sconf.getMacAddrDef():
                 self.mac_gen = ETHERNET_HDR_GEN_DISTRIBUTION
                 self.mac_def_file = sconf.getMacAddrDef()
-            self.intensity = sconf.getIntensity()
-            self.duration = sconf.getScanDuration()
             self.num_packets = self.intensity * self.duration
+            self.scan_type = sconf.getScanType()
+            self.t_ports = sconf.getTargetPorts()
 
         if rule:
-            base_port = rule.getBasePort()
             src_ip = rule.getSrcIp()
+            src_port = rule.getSrcPort()
+            if rule.getDuration() != 1:
+                self.duration = rule.getDuration()
+            if rule.getIntensity() != 5:
+                self.intensity = rule.getIntensity()
+            self.num_packets = self.intensity * self.duration
+            self.offset = rule.getOffset()
+            self.reply_chance = rule.getReplyChance()
             self.scan_type = rule.getScanType()
             self.targets = rule.getTarget()
             if rule.getTargetPorts():
                 self.t_ports = rule.getTargetPorts()
-            if rule.getIntensity() != 5:
-                self.intensity = rule.getIntensity()
-            if rule.getDuration() != 1:
-                self.duration = rule.getDuration()
-            self.offset = rule.getOffset()
-            self.reply_chance = rule.getReplyChance()
-            self.num_packets = self.intensity * self.duration
 
         if not self.t_ports:
             self.t_ports = [str(random.randint(1, 65535))]
@@ -958,23 +992,26 @@ class ScanAttack(TrafficStream):
         if self.targets is not None:
             self.dip = self.calculateIP(self.targets, False)
         else:
-            self.sip = self.calculateIP('any', False)
+            self.dip = self.calculateIP('any', False)
 
-        if base_port is None:
+        if src_port is None:
             self.sport = Port('any')
         else:
-            self.sport = Port(base_port)
+            self.sport = Port(src_port)
+
+        # set initial time
+        if start_sec < 0:
+            self.next_time_sec = sconf.getFirstTimestamp()
+        else:
+            self.next_time_sec = start_sec
+        if self.offset > 0:
+            self.next_time_sec += self.offset
+        self.latency = int(1000000/self.intensity)
 
     def testTypeTS(self, value):
         if value == "ScanAttack":
             return True
         return False
-
-    def get_duration(self):
-        return self.duration
-
-    def get_last_sent(self):
-        return self.last_sent
 
     def getNextPacket(self):
         pkt = None
@@ -987,23 +1024,27 @@ class ScanAttack(TrafficStream):
                     self.num_packets -= 1
                 if self.scan_type is CONNECTION_SCAN:
                     self.finish_handshake = True
+                self.incrementTimestamp(int(self.latency/2))
             elif self.finish_handshake:
                 pkt = self.buildPkt("to server", ACK)
                 self.updateSequence("to server", 1)
                 self.num_packets -= 1
                 self.finish_handshake = False
+                self.incrementTimestamp(int(self.latency/2))
             else:
                 next_port = self.get_next_port(self.t_ports)
-                pkt = self.scan_packet(self.dip, next_port, self.mac_gen,
+                pkt = self.scanPacket(self.dip, next_port, self.mac_gen,
                                        self.mac_def_file)
                 pick = random.randint(0, 100)
                 if pick <= self.reply_chance:
                     self.next_is_ack = True
+                    self.incrementTimestamp(int(self.latency/2))
                 else:
                     self.num_packets -= 1
-        return [pkt]
+                    self.incrementTimestamp(self.latency)
+        return pkt
 
-    def get_next_port(self, target_ports=None):
+    def getNextPort(self, target_ports=None):
         next_port = 'any'
         if len(target_ports) > 1:
             next_port = target_ports.pop(0)
@@ -1017,25 +1058,16 @@ class ScanAttack(TrafficStream):
             print("nothing")
         return next_port
 
-    def get_number_of_packets(self):
-        return self.num_packets
-
-    def get_offset(self):
+    def getOffset(self):
         return self.offset
 
-    def get_pkt_interval(self):
-        return float((1/self.intensity) * 1000000)
-
-    def has_packets(self):
+    def hasPackets(self):
         if self.num_packets > 0:
             return True
         else:
             return False
 
-    def set_last_sent(self, last=0.0):
-        self.last_sent = last
-
-    def scan_packet(self, dip=None, dport=None,
+    def scanPacket(self, dip=None, dport=None,
                     mac_gen=ETHERNET_HDR_GEN_RANDOM, dist_file=None):
         if dip is None or dport is None:
             print("Can't get any work done!")

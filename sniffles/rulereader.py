@@ -416,24 +416,27 @@ class TrafficStreamRule(object):
     def __init__(self, proto="any", sip="$EXTERNAL_NET", dip="$HOME_NET",
                  sport="any", dport="any", len=-1, ipv=4, synch=False,
                  handshake=False, teardown=False, ooo=False,
-                 ooo_prob=50, loss=0, flow="to server"):
-        self.proto = proto
-        self.src_ip = sip
-        self.dst_ip = dip
-        self.sport = sport
+                 ooo_prob=50, loss=0, flow="to server", latency=None):
+
+        self.content = []
         self.dport = dport
-        self.len = len
-        self.ipv = ipv
+        self.dst_ip = dip
         self.flow = flow
-        self.synch = synch
-        self.teardown = teardown
         self.handshake = handshake
+        self.ipv = ipv
+        self.latency = latency
+        self.len = len
+        self.loss = loss
         self.ooo = False
         self.ooo_prob = ooo_prob
-        self.loss = loss
-        self.content = []
-        self.typets = None
+        self.proto = proto
+        self.sport = sport
+        self.src_ip = sip
+        self.synch = synch
         self.tcp_overlap = False
+        self.teardown = teardown
+        self.typets = None
+
 
     def __str__(self):
         mystr = "Traffic Stream Rule\n"
@@ -499,6 +502,9 @@ class TrafficStreamRule(object):
     def getLength(self):
         return self.len
 
+    def getLatency(self):
+        return self.latency
+
     def getOOOProb(self):
         return self.ooo_prob
 
@@ -555,6 +561,9 @@ class TrafficStreamRule(object):
     def setIPV(self, ipv=4):
         self.ipv = ipv
 
+    def setLatency(self, lat):
+        self.latency = lat
+
     def setLen(self, len=-1):
         self.len = len
 
@@ -586,13 +595,13 @@ class TrafficStreamRule(object):
 class ScanAttackRule(TrafficStreamRule):
 
     def __init__(self, scan_type=SYN_SCAN, target=None,
-                 target_ports=None, base_port=None, duration=1,
+                 target_ports=None, src_port=None, duration=1,
                  intensity=5, offset=0.0, reply_chance=OPEN_PORT_CHANCE):
         super().__init__()
         self.scan_type = scan_type
         self.target = target
         self.target_ports = target_ports
-        self.base_port = base_port
+        self.src_port = src_port
         self.duration = duration
         self.intensity = intensity
         self.offset = offset
@@ -627,11 +636,11 @@ class ScanAttackRule(TrafficStreamRule):
     def setTargetPorts(self, value):
         self.target_ports = value
 
-    def getBasePort(self):
-        return self.base_port
+    def getSrcPort(self):
+        return self.src_port
 
-    def setBasePort(self, value):
-        self.base_port = value
+    def setSrcPort(self, value):
+        self.src_port = value
 
     def getDuration(self):
         return self.duration
@@ -1055,14 +1064,16 @@ class PetabiRuleParser(RuleParser):
                         mytsrule.setTCPOverlap(True)
                 if 'scantype' in ts.attrib:
                     mytsrule.setScanType(int(ts.attrib['scantype']))
-                if 'baseport' in ts.attrib:
-                    mytsrule.setBasePort(ts.attrib['baseport'])
+                if 'srcport' in ts.attrib:
+                    mytsrule.setSrcPort(ts.attrib['srcport'])
                 if 'duration' in ts.attrib:
                     mytsrule.setDuration(int(ts.attrib['duration']))
                 if 'intensity' in ts.attrib:
                     mytsrule.setIntensity(int(ts.attrib['intensity']))
                 if 'offset' in ts.attrib:
                     mytsrule.setOffset(int(ts.attrib['offset']))
+                if 'latency' in ts.attrib:
+                    mytsrule.setLatency(int(ts.attrib['latency']))
                 if 'replychance' in ts.attrib:
                     mytsrule.setReplyChance(int(ts.attrib['replychance']))
                 if 'target' in ts.attrib:

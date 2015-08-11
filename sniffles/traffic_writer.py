@@ -74,23 +74,25 @@ class TrafficWriter:
     def set_timestamp(self, secs=0, usecs=0):
         self.current_time_sec = secs
         self.current_time_usec = usecs
+        while self.current_time_usec >= 1000000:
+            self.current_time_sec += 1
+            self.current_time_usec -= 1000000
 
-    def write_packet(self, len=0, pkt=None, interframe=1):
+    def write_packet(self, len=0, pkt=None, secs=-1, usecs=-1):
         if pkt and self.writer_handle:
-            time_lapse = int(interframe)
-            if interframe > 1:
-                time_lapse = int(round(random.expovariate(1/interframe)))
+            time_lapse = 0
+            if secs < 0:
+              secs = self.current_time_sec
+            if usecs < 0:
+              usecs = self.current_time_usecs
+            self.set_timestamp(secs, usecs)
             pcap_hdr = struct.pack("IIII", self.current_time_sec,
                                    self.current_time_usec, len, len)
-            self.current_time_usec += time_lapse
-            if self.current_time_usec >= 1000000:
-                self.current_time_sec += 1
-                self.current_time_usec = self.current_time_usec - 1000000
             self.writer_handle.write(pcap_hdr)
             self.writer_handle.write(pkt)
         else:
             print("No packet to write!")
-        return float(self.current_time_sec + (self.current_time_usec/1000000))
+        return self.current_time_sec, self.current_time_usec
 
     def write_pcap_file_header(self):
         if not self.writer_handle:

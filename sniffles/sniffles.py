@@ -4,6 +4,7 @@ import random
 import sys
 import signal
 import copy
+from sortedcontainers import SortedDict
 from sniffles.rulereader import *
 from sniffles.ruletrafficgenerator import *
 from sniffles.traffic_writer import *
@@ -41,9 +42,6 @@ FINAL = 0
 ##############################################################################
 # Main Processing
 ##############################################################################
-
-SLOW_FLOW_COUNT = 3
-SLOW_FLOW_THRESHOLD = 1000000
 
 
 def main():
@@ -94,10 +92,7 @@ def start_generation(sconf):
     global TOTAL_GENERATED_STREAMS
     global TOTAL_GENERATED_PACKETS
     global FINAL
-    rand = sconf.getRandom()
     myrulelist = RuleList()
-    slow_flows = None
-    slow_flow_counter = 0
     if sconf.getRuleFile() and sconf.getRuleDir():
         print("You must specify either a single rule file, "
               "or a directory containing multiple rule files, not both.")
@@ -115,11 +110,21 @@ def start_generation(sconf):
     if sconf.getIPV6Home() is not None:
         set_ipv6_home(sconf.getIPV6Home())
     allrules = myrulelist.getParsedRules()
-    scanners = []
+    current = 0
+    end = 0
+    current_sec = sconf.getFirstTimeStamp()
+    current_usec = 0
+    total_generated_streams = 0
+    total_generated_packets = 0
+    traffic_queue = SortedDict()
+
     if sconf.getWriteRegEx():
         return printRegEx(allrules)
+
+    # If we define a scan attack from the command line, add it to the traff
+    # here.
     if sconf.getScan():
-        base_offset = sconf.getFirstTimestamp()
+        base_offset = 0
         for t in sconf.getScanTargets():
             if sconf.getRandomizeOffset():
                 base_offset += int(
@@ -135,100 +140,59 @@ def start_generation(sconf):
                                   sconf.getIntensity(),
                                   base_offset,
                                   sconf.getScanReplyChance())
-            rule.setSrcIp(None)
-
-            scanner = ScanAttack(rule, sconf)
-            scanners.append(scanner)
+            conversation = Conversation(rule, sconf, current_sec)
+            sec, usec = conversation.getNextTimeSlot()
+            traffic_queue[(sec + (usec/1000000))] = conversation
 
     traffic_writer = TrafficWriter(sconf.getOutputFile(),
                                    sconf.getFirstTimestamp())
-    traffic_queue = []
 
-    total_generated_streams = 0
-    total_generated_packets = 0
-    final = 0
-    lapse = 0
-    timer = 0
     if sconf.getEval() or sconf.getFullEval():
         return build_eval_pcap(allrules, traffic_writer, sconf)
-    current = 0
-    end = 0
+
     if sconf.getTrafficDuration() > 0:
         end = sconf.getTrafficDuration() + sconf.getFirstTimestamp()
     else:
         end = sconf.getTotalStreams()
-    if sconf.getConcurrentFlows() > SLOW_FLOW_THRESHOLD:
-        slow_flows = []
+
     while current < end:
-        lapse = current
-        mycon = None
+        myrule = None
         if allrules:
-            mycon = copy.deepcopy(random.choice(allrules))
+            myrulen = copy.deepcopy(random.choice(allrules))
             if sconf.getVerbosity():
-                print(mycon)
-
-        sconf.setFullEval(False)
-        conversation = Conversation(mycon, sconf)
-
-        if slow_flows is None or slow_flow_counter != SLOW_FLOW_COUNT:
-            traffic_queue.append(conversation)
-        else:
-            if slow_flow_counter == SLOW_FLOW_COUNT:
-                slow_flows.append(conversation)
-                slow_flow_counter = 0
-        slow_flow_counter += 1
-
+                print(myrule)
+        conversation = Conversation(myrule, sconf, current_sec, current_usec)
+        sec, usec = conversation.getNextTimeSlot()
+        traffic_queue[(sec + (usec/1000000))] = conversation
         total_generated_streams += conversation.getNumberOfStreams()
+
+        # Need to track global value in case of interupt
         TOTAL_GENERATED_STREAMS = total_generated_streams
 
-        con_flows = len(traffic_queue) + (len(slow_flows) if slow_flows else 0)
-        if con_flows >= sconf.getConcurrentFlows():
-            pkts, lapse = write_packets(traffic_queue, traffic_writer,
-                                        sconf.getTimeLapse(), sconf.getScan(),
-                                        scanners, slow_flows)
+        if len(traffic_queue) >= sconf.getConcurrentFlows():
+            pkts, current_sec, current_usec = write_packets(traffic_queue, traffic_writer,
+                                                            sconf)
             total_generated_packets += pkts
+
+            # Need to track global values in case of interupt
             TOTAL_GENERATED_PACKETS = total_generated_packets
-            FINAL = lapse
-        if sconf.getScan() and len(scanners) < 1 and \
-           sconf.getRandomizeOffset():
-            for t in sconf.getScanTargets():
-
-                myOffset = final + \
-                    int(random.normalvariate(sconf.getScanOffset(),
-                                             sconf.getScanOffset()/4))
-
-                rule = ScanAttackRule(sconf.getScanType(), t,
-                                      sconf.getTargetPorts(),
-                                      None,
-                                      sconf.getScanDuration(),
-                                      sconf.getIntensity(),
-                                      myOffset,
-                                      sconf.getScanReplyChance())
-                rule.setSrcIp(None)
-
-                scanner = ScanAttack(rule, sconf)
-                scanners.append(scanner)
+            FINAL = current_sec
 
         if sconf.getTrafficDuration() > 0:
-            current = lapse
+            current = current_sec
         elif sconf.getTrafficDuration() <= 0:
             current = total_generated_streams
-    final = lapse
+
     while traffic_queue and len(traffic_queue) > 0:
-        pkts, final = write_packets(traffic_queue, traffic_writer,
-                                    sconf.getTimeLapse(), sconf.getScan(),
-                                    scanners, slow_flows)
+        pkts, current_sec, current_usec = write_packets(traffic_queue, traffic_writer,
+                                                        sconf)
         total_generated_packets += pkts
+
+        # Track global values
         TOTAL_GENERATED_PACKETS = total_generated_packets
-        FINAL = lapse
-    while slow_flows and len(slow_flows) > 0:
-        pkts, final = write_packets(slow_flows, traffic_writer,
-                                    sconf.getTimeLapse())
-        total_generated_packets += pkts
-        TOTAL_GENERATED_PACKETS = total_generated_packets
-        FINAL = lapse
+        FINAL = current_sec
     traffic_writer.close_save_file()
-    return [total_generated_streams, total_generated_packets, final]
+    return [total_generated_streams, total_generated_packets, current_sec]
 
 
 def build_eval_pcap(rules, traffic_writer, sconf):
@@ -255,22 +219,28 @@ def build_eval_pcap(rules, traffic_writer, sconf):
     traffic_queue = []
     total_pkts = 0
     for rule in rules:
-
         sconf.setFullMatch(sconf.getEval())
-        mycon = Conversation(rule, sconf)
-
-        traffic_queue.append(mycon)
-    print("Now write the traffic")
+        rule.setLatency(1)
+        mycon = Conversation(rule, sconf, sconf.getFirstTimeStamp())
+        sec, usec = conversation.getNextTimeStamp()
+        traffic_queue[(sec + (usec/1000000))] = conversation
+    current_sec = sconf.getFirstTimeStamp()
+    current_usec = 0
     while traffic_queue:
         current_stream = traffic_queue.pop(0)
         while current_stream.has_packets():
-            pkts = current_stream.getNextPkts()
-            if pkts:
-                for pkt in pkts:
-                    current_time = traffic_writer.write_packet(
-                        pkt.get_size(), pkt.get_packet(), 1)
-                total_pkts += len(pkts)
-
+            pkt = current_stream.getNextPkts()
+            if pkt:
+                current_sec, current_usec = traffic_writer.write_packet(
+                    pkt.get_size(), pkt.get_packet(),
+                    current_sec, current_usec)
+                    current_usec+=1
+                    if current_usec >= 1000000:
+                        current_sec += 1
+                        current_usec -= 1000000
+                    total_pkts += 1
+                    TOTAL_GENERATED_PACKETS = total_pkts
+                    FINAL = current_sec
     traffic_writer.close_save_file()
     return [len(rules), total_pkts, current_time]
 
@@ -296,8 +266,7 @@ def printRegEx(rules):
     return [0, 0, 0]
 
 
-def write_packets(queue, traffic_writer, time_lapse=1,
-                  scan=False, scanners=None, slow_flows=None):
+def write_packets(queue, traffic_writer, sconf):
     """
         Packets are written out interleaved (round-robin) from
         each stream until the batch is complete, or there are no more packets
@@ -308,89 +277,35 @@ def write_packets(queue, traffic_writer, time_lapse=1,
     if not queue:
         print("No packets to write")
         return (0, traffic_writer.get_timestamp())
+    half_threshold = len(queue)
+    if len(queue) >= sconf.getConcurrentFlows():
+        half_threshold = int(len(queue)/2)
+    num_packets = 0
 
-    # write out packets
-    reg_packets = 0
-    scan_packets = 0
-    slow_flow_counter = 0
-    current_time = time_lapse
-    last_scan = current_time
-    index = random.randint(0, len(queue)-1)
-    if slow_flows:
-        for sf in slow_flows:
-            if not sf.has_started():
-                pkts = sf.getNextPkts()
-                if pkts:
-                    for pkt in pkts:
-                        current_time = traffic_writer.write_packet(
-                            pkt.get_size(), pkt.get_packet(), time_lapse)
-                    reg_packets += len(pkts)
-                else:
-                    slow_flows.remove(sf)
-    while queue:
+    while queue and len(queue) >= half_threshold:
 
-        index = index % len(queue)
-        current_stream = queue[index]
-        if current_stream.has_packets():
+        current_conversation = queue.pop(0)
+        if current_conversation.hasPackets():
             # write that packet
-            pkts = []
-            pkts.extend(current_stream.getNextPkts())
-            if pkts is not None and len(pkts) > 0:
-                for pkt in pkts:
-                    if pkt is not None:
-                        current_time = traffic_writer.write_packet(
-                            pkt.get_size(), pkt.get_packet(), time_lapse)
-                reg_packets += len(pkts)
+            pkt = None
+            current_secs, current_usecs = current_conversation.getNextTimeStamp()
+            pkt = current_conversation.getNextPacket()
+            if pkt is not None:
+                traffic_writer.write_packet(pkt.get_size(), pkt.get_packet(),
+                                            current_secs, current_usecs)
+                num_packets += 1
 
             else:
-                print("packets is none!!! Something is wrong")
-                del queue[index]
+                print("Packets is none!!! Something is wrong")
+                continue
 
         else:
-            del queue[index]
+            continue
+        if current_conversation.hasPackets():
+            next_sec, next_usec = current_conversation.getNextTimeStamp()
+            queue[(current_secs + (current_usecs/1000000))] = current_conversation
 
-        # Add scan packets interleaving with regular packets.
-        if scan:
-            last_time = current_time
-            for s in scanners:
-                if s.get_offset() <= current_time and s.has_packets():
-                    last = s.get_last_sent()
-                    diff = (current_time - last) / s.get_pkt_interval()
-                    pkts = []
-                    while diff > 0:
-                        pkt = s.get_next_packet()
-                        if pkt is not None:
-                            pkts.append(pkt)
-                        diff -= 1
-                    for pkt in pkts:
-                        last_time = traffic_writer.write_packet(
-                            pkt.get_size(), pkt.get_packet(),
-                            time_lapse)
-                        scan_packets += 1
-                if not s.has_packets():
-                    scanners.remove(s)
-            current_time = last_time
-
-        # Add in flows designed to extend across the entire pcap
-        if slow_flows and slow_flow_counter == SLOW_FLOW_COUNT:
-            sf_index = random.randint(0, len(slow_flows)-1)
-            sf = slow_flows[sf_index]
-            pkts = []
-            pkts.extend(sf.getNextPkts())
-            if pkts is not None and len(pkts) > 0:
-                for pkt in pkts:
-                    current_time = traffic_writer.write_packet(
-                        pkt.get_size(), pkt.get_packet(), time_lapse)
-                reg_packets += len(pkts)
-
-            else:
-                del slow_flows[sf_index]
-            if not sf.has_packets():
-                del slow_flows[sf_index]
-
-        slow_flow_counter += 1
-        index += 1
-    return (reg_packets + scan_packets, current_time)
+    return (num_packets, current_secs, current_usecs)
 
 
 def handlerKeyboardInterupt(signum, frame):

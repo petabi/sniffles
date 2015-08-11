@@ -62,7 +62,7 @@ class SnifflesConfig(object):
         self.tcp_ack = False
         self.tcp_handshake = False
         self.tcp_teardown = False
-        self.time_lapse = 1
+        self.latency = 0
         self.total_streams = 1
         self.traffic_duration = 0
         self.verbosity = False
@@ -145,8 +145,8 @@ class SnifflesConfig(object):
         else:
             mystr += "  Generating " + str(self.pkts_per_stream) + \
                 " data-bearing packet per stream.\n"
-        if self.time_lapse > 1:
-            mystr += "  An average of " + str(self.time_lapse) + \
+        if self.latency > 1:
+            mystr += "  An average of " + str(self.latency) + \
                      " microsecond delay between each packet.\n"
         else:
             mystr += "  One microsecond delay between packets.\n"
@@ -344,11 +344,11 @@ class SnifflesConfig(object):
     def setTCPTeardown(self, value):
         self.tcp_teardown = value
 
-    def getTimeLapse(self):
-        return self.time_lapse
+    def getLatency(self):
+        return self.latency
 
-    def setTimeLapse(self, value):
-        self.time_lapse = value
+    def setLatency(self, value):
+        self.latency = value
 
     def getTotalStreams(self):
         return self.total_streams
@@ -456,7 +456,7 @@ class SnifflesConfig(object):
             self.pkt_length = int(arg)
         elif opt == "-L":
             if int(arg) > 1:
-                self.time_lapse = int(arg)
+                self.latency = int(arg)
         elif opt == "-m":
             self.full_match = True
         elif opt == "-M":
@@ -464,8 +464,8 @@ class SnifflesConfig(object):
         elif opt == "-o":
             self.output_file = arg
         elif opt == "-O":
-            if float(arg) > 0:
-                self.scan_offset = float(arg)
+            if int(arg) > 0:
+                self.scan_offset = int(arg)
         elif opt == "-p":
             self.pkts_per_stream = int(arg)
         elif opt == "-P":
