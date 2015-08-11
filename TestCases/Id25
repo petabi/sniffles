@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <petabi_rules>
   <rule name="testall">
-    <traffic_stream proto="tcp" src="any" dst="$HOME_NET" sport="any" dport="50" ip="6">
+    <traffic_stream proto="tcp" src="any" dst="$HOME_NET" sport="any" dport="50">
         <pkt dir="to server" content="/abcdef/i" fragment="0" times="5" />
         <pkt dir="to server" content="/abcdef/i" fragment="0" times="5" />
     </traffic_stream>
-    <traffic_stream proto="tcp" src="any" dst="$HOME_NET" sport="any" dport="50" ip="6" synch="true" out_of_order_prob="90" packet_loss="40">
+    <traffic_stream proto="tcp" src="any" dst="$HOME_NET" sport="any" dport="50" synch="true" out_of_order_prob="90" packet_loss="40">
         <pkt dir="to server" content="/abcdef/i" fragment="0" times="20" />
         <pkt dir="to server" content="/abcdef/i" fragment="0" times="20" />
     </traffic_stream>

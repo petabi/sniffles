@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <petabi_rules>
   <rule name="testall">
-    <traffic_stream proto="tcp" src="any" dst="$HOME_NET" sport="any" dport="50" ip="4" tcp_overlap="true">
+    <traffic_stream proto="tcp" src="any" dst="$HOME_NET" sport="any" dport="50" tcp_overlap="true">
         <pkt dir="to server" content="/abcdefmnpqr/i" times="5"/>
     </traffic_stream>
   </rule>

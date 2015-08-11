@@ -1,0 +1,1 @@
+type=feature; name=port; lower_bound=0; upper_bound=65535; complexity_prob=50; ambiguity_list=[any,[1024:65535],[1024,65535],{450,150,600,135}];
