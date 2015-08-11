@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<petabi_rules>
-  <rule name="testall">
-    <traffic_stream proto="tcp" src="any" dst="$HOME_NET" sport="any" dport="50" ip="6" ack=>
-        <pkt dir="to server" content="/abcdefmnpqr/i" fragment="2" ttl="25"/>
-    </traffic_stream>
-  </rule>
-</petabi_rules>
