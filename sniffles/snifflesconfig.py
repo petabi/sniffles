@@ -12,6 +12,12 @@ from pkg_resources import get_distribution, DistributionNotFound
 
 
 def getVersion():
+    """
+    getVersion()
+      Queries the distribution package to get the current version of
+      Sniffles.  The version number is used for informational purposes
+      as well as reference.
+    """
     try:
         _dist = get_distribution('sniffles')
         dist_loc = os.path.normcase(_dist.location)
@@ -68,8 +74,6 @@ class SnifflesConfig(object):
         self.verbosity = False
         self.version = 0
         self.write_reg_ex = False
-        self.split_file = None
-        self.is_sqllite_db = False
 
         if cmd:
             self.parse_cmd(cmd)
@@ -308,18 +312,6 @@ class SnifflesConfig(object):
     def setScanReplyChance(self, value):
         self.scan_reply_chance = value
 
-    def getSplitFile(self):
-        return self.split_file
-
-    def setSplitFile(self, value):
-        self.split_file = value
-
-    def getSQLLiteDB(self):
-        return self.is_sqllite_db
-
-    def setSQLLiteDB(self, value):
-        self.is_sqllite_db = value
-
     def getTargetPorts(self):
         return self.target_ports
 
@@ -375,8 +367,11 @@ class SnifflesConfig(object):
         self.write_reg_ex = value
 
     def parse_cmd(self, cmd):
+        """
+            Standard function for reading command line input.
+        """
         cmd_options = "abc:C:d:D:eEf:F:g:h:H:i:I:l:L:" + \
-                      "mM:o:O:p:P:rRs:S:tTvwW:x:zZ:?"
+                      "mM:o:O:p:P:rRs:S:tTvwW:Z:?"
         try:
             options, args = getopt.getopt(cmd, cmd_options, [])
         except getopt.GetoptError as err:
@@ -386,6 +381,12 @@ class SnifflesConfig(object):
             self.parse_opt_arg(opt, arg)
 
     def parse_config_file(self, cfg_file):
+        """
+            It is possible to use a config file to fix the command
+            line arguments.  In that case, the arguments are read
+            as a file of key-value pairs and parsed accordingly.
+            Lines starting with the # symbol are ignored.
+        """
         print("Reading config file: ", cfg_file)
         try:
             fd = open(cfg_file, 'r')
@@ -410,91 +411,178 @@ class SnifflesConfig(object):
         fd.close()
 
     def parse_opt_arg(self, opt, arg):
+        """
+            Since there are two ways to read the command-line
+            parameters (command line or config file) the
+            actual parsing of values has been pulled out into
+            a separate function to decrease redundancy of code.
+        """
+
+        # Designate an ACK for every packet from client to server
         if opt == "-a":
             self.tcp_ack = True
+
+        # Designate that data also flow from server to client.
+        # Requires that the server is also ACKing data from client.
+        # This is the command-line version, more fine-grained control
+        # can be achieved using a rule.
         elif opt == "-b":
             self.bi = True
             self.tcp_ack = True
+
+        # Set total number of streams.  The amount of traffic generated
+        # is dependent on either the number of streams, of a duration.
         elif opt == "-c":
             self.total_streams = int(arg)
             if self.total_streams < 1:
                 print("Must designate one or more streams to create.")
                 self.usage()
+
+        # Concurrent streams (conversations really).  The larger
+        # this number the more memory required.  Values in the
+        # millions may lead to exhausting available memory.  Also,
+        # pcap creation times are greatly increased.
         elif opt == "-C":
             if int(arg) > 0:
                 self.concurrent_flows = int(arg)
+
+        # Designate a directory of .rules files to read.  Will
+        # read all files with the .rules designation and parse
+        # them as best as possible.
         elif opt == "-d":
             self.rule_dir = arg
+
+        # Set the duration of traffic generation in total seconds.
         elif opt == "-D":
             if int(arg) > 0:
                 self.traffic_duration = int(arg)
+
+        # Create eval pcaps for testing ability to match.
         elif opt == "-e":
             self.eval = True
         elif opt == "-E":
             self.full_eval = True
+
+        # Read a specific rule file.
         elif opt == "-f":
             self.rule_file = arg
+
+        # Use a config file, rather than just the command line
         elif opt == "-F":
             self.config_file = arg
             self.parse_config_file(arg)
+
+        # Designate a start time for the pcap.  Default is now!
         elif opt == "-g":
             if self.pcap_start_sec > 0:
                 self.pcap_start_sec = int(arg)
+
+        # Set home address ranges.
         elif opt == "-h":
             self.ipv4_home = [temp.strip() for temp in arg.split(",")]
         elif opt == "-H":
             self.ipv6_home = [temp.strip() for temp in arg.split(",")]
+
+        # Set the chance for ipv6 packets.  Roughly, that percent of
+        # streams will be ipv6.  Rules will override this setting.
         elif opt == "-i":
             self.ipv6_percent = int(arg)
             if self.ipv6_percent > 100 or self.ipv6_percent < 1:
                 print("IPv6 percentage must be between 1 and 100 to be set.")
                 self.usage()
+
+        # For scan attacks.  Set the number of scan attempts per second.
         elif opt == "-I":
             if int(arg) > 0:
                 self.intensity = int(arg)
+
+        # Fix the data length for each packet.  Will pad or truncate
+        # packets as necessary to meet this requirement.
+        # This only affects the data, not the headers.
         elif opt == "-l":
             self.pkt_length = int(arg)
+
+        # Fix a latency for the streams.  Overriden by rules.
         elif opt == "-L":
             if int(arg) > 1:
                 self.latency = int(arg)
+
+        # By default, packets almost match content of rules.
+        # This switch makes them match.
         elif opt == "-m":
             self.full_match = True
+
+        # Provide a MAC address distribution file for generating
+        # MAC addresses with specific values.
         elif opt == "-M":
             self.mac_addr_def = arg
+
+        # Set output file name, default is sniffles.pcap.
         elif opt == "-o":
             self.output_file = arg
+
+        # For scan attacks.  The offset designates the offset from
+        # the beginning of the traffic generation to when the
+        # scan attack will start.  If used with Random, this becomes
+        # the average of an exponential distribution.
         elif opt == "-O":
             if int(arg) > 0:
                 self.scan_offset = int(arg)
+
+        # Number of packets per stream.  Should be 1 or more.
         elif opt == "-p":
             self.pkts_per_stream = int(arg)
+
+        # Designate a port, or list of ports, to target for
+        # a scan attack.
         elif opt == "-P":
             self.target_ports = arg.split(',')
+
+        # This setting tells sniffles to use random generation wherever
+        # possible.  When used with a rule, most of the rule features
+        # will override this option.
         elif opt == "-r":
             self.rand = True
+
+        # Randomize a scan attack's start.  Use with -O to create
+        # a random start to the scan.
         elif opt == "-R":
             self.scan_randomize_offset = True
+
+        # A list of scan targets.  One scan will be created for
+        # each target.  If there are other streams, then those
+        # will show up in the pcap as well.
         elif opt == "-s":
             self.scan = True
             self.scan_targets = arg.split(',')
+
+        # Adjust the scan type.  Currently only two types.
         elif opt == "-S":
             if int(arg) in range(1, 2):
                 self.scan_type = int(arg)
+
+        # Turn on TCP handshake and teardown.  Off by default.
         elif opt == "-t":
             self.tcp_handshake = True
         elif opt == "-T":
             self.tcp_teardown = True
+
+        # Will print out the rules read, and used in the traffic.
         elif opt == "-v":
             self.verbosity = True
+
+        # Creates a file with the content strings and regex used
+        # for this run of sniffles.
         elif opt == "-w":
             self.write_reg_ex = True
+
+        # Sets the duration of a scan attack (in seconds)
         elif opt == "-W":
             if int(arg) > 1:
                 self.scan_duration = int(arg)
-        elif opt == "-x":
-            self.split_file = arg
-        elif opt == "-z":
-            self.is_sqllite_db = True
+
+        # Ran out of letters.  This sets the chance that a
+        # target will reply to a scan packet.
         elif opt == "-Z":
             if int(arg) > 0 and int(arg) <= 100:
                 self.scan_reply_chance = int(arg)
@@ -513,12 +601,12 @@ class SnifflesConfig(object):
         print(" [-l pkt_length] [-L time lapse] [-M mac_addr_def file]")
         print(" [-o output_file] [-O scan start offset] [-p pkts_per_stream]")
         print(" [-P scan port(s)] [-s scan target(s)] [-S scan type]")
-        print(" [-W scan window] [-z sql file] [-Z Reply %] [-abeEmrRtTvwx]")
+        print(" [-W scan window] [-Z Reply %] [-abeEmrRtTvw]")
         print("")
         print("-a TCP Ack: Send a TCP acknowledgment for every data packet")
         print("   sent.  Off by default.")
         print("-b Bi-directional data: Send data in both directions.")
-        print("   Off by default.  Automatically set TCP acks.")
+        print("   Off by default.  Automatically sets TCP acks.")
         print("-c Count: Number of streams to create.  Each stream will")
         print("   contain a minimum of 1 packet.  Packet will be between")
         print("   two end-points as defined by the rule or randomly chosen.")
@@ -540,7 +628,7 @@ class SnifflesConfig(object):
         print("-D Duration: Generate based on duration rather than")
         print("   on count.  This will disregard the -c input.")
         print("-f Rule File: read a single rule file as per the provided")
-        print("   path and file name. A rule file may be an infnis rules.xml,")
+        print("   path and file name. A rule file may be a petabi rules.xml,")
         print("   a list of regular expressions (one to a row), or a snort")
         print("   rule file.")
         print("-e eval: Create just one packet for each rule in the")
@@ -551,9 +639,9 @@ class SnifflesConfig(object):
         print("   create two packets with data: abce and abde respectively.")
         print("   Ignores all other options except -f.")
         print("-F Config: Designate a config file for Sniffles options.  The")
-        print("   config file fixes the parameters used for a run")
-        print("   of Sniffles.")
-        print("-g Start timestamp: set the second for the starting timestamp")
+        print("   config file offers a means of saving the command line")
+        print("   options for use across different runs.")
+        print("-g Start timestamp: set the seconds for the starting timestamp")
         print("   in the capture.  All other timestamps are derived from")
         print("   this value.  The default is the current time (in seconds).")
         print("-h IP Home Prefixes: A list of IP Home Network Prefixes.")
@@ -570,35 +658,39 @@ class SnifflesConfig(object):
         print("   all streams are IPv4.")
         print("-I Intensity of scan attack (i.e. scan packets per second).")
         print("-l Content Length: Fix the Content length to the number of")
-        print("   bytes designated. Less than one will set the length equal")
+        print("   bytes designated. Less than zero will set the length equal")
         print("   to the content generated by nfa, or a random number between")
         print("   10 and 1410 if random.  This length is applied to all data")
-        print("   bearing packets.")
-        print("-L Lapse: Time lapse between packets (microsecs). Default")
-        print("   is 1us. A value larger than 1 here will cause a random time")
-        print("   lapse between packets with the value as the average.")
+        print("   bearing packets.  Greater than zero will fix the content")
+        print("   length for each packet potentially padding or truncating")
+        print("   as necessary.")
+        print("-L Latency: Average latency for streams (microsecs). Default")
+        print("   is a random value between 1 and 200 microseconds for each.")
+        print("   stream.  The average will be different for each stream.")
         print("-m Full match: Fully match rules.  By default, generated")
         print("   content will only partially match rules, thus alerts")
         print("   should not be generated (not guaranteed though).")
-        print("- -M It allows to use a MAC distribution to have a custom MAC address")
-        print("   distribution in the traffic. By default, it will not use MAC")
-        print("   distribution file but it will generate a random address. More")
-        print("   information about the MAC definition file can be found in the")
-        print("   the examples/mac_definition_file.txt . If you only specify")
-        print("   one file, it will change both source and destination MAC")
-        print("   definition using one file. If you want to have a single destination")
-        print("   MAC and a single source MAC file, specify the argument as")
-        print("   'path1:path2'. Path1 will be MAC definition file for source,")
-        print("   path2 will be MAC definition file for destination. If you want")
-        print("   the source MAC is random value, specify argument as '?:path2'.")
-        print("   If you want the destination MAC is random value, specify argument")
-        print("   as 'path1:?' (? represent random values).")
+        print("-M Allows the use of a MAC distribution to have a custom MAC")
+        print("   addresses in the traffic.  By default, MAC addresses are")
+        print("   randomly generated. More information about the MAC")
+        print("   definition file can be found in the")
+        print("   examples/mac_definition_file.txt.")
+        print("   Note:  You can specify up to two MAC definition files")
+        print("   in order to set different values dependent on source or")
+        print("   destination MACs.  If you specify only one file, it will")
+        print("   be used for either direction. If you use the following")
+        print("   notation you can specify for specific directions.")
+        print("   For example: 'path1:path2'. Path1 will be MAC definition")
+        print("   file for source MACs and path2 will be the MAC definition")
+        print("   file for destination MACs. You may also use a question")
+        print("   mark (?) to designate one or the other as random as in:")
+        print("   '?:path2' to have random source MACs but use the file for.")
+        print("   destination MACs.")
         print("-o output file: designate the name of the output file.")
         print("   by default, the file is named: sniffles.pcap.")
         print("-O Offset: Offset before starting a scan attack.")
         print("   If used with the -R option this becomes the")
-        print("   offset for each new attack after the last attack")
-        print("   has finished.")
+        print("   average Offset for attacks.")
         print("-p Packets-per-stream: designate the number of ")
         print("   content-bearing packets for a single stream.")
         print("   If the value is a positive integer, then this is the exact")
@@ -612,15 +704,15 @@ class SnifflesConfig(object):
         print("   Otherwise ports will be scanned at random.")
         print("   If a single port is provided, then ports are sequentially")
         print("   scanned from that point onward, returning to the starting")
-        print("   port after 65535 is reached.")
+        print("   port after 65535 is reached.  For a list, the ports are")
+        print("   scanned through in round-robin fashion.")
         print("-r Random: Generate random content rather than from the")
         print("   rules.  If rules are still provided, the rules are used")
         print("   in the generation of the headers if they provide headers")
-        print("   (like in Snort rules.")
-        print("-R Random Syn Attacks: Will use the Offset to create scan")
-        print("   attacks in the traffic, but will use the offset only as a")
-        print("   median.  When all scan attacks are finished, more scans")
-        print("   will be created unitl the duration is finished.")
+        print("   (like in Snort rules).")
+        print("-R Random scan Attacks: Will use the Offset to create scan")
+        print("   attacks in the traffic, but will use the offset only as an")
+        print("   average. ")
         print("-s Scan Attack: followed by a comma-sep list of ipv4 addrs")
         print("   indicating what ip address to target.  Each IP range will")
         print("   create will create one scan attack.  The ranges should be")
@@ -636,10 +728,6 @@ class SnifflesConfig(object):
         print("-w write content: Write the content strings to a file")
         print("   called \'all.re\'.")
         print("-W Window: The window, or duration, of a scan attack.")
-        print("-x Split a pcap into two meta-files for use with traffobot.")
-        print("   no other options are valid if this is used.  This will")
-        print("   generate a pcap, but takes a pcap and generates two files")
-        print("   representing both sides of that pcap.")
         print("-Z Reply Chance: chance that a scan will have a reply.")
         print("   In other words, chance the targer port is open")
         print("   (default 20%).")

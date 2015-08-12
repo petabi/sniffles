@@ -96,13 +96,17 @@ class Conversation(object):
         communications.
     """
 
-    def __init__(self, con, sconf):
+    def __init__(self, con, sconf, sec=-1, usec=0):
         
         subclasses = get_all_subclasses(globals()["TrafficStream"])
 
         self.ts = []
         self.ts_active = SortedDict()
         self.started = False
+        current_sec = sec
+        current_usec = usec
+        if current_sec < 0:
+            sec = sconf.getFirstTimestamp()
 
         if con:
             tsrules = con.getTS()
@@ -112,7 +116,7 @@ class Conversation(object):
         while tsrules:
             myrule = tsrules.pop(0)
             mypkts = [RulePkt()]
-            myts = TrafficStream(myrule, sconf)
+            myts = TrafficStream(myrule, sconf, current_sec, current_usec)
 
             if myrule and myrule.getTypeTS() is not None:
                 useSubclass = False
@@ -125,13 +129,22 @@ class Conversation(object):
             self.ts.append(myts)
         self.updateStreams()
 
+    def __str__(self):
+        mystr = "Active TS:\n"
+        for ts in self.ts_active:
+            mystr += self.ts_active[ts]
+        mystr += "Waiting TS:"
+        for ts in self.ts:
+            mystr += self.tx
+        return myts
+
     # Returns the timestamp and the packet of the next packet to
     # send among the streams for this particular conversation.
-    def getNextPkt(self):
+    def getNextPacket(self):
         if not self.hasPackets():
             return None
         pkt = None
-        ts = self.ts_active.pop(0)
+        key, ts = self.ts_active.popitem()
         sec = 0
         usec = 0
         if ts.hasPackets():
@@ -153,11 +166,11 @@ class Conversation(object):
     def getNumberOfStreams(self):
         return len(self.ts_active) + len(self.ts)
 
-    def getNextTimeStamp():
+    def getNextTimeStamp(self):
         next_sec = -1
         next_usec = 0
         if self.ts_active:
-            next_sec, next_usec = self.ts_active.iloc[0].getNextTimeStamp()
+            next_sec, next_usec = self.ts_active[self.ts_active.iloc[0]].getNextTimeStamp()
         else:
             self.updateStream()
             return self.getNextTimeStamp()
@@ -166,11 +179,11 @@ class Conversation(object):
     def hasPackets(self):
         if self.ts_active:
             for ts in self.ts_active:
-                if ts.hasPackets():
+                if self.ts_active[ts].hasPackets():
                     return True
         if self.ts:
             for ts in self.ts:
-                if ts.hasPackets():
+                if self.ts[ts].hasPackets():
                     return True
         return False
 
@@ -186,7 +199,7 @@ class Conversation(object):
             if self.ts and len(self.ts) > 0:
                 while self.ts:
                     myts = self.ts.pop(0)
-                    sec, usec = ts.getNextTimeStamp()
+                    sec, usec = myts.getNextTimeStamp()
                     mytime = sec + usec/1000000
                     self.ts_active[mytime] = myts
                     if myts.getSynch():
@@ -202,10 +215,10 @@ class TrafficStream(object):
           getNextPacket() will return the next packet for this stream or
           None if there are no more packets for this stream.
 
-          has_packets() returns true if the stream has packets to send, or
+          hasPackets() returns true if the stream has packets to send, or
           false otherwise.
 
-          is_finished() returns true if the stream has no packets, or false
+          isFinished() returns true if the stream has no packets, or false
           otherwise (deprecated).
     """
 
@@ -272,6 +285,10 @@ class TrafficStream(object):
                 self.packets_in_stream = sconf.getPktsPerStream()
             self.rand = sconf.getRandom()
 
+        # Get values from the rule.  Will, in most cases, override
+        # settings from the sconf (i.e. command line).  The
+        # assumption is that if you are using a rule, you know
+        # what you are doing already.
         if rule:
             if not handshake and rule.getHandshake():
                 handshake = True
@@ -523,8 +540,9 @@ class TrafficStream(object):
                 while con:
                     self.eval_pkts.append(self.buildPkt(dir, ACK, con))
                     con = cg.get_next_published_content()
-                packets_in_stream = len(self.eval_pkts)
+                self.packets_in_stream = len(self.eval_pkts)
             pkt = self.eval_pkts.pop(0)
+            self.packets_in_stream -= 1
         else:
             if not ack_only:
                 cg = ContentGenerator(myrule, self.pkt_len, self.rand,
@@ -533,9 +551,18 @@ class TrafficStream(object):
             pkt = self.buildPkt(dir, ACK, con, seq, ack)
         return pkt
 
+    def getLatency(self):
+        return self.latency
+
     def getNextContentPacket(self):
         pkt = None
         isMalicious = False
+
+        if len(self.eval_pkts) > 0:
+            pkt = self.eval_pkts.pop(0)
+            self.packets_in_stream -= 1
+            return pkt
+
         # Handle complex rules such as fragments, out-of-order, etc.
         if self.myp:
             p = self.myp[0]
@@ -546,7 +573,7 @@ class TrafficStream(object):
             if self.p_count == 0:
                 self.p_count = p.getTimes()
 
-            # Handle acked packets
+            # Handle ACKs
             if self.next_is_ack:
                 pkt = self.buildPkt(self.ack_dir, ACK)
                 if self.advance_pkt:
@@ -554,6 +581,8 @@ class TrafficStream(object):
                     self.advance_pkt = False
                 self.next_is_ack = False
 
+            # Split packets (i.e. data is spread across multiple
+            # valid packets--No fragments).
             elif p.getSplit() > 0:
                 pkt = self.handleSplitPacket(p)
 
@@ -561,7 +590,7 @@ class TrafficStream(object):
             elif p.getFragment() > 0:
                 pkt, isMalicious = self.handleFragPacket(p)
 
-            # Out of order packet-level
+            # Out of order packets
             elif ((
                 p.getOutOfOrder() or self.stream_ooo) and self.proto == 'tcp'
             ):
@@ -581,7 +610,7 @@ class TrafficStream(object):
                         self.updateSequence(p.getDir(), pkt.content.get_size())
                         self.p_count -= 1
 
-            # Update TTL value getting from the rule (ignored if 256)
+            # Update TTL value from the rule (ignored if 256)
             # only if that packet is not malicious
             # In other words, isMalicious is none or false
             if p.getTTL() != 256 and not isMalicious:
@@ -964,8 +993,8 @@ class ScanAttack(TrafficStream):
         self.scan_type = SYN_SCAN
         self.shift_seq = False
         self.targets = None
-        self.t_ports = None
         self.tcp_overlap = False
+        self.t_ports = None
 
         if sconf:
             self.duration = sconf.getScanDuration()
@@ -1022,6 +1051,29 @@ class ScanAttack(TrafficStream):
             self.next_time_sec += self.offset
         self.latency = int(1000000/self.intensity)
 
+    def __str__(self):
+        mystr = "Scan Attack Traffic Stream\n"
+        mystr += "  Src IP: " + self.sip + "\n"
+        mystr += "  Src Port: " + self.sport + "\n"
+        mystr += "  Target IP: " + self.dip + "\n"
+        mystr += "  Target Ports: "
+        for p in self.t_ports:
+            mystr += p + ", "
+        mystr += "\n"
+        mystr += "  Offset: " + self.offset + "\n"
+        mystr += "  Intensity: " + self.intensity + "\n"
+        mystr += "  Duration: " + self.duration + "\n"
+        mystr += "  Scan Type: "
+        if self.scan_type == SYN_SCAN:
+            mystr += "SYN scan\n"
+        elif self.scan_type == CONNECTION_SCAN:
+            mystr += "Connection Scan\n"
+        else:
+            mystr += "Unknown scan type\n"
+        mystr += "  Reply chance: " + self.reply_chance + "\n"
+
+        return mystr
+
     def testTypeTS(self, value):
         if value == "ScanAttack":
             return True
@@ -1038,13 +1090,13 @@ class ScanAttack(TrafficStream):
                     self.num_packets -= 1
                 if self.scan_type is CONNECTION_SCAN:
                     self.finish_handshake = True
-                self.incrementTime(int(self.latency/2))
+                self.incrementTime(self.latency)
             elif self.finish_handshake:
                 pkt = self.buildPkt("to server", ACK)
                 self.updateSequence("to server", 1)
                 self.num_packets -= 1
                 self.finish_handshake = False
-                self.incrementTime(int(self.latency/2))
+                self.incrementTime(self.latency)
             else:
                 next_port = self.getNextPort(self.t_ports)
                 pkt = self.scanPacket(self.dip, next_port, self.mac_gen,
@@ -1052,7 +1104,7 @@ class ScanAttack(TrafficStream):
                 pick = random.randint(0, 100)
                 if pick <= self.reply_chance:
                     self.next_is_ack = True
-                    self.incrementTime(int(self.latency/2))
+                    self.incrementTime(self.latency)
                 else:
                     self.num_packets -= 1
                     self.incrementTime(self.latency)

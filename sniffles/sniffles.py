@@ -56,20 +56,14 @@ def main():
     print("!^!Sniffles v" + getVersion() +
           " -- Traffic Generation for NIDS evaluation.")
     print("Started at: ", start)
-    if sconf.getSplitFile():
-        myts = TrafficSplitter(sconf.getSplitFile())
-        myts.readPcap()
-        print("Split pcap: ", sconf.getSplitFile())
-        print("Into meta files: tfilea and tfileb")
-    else:
-        print(str(sconf))
-        mystats = start_generation(sconf)
-        print("Generated Streams: ", mystats[0])
-        print("Generated Packets: ", mystats[1])
-        tduration = mystats[2] - sconf.getFirstTimestamp()
-        if tduration < 0:
-            tduration = 0
-        print("Traffic Duration: ", tduration)
+    print(str(sconf))
+    mystats = start_generation(sconf)
+    print("Generated Streams: ", mystats[0])
+    print("Generated Packets: ", mystats[1])
+    tduration = mystats[2] - sconf.getFirstTimestamp()
+    if tduration < 0:
+        tduration = 0
+    print("Traffic Duration: ", tduration)
     end = datetime.datetime.now()
     print("Ending at: ", end)
     duration = end - start
@@ -112,7 +106,7 @@ def start_generation(sconf):
     allrules = myrulelist.getParsedRules()
     current = 0
     end = 0
-    current_sec = sconf.getFirstTimeStamp()
+    current_sec = sconf.getFirstTimestamp()
     current_usec = 0
     total_generated_streams = 0
     total_generated_packets = 0
@@ -141,8 +135,13 @@ def start_generation(sconf):
                                   base_offset,
                                   sconf.getScanReplyChance())
             conversation = Conversation(rule, sconf, current_sec)
-            sec, usec = conversation.getNextTimeSlot()
-            traffic_queue[(sec + (usec/1000000))] = conversation
+            sec, usec = conversation.getNextTimeStamp()
+            timekey = sec + (usec/1000000)
+            if timekey in traffic_queue:
+                traffic_queue[timekey].append(conversation)
+            else:
+                traffic_queue[timekey] = [conversation]
+            total_generated_streams += conversation.getNumberOfStreams()
 
     traffic_writer = TrafficWriter(sconf.getOutputFile(),
                                    sconf.getFirstTimestamp())
@@ -158,12 +157,16 @@ def start_generation(sconf):
     while current < end:
         myrule = None
         if allrules:
-            myrulen = copy.deepcopy(random.choice(allrules))
+            myrule = copy.deepcopy(random.choice(allrules))
             if sconf.getVerbosity():
                 print(myrule)
-        conversation = Conversation(myrule, sconf, current_sec, current_usec)
-        sec, usec = conversation.getNextTimeSlot()
-        traffic_queue[(sec + (usec/1000000))] = conversation
+        conversation = Conversation(myrule, sconf, current_sec, current_usec + random.randint(0,50))
+        sec, usec = conversation.getNextTimeStamp()
+        timekey = timekey = sec + (usec/1000000)
+        if timekey in traffic_queue:
+            traffic_queue[timekey].append(conversation)
+        else:
+            traffic_queue[timekey] = [conversation]
         total_generated_streams += conversation.getNumberOfStreams()
 
         # Need to track global value in case of interupt
@@ -221,10 +224,10 @@ def build_eval_pcap(rules, traffic_writer, sconf):
     for rule in rules:
         sconf.setFullMatch(sconf.getEval())
         rule.setLatency(1)
-        mycon = Conversation(rule, sconf, sconf.getFirstTimeStamp())
+        mycon = Conversation(rule, sconf, sconf.getFirstTimestamp())
         sec, usec = conversation.getNextTimeStamp()
         traffic_queue[(sec + (usec/1000000))] = conversation
-    current_sec = sconf.getFirstTimeStamp()
+    current_sec = sconf.getFirstTimestamp()
     current_usec = 0
     while traffic_queue:
         current_stream = traffic_queue.pop(0)
@@ -234,13 +237,13 @@ def build_eval_pcap(rules, traffic_writer, sconf):
                 current_sec, current_usec = traffic_writer.write_packet(
                     pkt.get_size(), pkt.get_packet(),
                     current_sec, current_usec)
-                    current_usec+=1
-                    if current_usec >= 1000000:
-                        current_sec += 1
-                        current_usec -= 1000000
-                    total_pkts += 1
-                    TOTAL_GENERATED_PACKETS = total_pkts
-                    FINAL = current_sec
+                current_usec+=1
+                if current_usec >= 1000000:
+                    current_sec += 1
+                    current_usec -= 1000000
+                total_pkts += 1
+                TOTAL_GENERATED_PACKETS = total_pkts
+                FINAL = current_sec
     traffic_writer.close_save_file()
     return [len(rules), total_pkts, current_time]
 
@@ -277,33 +280,38 @@ def write_packets(queue, traffic_writer, sconf):
     if not queue:
         print("No packets to write")
         return (0, traffic_writer.get_timestamp())
-    half_threshold = len(queue)
+    half_threshold = 0
     if len(queue) >= sconf.getConcurrentFlows():
         half_threshold = int(len(queue)/2)
     num_packets = 0
+    while queue and len(queue) > half_threshold:
 
-    while queue and len(queue) >= half_threshold:
+        key, con_list = queue.popitem(last=False)
+        for current_conversation in con_list:
+            if current_conversation.hasPackets():
+                # write that packet
+                pkt = None
+                current_secs, current_usecs = current_conversation.getNextTimeStamp()
+                s, u, pkt = current_conversation.getNextPacket()
+                if pkt is not None:
+                    traffic_writer.write_packet(pkt.get_size(), pkt.get_packet(),
+                                                s, u)
+                    num_packets += 1
 
-        current_conversation = queue.pop(0)
-        if current_conversation.hasPackets():
-            # write that packet
-            pkt = None
-            current_secs, current_usecs = current_conversation.getNextTimeStamp()
-            pkt = current_conversation.getNextPacket()
-            if pkt is not None:
-                traffic_writer.write_packet(pkt.get_size(), pkt.get_packet(),
-                                            current_secs, current_usecs)
-                num_packets += 1
-
+                else:
+                    print("Packets is none!!! Something is wrong")
+                    continue
             else:
-                print("Packets is none!!! Something is wrong")
                 continue
 
-        else:
-            continue
-        if current_conversation.hasPackets():
-            next_sec, next_usec = current_conversation.getNextTimeStamp()
-            queue[(current_secs + (current_usecs/1000000))] = current_conversation
+        for current_conversation in con_list:
+            if current_conversation.hasPackets():
+                next_sec, next_usec = current_conversation.getNextTimeStamp()
+                timekey = next_sec + (next_usec/1000000)
+                if timekey in queue:
+                    queue[timekey].append(current_conversation)
+                else:
+                    queue[timekey] = [current_conversation]
 
     return (num_packets, current_secs, current_usecs)
 
@@ -319,20 +327,26 @@ def handlerKeyboardInterupt(signum, frame):
     global START
     global FINAL
     print()
-    if TOTAL_GENERATED_STREAMS:
-        print("Generated Streams: ",TOTAL_GENERATED_STREAMS)
-    if TOTAL_GENERATED_PACKETS:
-        print("Generated Packets: ", TOTAL_GENERATED_PACKETS)
+    print(
+        "Generated Streams: ",
+        TOTAL_GENERATED_STREAMS if TOTAL_GENERATED_STREAMS else 0
+        )
+    print(
+        "Generated Packets: ",
+        TOTAL_GENERATED_PACKETS if TOTAL_GENERATED_PACKETS else 0
+        )
+    tduration = 0
     if GLOBAL_SCONF:
         tduration = FINAL - GLOBAL_SCONF.getFirstTimestamp()
         if tduration < 0:
             tduration = 0
-        print("Traffic Duration: ", tduration)
+    print("Traffic Duration: ", tduration)
+    end = datetime.datetime.now()
+    print("Generation finished at: ", end)
+    duration = 0
     if START:
-        end = datetime.datetime.now()
-        print("Ending at: ", end)
         duration = end - START
-        print("Generation Time: ", duration)
+    print("Generation Time: ", duration)
     sys.exit(0)
 
 if __name__ == "__main__":
