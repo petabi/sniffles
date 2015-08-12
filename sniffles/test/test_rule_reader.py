@@ -19,9 +19,9 @@ class TestRuleReader(TestCase):
         myrule.setTargetPorts(-3)
         self.assertEqual(myrule.getTargetPorts(), -3)
 
-        self.assertEqual(myrule.getBasePort(), 4)
-        myrule.setBasePort(-4)
-        self.assertEqual(myrule.getBasePort(), -4)
+        self.assertEqual(myrule.getSrcPort(), 4)
+        myrule.setSrcPort(-4)
+        self.assertEqual(myrule.getSrcPort(), -4)
 
         self.assertEqual(myrule.getDuration(), 5)
         myrule.setDuration(-5)

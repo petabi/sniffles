@@ -17,31 +17,31 @@ class TestRuleTrafficGenerator(TestCase):
         self.assertEqual(firstTSRule.getHandshake(), True)
         self.assertEqual(firstTSRule.getTeardown(), True)
         myTS = TrafficStream(firstTSRule)
-        pkt = myTS.getNextPacket()[0]
+        pkt = myTS.getNextPacket()
         initSeqClient = pkt.get_seq_num()
-        pkt = myTS.getNextPacket()[0]
+        pkt = myTS.getNextPacket()
         initSeqServer = pkt.get_seq_num()
-        pkt = myTS.getNextPacket()[0]
+        pkt = myTS.getNextPacket()
         self.assertEqual(pkt.get_seq_num() - initSeqClient, 1)
-        pkt = myTS.getNextPacket()[0]
+        pkt = myTS.getNextPacket()
         self.assertEqual(pkt.get_seq_num() - initSeqClient, 7)
-        pkt = myTS.getNextPacket()[0]
+        pkt = myTS.getNextPacket()
         self.assertEqual(pkt.get_seq_num() - initSeqClient, 12)
-        pkt = myTS.getNextPacket()[0]
+        pkt = myTS.getNextPacket()
         self.assertEqual(pkt.get_seq_num() - initSeqClient, 18)
-        pkt = myTS.getNextPacket()[0]
+        pkt = myTS.getNextPacket()
         self.assertEqual(pkt.get_seq_num() - initSeqClient, 24)
-        pkt = myTS.getNextPacket()[0]
+        pkt = myTS.getNextPacket()
         self.assertEqual(pkt.get_seq_num() - initSeqClient, 30)
-        pkt = myTS.getNextPacket()[0]
+        pkt = myTS.getNextPacket()
         self.assertEqual(pkt.get_seq_num() - initSeqClient, 36)
-        pkt = myTS.getNextPacket()[0]
+        pkt = myTS.getNextPacket()
         self.assertEqual(pkt.get_seq_num() - initSeqClient, 43)
-        pkt = myTS.getNextPacket()[0]
+        pkt = myTS.getNextPacket()
         self.assertEqual(pkt.get_seq_num() - initSeqServer, 1)
-        pkt = myTS.getNextPacket()[0]
+        pkt = myTS.getNextPacket()
         self.assertEqual(pkt.get_seq_num() - initSeqServer, 1)
-        pkt = myTS.getNextPacket()[0]
+        pkt = myTS.getNextPacket()
         self.assertEqual(pkt.get_seq_num() - initSeqClient, 44)
 
     def test_build_random_ethernet_header(self):
@@ -580,16 +580,16 @@ class TestRuleTrafficGenerator(TestCase):
         rule.setSrcIp('192.168.1.1')
         scanner = ScanAttack(rule, None)
 
-        self.assertEqual(scanner.get_number_of_packets(), 100)
-        mypkt = scanner.getNextPacket()[0]
-        self.assertEqual(scanner.get_number_of_packets(), 100)
+        self.assertEqual(scanner.getPacketsRemaining(), 100)
+        mypkt = scanner.getNextPacket()
+        self.assertEqual(scanner.getPacketsRemaining(), 100)
         self.assertEqual(mypkt.get_content_length(), 0)
         self.assertEqual(mypkt.get_src_ip(), '192.168.1.1')
-        mypkt = scanner.getNextPacket()[0]
-        self.assertEqual(scanner.get_number_of_packets(), 99)
+        mypkt = scanner.getNextPacket()
+        self.assertEqual(scanner.getPacketsRemaining(), 99)
         for i in range(0, 197):
             scanner.getNextPacket()
-        self.assertEqual(scanner.get_number_of_packets(), 1)
+        self.assertEqual(scanner.getPacketsRemaining(), 1)
 
         rule = ScanAttackRule(CONNECTION_SCAN, '192.168.1.2',
                               ['1', '2', '3', '4'],
@@ -598,15 +598,15 @@ class TestRuleTrafficGenerator(TestCase):
 
         scanner = ScanAttack(rule, None)
 
-        self.assertEqual(scanner.get_number_of_packets(), 100)
+        self.assertEqual(scanner.getPacketsRemaining(), 100)
         for i in range(0, 299):
             scanner.getNextPacket()
-        self.assertEqual(scanner.get_number_of_packets(), 1)
+        self.assertEqual(scanner.getPacketsRemaining(), 1)
 
     def test_traffic_stream_rand(self):
         myts = TrafficStream()
-        self.assertEqual(myts.has_packets(), True)
-        myp = myts.getNextPacket()[0]
+        self.assertEqual(myts.hasPackets(), True)
+        myp = myts.getNextPacket()
         self.assertNotEqual(myp.get_size(), 0)
 
         myConfig = SnifflesConfig()
@@ -616,8 +616,8 @@ class TestRuleTrafficGenerator(TestCase):
         myts = TrafficStream(None, myConfig)
 
         mycount = 0
-        while myts.has_packets():
-            mypkt = myts.getNextPacket()[0]
+        while myts.hasPackets():
+            mypkt = myts.getNextPacket()
             if mypkt.get_proto() == 'tcp':
                 self.assertEqual(mypkt.get_size(), 154)
             elif mypkt.get_proto() == 'udp':
@@ -636,32 +636,32 @@ class TestRuleTrafficGenerator(TestCase):
 
         myts = TrafficStream(None, myConfig)
 
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         while mypkt.get_proto() != 'tcp':
             myts = TrafficStream(None, myConfig)
-            mypkt = myts.getNextPacket()[0]
+            mypkt = myts.getNextPacket()
         myseq = mypkt.transport_hdr.get_seq_num()
 
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), (SYN + ACK))
         myack = mypkt.transport_hdr.get_seq_num()
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
         self.assertEqual(mypkt.transport_hdr.get_seq_num(), myseq+1)
         self.assertEqual(mypkt.transport_hdr.get_ack_num(), myack+1)
         self.assertEqual(mypkt.get_size(), 254)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_ack_num(), (myseq + 201))
         self.assertEqual(mypkt.get_size(), 54)
         self.assertEqual(mypkt.get_content().get_size(), 0)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
 
     def test_traffic_stream_frags(self):
@@ -682,38 +682,38 @@ class TestRuleTrafficGenerator(TestCase):
 
         myts = TrafficStream(mytsrule, myConfig)
 
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         myseq = mypkt.transport_hdr.get_seq_num()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), (SYN + ACK))
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
         self.assertEqual(mypkt.transport_hdr.get_seq_num(), myseq+1)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertNotEqual(mypkt.network_hdr.get_frag_id(), 0)
         self.assertIn(mypkt.network_hdr.get_frag_offset(), [8192, 8213, 42])
         self.assertIn(mypkt.get_size(), [202, 218])
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertIn(mypkt.get_size(), [202, 218])
         self.assertIn(mypkt.network_hdr.get_frag_offset(), [8192, 8213, 42])
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertIn(mypkt.network_hdr.get_frag_offset(), [8192, 8213, 42])
         self.assertIn(mypkt.get_size(), [202, 218])
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.get_size(), 54)
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertNotEqual(mypkt.network_hdr.get_frag_id(), 0)
         self.assertIn(mypkt.network_hdr.get_frag_offset(), [8192, 8213, 42])
         self.assertIn(mypkt.get_size(), [202, 218])
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertIn(mypkt.get_size(), [202, 218])
         self.assertIn(mypkt.network_hdr.get_frag_offset(), [8192, 8213, 42])
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertIn(mypkt.network_hdr.get_frag_offset(), [8192, 8213, 42])
         self.assertIn(mypkt.get_size(), [202, 218])
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.get_size(), 54)
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
 
@@ -732,13 +732,13 @@ class TestRuleTrafficGenerator(TestCase):
 
         myts = TrafficStream(mytsrule, myConfig)
 
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         myseq = mypkt.transport_hdr.get_seq_num()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), (SYN + ACK))
-        while myts.has_packets():
-            mypkt = myts.getNextPacket()[0]
+        while myts.hasPackets():
+            mypkt = myts.getNextPacket()
             if mypkt.get_content() is None or \
                mypkt.get_content().get_size() == 0:
                 self.assertIn(mypkt.transport_hdr.get_ack_num(), [myseq + 1,
@@ -763,13 +763,13 @@ class TestRuleTrafficGenerator(TestCase):
 
         myts = TrafficStream(mytsrule, myConfig)
 
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         myseq = mypkt.transport_hdr.get_seq_num()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), (SYN + ACK))
-        while myts.has_packets():
-            mypkt = myts.getNextPacket()[0]
+        while myts.hasPackets():
+            mypkt = myts.getNextPacket()
             if mypkt.get_content() is None or \
                mypkt.get_content().get_size() == 0:
                 self.assertIn(mypkt.transport_hdr.get_ack_num(), [myseq + 1,
@@ -791,18 +791,18 @@ class TestRuleTrafficGenerator(TestCase):
 
         myts = TrafficStream(mytsrule, myConfig)
 
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
         self.assertEqual(mypkt.get_content().get_size(), 5)
         self.assertEqual(mypkt.get_content().get_data(), b'abcde')
 
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
         self.assertNotEqual(mypkt.get_content().get_data(), b'abcde')
         self.assertEqual(mypkt.get_content().get_data(), b'fghij')
         self.assertEqual(mypkt.get_content().get_size(), 5)
 
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt, None)
 
     def test_traffic_stream_split_too_large(self):
@@ -816,11 +816,11 @@ class TestRuleTrafficGenerator(TestCase):
         myts = TrafficStream(mytsrule, myConfig)
 
         for i in range(0, 5):
-            mypkt = myts.getNextPacket()[0]
+            mypkt = myts.getNextPacket()
             self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
             self.assertEqual(mypkt.get_content().get_size(), 1)
             if i < 4:
                 self.assertIn(mypkt.get_content().get_data(), [b'1', b'2',
                               b'3', b'4', b'5'])
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt, None)

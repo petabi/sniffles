@@ -4,6 +4,9 @@ import struct
 import socket
 import sys
 import copy
+import datetime
+import calendar
+import time
 from os import listdir
 from os.path import isfile, join
 from sniffles.rulereader import *
@@ -259,7 +262,7 @@ class TrafficStream(object):
             self.flow_ack = sconf.getTCPACK()
             self.full_eval = sconf.getFullEval()
             self.full_match = sconf.getFullMatch()
-            if sconf.getTimeLapse() > 0:
+            if sconf.getLatency() > 0:
                 self.latency = sconf.getTimeLapse()
             self.mac_def_file = sconf.getMacAddrDef()
             if self.mac_def_file:
@@ -278,7 +281,7 @@ class TrafficStream(object):
                 ipv6_percent = 100
             if rule.getLength() >= 0:
                 self.pkt_len = rule.getLength()
-            if rule.getLatency() > 0:
+            if rule.getLatency() is not None and rule.getLatency() > 0:
                 self.latency = rule.getLatency()
             flow_opts = rule.getFlowOptions()
             self.myp = rule.getPkts()
@@ -342,7 +345,10 @@ class TrafficStream(object):
         if start_sec > 0:
             self.next_time_sec = start_sec
         else:
-            self.next_time_sec = sconf.getFirstTimestamp()
+            if sconf:
+                self.next_time_sec = sconf.getFirstTimestamp()
+            else:
+                self.next_time_sec = int(calendar.timegm(time.gmtime()))
         self.next_time_usec = start_usec
         while self.next_time_usec > 1000000:
             self.next_time_sec += 1
@@ -671,6 +677,9 @@ class TrafficStream(object):
     def getNextTimeStamp(self):
         return self.next_time_sec, self.next_time_usec
 
+    def getPacketsRemaining(self):
+        return self.header + self.packets_in_stream + self.footer
+
     def getSynch(self):
         return self.synch
 
@@ -894,7 +903,7 @@ class TrafficStream(object):
                 self.p_count -= 1
         return pkt
 
-    def has_packets(self):
+    def hasPackets(self):
         if (self.header + self.packets_in_stream + self.footer) > 0:
             return True
         else:
@@ -946,6 +955,8 @@ class ScanAttack(TrafficStream):
         self.mac_def_file = None
         self.mac_gen = ETHERNET_HDR_GEN_RANDOM
         self.next_is_ack = False
+        self.next_time_sec = 0
+        self.next_time_usec = 0
         self.num_packets = self.intensity * self.duration
         self.offset = 0.0
         self.proto = 'tcp'
@@ -1001,7 +1012,10 @@ class ScanAttack(TrafficStream):
 
         # set initial time
         if start_sec < 0:
-            self.next_time_sec = sconf.getFirstTimestamp()
+            if sconf:
+                self.next_time_sec = sconf.getFirstTimestamp()
+            else:
+                self.next_time_sec = int(calendar.timegm(time.gmtime()))
         else:
             self.next_time_sec = start_sec
         if self.offset > 0:
@@ -1024,24 +1038,24 @@ class ScanAttack(TrafficStream):
                     self.num_packets -= 1
                 if self.scan_type is CONNECTION_SCAN:
                     self.finish_handshake = True
-                self.incrementTimestamp(int(self.latency/2))
+                self.incrementTime(int(self.latency/2))
             elif self.finish_handshake:
                 pkt = self.buildPkt("to server", ACK)
                 self.updateSequence("to server", 1)
                 self.num_packets -= 1
                 self.finish_handshake = False
-                self.incrementTimestamp(int(self.latency/2))
+                self.incrementTime(int(self.latency/2))
             else:
-                next_port = self.get_next_port(self.t_ports)
+                next_port = self.getNextPort(self.t_ports)
                 pkt = self.scanPacket(self.dip, next_port, self.mac_gen,
                                        self.mac_def_file)
                 pick = random.randint(0, 100)
                 if pick <= self.reply_chance:
                     self.next_is_ack = True
-                    self.incrementTimestamp(int(self.latency/2))
+                    self.incrementTime(int(self.latency/2))
                 else:
                     self.num_packets -= 1
-                    self.incrementTimestamp(self.latency)
+                    self.incrementTime(self.latency)
         return pkt
 
     def getNextPort(self, target_ports=None):
@@ -1060,6 +1074,9 @@ class ScanAttack(TrafficStream):
 
     def getOffset(self):
         return self.offset
+
+    def getPacketsRemaining(self):
+        return self.num_packets
 
     def hasPackets(self):
         if self.num_packets > 0:
