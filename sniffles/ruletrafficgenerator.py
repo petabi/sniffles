@@ -200,8 +200,11 @@ class Conversation(object):
                 while self.ts:
                     myts = self.ts.pop(0)
                     sec, usec = myts.getNextTimeStamp()
-                    mytime = sec + usec/1000000
-                    self.ts_active[mytime] = myts
+                    timekey = sec + usec/1000000
+                    while timekey in self.ts_active:
+                        usec += 1
+                        timekey = sec + usec/1000000
+                    self.ts_active[timekey] = myts
                     if myts.getSynch():
                         break
 
