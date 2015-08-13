@@ -602,13 +602,12 @@ class TrafficStream(object):
             # Just a normal packet
             else:
                 pkt = self.createNormalPacket(p.getDir(), False, p)
-                if type(pkt) is list:
-                    self.packets_in_stream = 0
-                    self.header = 0
-                    self.footer = 0
+                self.updateSequence(p.getDir(), pkt.content.get_size())
+                if self.flow_ack or p.ackThis():
+                    self.next_is_ack = True
+                    self.advance_pkt = True
                 else:
-                        self.updateSequence(p.getDir(), pkt.content.get_size())
-                        self.p_count -= 1
+                    self.p_count -= 1
 
             # Update TTL value from the rule (ignored if 256)
             # only if that packet is not malicious
@@ -638,7 +637,7 @@ class TrafficStream(object):
                 pkt = self.createNormalPacket("to server")
                 if not self.full_eval:
                     self.updateSequence("to server", pkt.content.get_size())
-                if self.flow_ack:
+                if self.flow_ack or p.ackThis():
                     self.next_is_ack = True
                     self.advance_pkt = True
                 else:
