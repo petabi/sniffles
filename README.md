@@ -60,17 +60,24 @@ Install
 REQUIRES: Python 3.3+ and the SortedContainers module
 
 Sniffles consists of the following files:
-- sniffles.py: The main program managing the process.
-- sniffles_config.py: handles command line input and options for Sniffles.
 - rulereader.py: The parser for rules.
 - ruletrafficgenerator.py: The tool for generating content streams.
+- sniffles.py: The main program managing the process.
+- sniffles_config.py: handles command line input and options for Sniffles.
 - traffic_writer.py: Writes a packet into a pcap compatible file.
   Does not require libpcap.
 - vendor_mac_list.py: Contains MAC Organisationally Unique
   Identifiers used for generating semi-realistic MAC addresses rather
   than just randomly mashed together octets.
-- vendor_mac_definition.txt: Optional file for defining the
+- examples/vendor_mac_definition.txt: Optional file for defining the
   distribution of partial or full MAC addresses.
+- pcre files for pcre (pcre_chartables.c pcre_compile.c pcre_globals.c
+pcre_internal.h pcre_newline.c pcre_tables.c pcre.h pcrecomp.c pcreconf.py
+ucp.h).
+- nfa.py: for traversing NFA.
+- regex_generator.py: The code for generating random regular expressions.
+- rand_rule_gen.py, feature.py, and rule_formats.py: modules for generating
+random rule sets.
 
 To install:
 
