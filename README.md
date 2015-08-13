@@ -495,6 +495,9 @@ In detail, the tags work as follows:
                   are 1 to 99 representing the chance that a packet will be dropped.
                   Note, the packet drop only happens on data-bearing packets, not
                   on the acks.
+                - ack: Have every data packet in this flow be followed by
+                  an ACK from the server.  Valid values are true or false.
+                  Default is false.
             - `<pkt > </pkt>`:  This directive designates either an individual
               packet or a series of packets.  The times feature can be used to have
               one <pkt> </pkt> directive generate several packets.  Otherwise, it is

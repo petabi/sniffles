@@ -295,6 +295,8 @@ class TrafficStream(object):
                 self.pkt_len = rule.getLength()
             if rule.getLatency() is not None and rule.getLatency() > 0:
                 self.latency = rule.getLatency()
+            if rule.getAck():
+                self.flow_ack = True
             flow_opts = rule.getFlowOptions()
             self.myp = rule.getPkts()
             self.packets_in_stream = len(rule.getPkts())
@@ -760,8 +762,10 @@ class TrafficStream(object):
                     self.frag_con_size = 0
                 if self.flow_ack or p.ackThis():
                     self.next_is_ack = True
+                    self.advance_packet = True
                 else:
                     self.p_count -= 1
+
         return pkt, ttlexpi
 
     def handleLostPacket(self, p=None):

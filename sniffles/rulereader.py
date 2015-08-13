@@ -417,8 +417,10 @@ class TrafficStreamRule(object):
     def __init__(self, proto="any", sip="$EXTERNAL_NET", dip="$HOME_NET",
                  sport="any", dport="any", len=-1, ipv=4, synch=False,
                  handshake=False, teardown=False, ooo=False,
-                 ooo_prob=50, loss=0, flow="to server", latency=None):
+                 ooo_prob=50, loss=0, flow="to server", ack=False,
+                 latency=None):
 
+        self.ack = ack
         self.content = []
         self.dport = dport
         self.dst_ip = dip
@@ -479,6 +481,9 @@ class TrafficStreamRule(object):
         return False
 
     # accessors
+    def getAck(self):
+        return self.ack
+
     def getTCPOverlap(self):
         return self.tcp_overlap
 
@@ -540,6 +545,9 @@ class TrafficStreamRule(object):
                 self.content.append(pktrule)
             else:
                 self.content = [pktrule]
+
+    def setAck(self, value):
+        self.ack = value
 
     def setTCPOverlap(self, value):
         self.tcp_overlap = value
@@ -1065,6 +1073,9 @@ class PetabiRuleParser(RuleParser):
                     mytsrule.setTypeTS(typeRuleTS)
                 else:
                     mytsrule = TrafficStreamRule()
+                if 'ack' in ts.attrib:
+                    if ts.attrib['ack'].lower() == 'true':
+                        mytsrule.setAck(True)
                 if 'tcp_overlap' in ts.attrib:
                     if ts.attrib['tcp_overlap'].lower() == 'true':
                         mytsrule.setTCPOverlap(True)
