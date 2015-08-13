@@ -369,7 +369,7 @@ class TrafficStream(object):
             else:
                 self.next_time_sec = int(calendar.timegm(time.gmtime()))
         self.next_time_usec = start_usec
-        while self.next_time_usec > 1000000:
+        while self.next_time_usec >= 1000000:
             self.next_time_sec += 1
             self.next_time_usec -= 1000000
 
@@ -950,7 +950,7 @@ class TrafficStream(object):
 
     def incrementTime(self, usec):
         self.next_time_usec += usec
-        while self.next_time_usec > 1000000:
+        while self.next_time_usec >= 1000000:
             self.next_time_sec += 1
             self.next_time_usec -= 1000000
 
