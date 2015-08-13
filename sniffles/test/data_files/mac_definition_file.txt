@@ -1,0 +1,43 @@
+#Definition file for MAC Addresses
+#the # symbol designates comments.
+#Domain designates the total domain to work in.  It must
+#be larger than the total number of MAC addresses.
+#This, then, is the domain within which statistical chance may
+#be assigned to MAC addresses.  For example, the default is
+#to have a domain of 100.  This implies operating within
+#1 and 100 to assign probabilities to each MAC address.
+#obviously, the probabilities should not sum to more than
+#the domain
+domain = 100
+
+#MAC addresses are defined by the address = percent.
+#The MAC Address may be defined by any number of octets up to
+#6 (the maximum).  Any non-specified octets will be randomly
+#generated.  All randomly generated octets come after designated
+#octets have been processed.
+#
+#Examples:
+#
+#The following would designate 32% of all generated MAC addresses
+#with the first 3 bytes 00E0B0.  The remaining three bytes would be
+#randomly generated.
+#00E0B0 = 32
+#
+#The following designates a secondary format for the MAC address.  Further
+#it would set the first 4 bytes of 10% of the MAC addresses generated.
+#Note, the quoted probabilities assume a domain of 100.
+#0x00 0x80 0x5A 0x12 = 10
+
+00805A36 = 10
+00805B987654 = 20
+00805C = 10
+00805F = 10
+0080602143 = 20
+008062 = 10
+00806388 = 10
+008064 = 5
+0080674554 = 1
+008069123456 = 1
+0x00 0X80 0x6A = 1
+0x00 0x80 0x6B = 1
+00806C = 1
