@@ -62,9 +62,9 @@ def main():
     tduration = mystats[2] - sconf.getFirstTimestamp()
     if tduration < 0:
         tduration = 0
-    print("Traffic Duration: ", tduration)
+    print("Traffic Duration in seconds (rounded down): ", tduration)
     end = datetime.datetime.now()
-    print("Ending at: ", end)
+    print("Generation finished at: ", end)
     duration = end - start
     print("Generation Time: ", duration)
     sys.exit(0)
@@ -226,31 +226,27 @@ def build_eval_pcap(rules, traffic_writer, sconf):
     """
     traffic_queue = []
     total_pkts = 0
+    if rules is None:
+        print("No rules were provided.")
+        return [0, 0, 0]
     for rule in rules:
         sconf.setFullMatch(sconf.getEval())
-        rule.setLatency(1)
-        mycon = Conversation(rule, sconf, sconf.getFirstTimestamp())
-        sec, usec = conversation.getNextTimeStamp()
-        traffic_queue[(sec + (usec/1000000))] = conversation
-    current_sec = sconf.getFirstTimestamp()
-    current_usec = 0
+        mycon = Conversation(rule, sconf, 0)
+        traffic_queue.append(mycon)
+    mytimer = 0
     while traffic_queue:
         current_stream = traffic_queue.pop(0)
-        while current_stream.has_packets():
-            pkt = current_stream.getNextPkts()
+        while current_stream.hasPackets():
+            s, u, pkt = current_stream.getNextPacket()
             if pkt:
-                current_sec, current_usec = traffic_writer.write_packet(
+                traffic_writer.write_packet(
                     pkt.get_size(), pkt.get_packet(),
-                    current_sec, current_usec)
-                current_usec+=1
-                if current_usec >= 1000000:
-                    current_sec += 1
-                    current_usec -= 1000000
+                    0, mytimer)
+                mytimer += 1
                 total_pkts += 1
                 TOTAL_GENERATED_PACKETS = total_pkts
-                FINAL = current_sec
     traffic_writer.close_save_file()
-    return [len(rules), total_pkts, current_time]
+    return [len(rules), total_pkts, 0]
 
 
 def printRegEx(rules):
