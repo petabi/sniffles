@@ -1243,6 +1243,9 @@ class RuleList:
                 myp = p()
                 if myp.testForRuleFile(filename):
                     return myp
+        print("Could not find a parser for the rules provided.")
+        print("Using a generic rule parser.  This probably does")
+        print("not do what you are expecting!")
         return RuleParser()
 
     def readRuleFile(self, filename):
