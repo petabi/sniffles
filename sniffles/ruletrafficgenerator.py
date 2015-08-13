@@ -639,7 +639,7 @@ class TrafficStream(object):
                 pkt = self.createNormalPacket("to server")
                 if not self.full_eval:
                     self.updateSequence("to server", pkt.content.get_size())
-                if self.flow_ack or p.ackThis():
+                if self.flow_ack:
                     self.next_is_ack = True
                     self.advance_pkt = True
                 else:
