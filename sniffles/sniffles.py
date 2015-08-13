@@ -9,7 +9,6 @@ from sniffles.rulereader import *
 from sniffles.ruletrafficgenerator import *
 from sniffles.traffic_writer import *
 from sniffles.snifflesconfig import *
-from sniffles.traffic_splitter import *
 TOTAL_GENERATED_PACKETS = 0
 TOTAL_GENERATED_STREAMS = 0
 GLOBAL_SCONF = None
