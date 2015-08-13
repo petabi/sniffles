@@ -9,6 +9,7 @@ import calendar
 import time
 from os import listdir
 from os.path import isfile, join
+from collections import *
 from sniffles.rulereader import *
 from sniffles.nfa import *
 from sniffles.vendor_mac_list import VENDOR_MAC_OUI
@@ -268,6 +269,7 @@ class TrafficStream(object):
             self.flow_ack = sconf.getTCPACK()
             self.full_eval = sconf.getFullEval()
             self.full_match = sconf.getFullMatch()
+            ipv6_percent = sconf.getIPV6Percent()
             if sconf.getLatency() > 0:
                 self.latency = sconf.getLatency()
             self.mac_def_file = sconf.getMacAddrDef()
@@ -1853,7 +1855,7 @@ class EthernetFrame:
                     print("Could not open mac definition file: ", path)
                     sys.exit(1)
 
-                VENDOR_MAC_DIST[origin] = {}
+                VENDOR_MAC_DIST[origin] = OrderedDict()
 
                 line = fd.readline()
                 base_prob = 0
@@ -1956,20 +1958,11 @@ class EthernetFrame:
         dist_map = VENDOR_MAC_DIST[origin].keys()
         pick = random.randint(1, VENDOR_MAC_DIST_DOMAIN[origin])
         prefix = []
-        last_key = 0
 
         for i in dist_map:
-            if i > pick:
-                prefix = VENDOR_MAC_DIST[origin][last_key]
+            prefix = VENDOR_MAC_DIST[origin][i]
+            if i >= pick:
                 break
-            elif i == pick:
-                prefix = VENDOR_MAC_DIST[origin][i]
-                break
-            else:
-                last_key = i
-
-        if not prefix:
-            prefix = VENDOR_MAC_DIST[origin][last_key]
         return prefix
 
     def get_datalink_hdr_size(self):
