@@ -126,14 +126,15 @@ def start_generation(sconf):
                                          sconf.getScanOffset()/4))
             else:
                 base_offset += int(sconf.getScanOffset())
-
-            rule = ScanAttackRule(sconf.getScanType(), t,
+            rule = Rule("Scan Attack")
+            r_ts = ScanAttackRule(sconf.getScanType(), t,
                                   sconf.getTargetPorts(),
                                   None,
                                   sconf.getScanDuration(),
                                   sconf.getIntensity(),
                                   base_offset,
                                   sconf.getScanReplyChance())
+            rule.addTS(r_ts)
             conversation = Conversation(rule, sconf, current_sec)
             sec, usec = conversation.getNextTimeStamp()
             timekey = sec + (usec/1000000)
@@ -160,7 +161,10 @@ def start_generation(sconf):
             myrule = copy.deepcopy(random.choice(allrules))
             if sconf.getVerbosity():
                 print(myrule)
-        conversation = Conversation(myrule, sconf, current_sec, current_usec + random.randint(0,50))
+        conversation = Conversation(
+              myrule, sconf, current_sec, current_usec +
+              random.randint(0,sconf.getConcurrentFlows() + 1)
+            )
         sec, usec = conversation.getNextTimeStamp()
         timekey = timekey = sec + (usec/1000000)
         if timekey in traffic_queue:
@@ -171,7 +175,6 @@ def start_generation(sconf):
 
         # Need to track global value in case of interupt
         TOTAL_GENERATED_STREAMS = total_generated_streams
-
         if len(traffic_queue) >= sconf.getConcurrentFlows():
             pkts, current_sec, current_usec = write_packets(traffic_queue, traffic_writer,
                                                             sconf)
@@ -281,6 +284,8 @@ def write_packets(queue, traffic_writer, sconf):
         print("No packets to write")
         return (0, traffic_writer.get_timestamp())
     half_threshold = 0
+    last_sec = 0
+    last_usec = 0
     if len(queue) >= sconf.getConcurrentFlows():
         half_threshold = int(len(queue)/2)
     num_packets = 0
@@ -292,6 +297,10 @@ def write_packets(queue, traffic_writer, sconf):
                 # write that packet
                 pkt = None
                 current_secs, current_usecs = current_conversation.getNextTimeStamp()
+                if current_secs > last_sec:
+                    last_sec = current_secs
+                if current_usecs > last_usec:
+                    last_usec = current_usecs
                 s, u, pkt = current_conversation.getNextPacket()
                 if pkt is not None:
                     traffic_writer.write_packet(pkt.get_size(), pkt.get_packet(),
@@ -307,13 +316,23 @@ def write_packets(queue, traffic_writer, sconf):
         for current_conversation in con_list:
             if current_conversation.hasPackets():
                 next_sec, next_usec = current_conversation.getNextTimeStamp()
+                if next_sec > last_sec:
+                    last_sec = next_sec
+                if next_usec > next_usec:
+                    last_usec = current_usecs
                 timekey = next_sec + (next_usec/1000000)
                 if timekey in queue:
                     queue[timekey].append(current_conversation)
                 else:
                     queue[timekey] = [current_conversation]
+            else:
+                next_sec, next_usec = current_conversation.getNextTimeStamp()
+                if next_sec > last_sec:
+                    last_sec = next_sec
+                if next_usec > next_usec:
+                    last_usec = current_usecs
 
-    return (num_packets, current_secs, current_usecs)
+    return (num_packets, last_sec, last_usec)
 
 
 def handlerKeyboardInterupt(signum, frame):

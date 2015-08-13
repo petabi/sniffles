@@ -97,9 +97,6 @@ class Conversation(object):
     """
 
     def __init__(self, con, sconf, sec=-1, usec=0):
-        
-        subclasses = get_all_subclasses(globals()["TrafficStream"])
-
         self.ts = []
         self.ts_active = SortedDict()
         self.started = False
@@ -107,7 +104,6 @@ class Conversation(object):
         current_usec = usec
         if current_sec < 0:
             sec = sconf.getFirstTimestamp()
-
         if con:
             tsrules = con.getTS()
         else:
@@ -115,17 +111,10 @@ class Conversation(object):
 
         while tsrules:
             myrule = tsrules.pop(0)
-            mypkts = [RulePkt()]
-            myts = TrafficStream(myrule, sconf, current_sec, current_usec)
-
-            if myrule and myrule.getTypeTS() is not None:
-                useSubclass = False
-                for subclass in subclasses:
-                    subInstance = subclass()
-                    if subInstance.testTypeTS(myrule.getTypeTS()):
-                        myts = subclass(myrule, sconf)
-                        useSubclass = True
-                        break
+            if myrule:
+                myts = myrule.getTrafficStreamObject(sconf, sec, usec)
+            else:
+                myts = TrafficStream(None, sconf, sec, usec)
             self.ts.append(myts)
         self.updateStreams()
 
@@ -172,8 +161,9 @@ class Conversation(object):
         if self.ts_active:
             next_sec, next_usec = self.ts_active[self.ts_active.iloc[0]].getNextTimeStamp()
         else:
-            self.updateStream()
-            return self.getNextTimeStamp()
+            self.updateStreams()
+            if self.ts_active:
+                return self.getNextTimeStamp()
         return next_sec, next_usec
 
     def hasPackets(self):
@@ -279,7 +269,7 @@ class TrafficStream(object):
             self.full_eval = sconf.getFullEval()
             self.full_match = sconf.getFullMatch()
             if sconf.getLatency() > 0:
-                self.latency = sconf.getTimeLapse()
+                self.latency = sconf.getLatency()
             self.mac_def_file = sconf.getMacAddrDef()
             if self.mac_def_file:
                 self.mac_gen = ETHERNET_HDR_GEN_DISTRIBUTION
@@ -973,7 +963,7 @@ class ScanAttack(TrafficStream):
     """
 
     def __init__(self, rule=None, sconf=None, start_sec=-1, u_sec=0):
-
+        super().__init__()
         src_ip = None
         src_port = None
 

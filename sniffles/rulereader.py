@@ -5,6 +5,7 @@ import random
 from os import listdir
 from os.path import isfile, join
 import xml.etree.ElementTree as ET
+from sniffles.ruletrafficgenerator import *
 
 # Variables used for Snort rules
 CONTENT_MODIFIERS = ['distance', 'offset', 'nocase', 'fast_pattern',
@@ -591,6 +592,9 @@ class TrafficStreamRule(object):
     def setTeardown(self, td=False):
         self.teardown = td
 
+    def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
+        return TrafficStream(self, sconf, secs, usecs)
+
 
 class ScanAttackRule(TrafficStreamRule):
 
@@ -660,6 +664,8 @@ class ScanAttackRule(TrafficStreamRule):
     def setOffset(self, value):
         self.offset = value
 
+    def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
+        return ScanAttack(self, sconf, secs, usecs)
 
 class SnortRuleContent(RuleContent):
     def __init__(self, type=None, content=None):
