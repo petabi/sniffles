@@ -109,6 +109,7 @@ def start_generation(sconf):
     current_usec = 0
     total_generated_streams = 0
     total_generated_packets = 0
+    flow_start_offset = 0
     traffic_queue = SortedDict()
 
     if sconf.getWriteRegEx():
@@ -160,10 +161,12 @@ def start_generation(sconf):
             myrule = copy.deepcopy(random.choice(allrules))
             if sconf.getVerbosity():
                 print(myrule)
+        flow_start_offset = random.randint(
+            1, sconf.getConcurrentFlows() + 100000
+        )
         conversation = Conversation(
-              myrule, sconf, current_sec, current_usec +
-              random.randint(0,sconf.getConcurrentFlows() + 1)
-            )
+              myrule, sconf, current_sec, current_usec + flow_start_offset
+        )
         sec, usec = conversation.getNextTimeStamp()
         timekey = timekey = sec + (usec/1000000)
         if timekey in traffic_queue:
@@ -358,7 +361,7 @@ def handlerKeyboardInterupt(signum, frame):
         tduration = FINAL - GLOBAL_SCONF.getFirstTimestamp()
         if tduration < 0:
             tduration = 0
-    print("Traffic Duration: ", tduration)
+    print("Traffic Duration in seconds (rounded down): ", tduration)
     end = datetime.datetime.now()
     print("Generation finished at: ", end)
     duration = 0

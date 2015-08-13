@@ -162,7 +162,12 @@ Command Line Options:
      The duration is in seconds.  Keep in mind that the default
      latency between packets is an average of 1-200 microseconds.
      For low latencies, a large duration could result in millions
-     of packets which could take a long time to build.
+     of packets which could take a long time to build.  Also,
+     duration is best effort.  Essentially, new streams are not
+     created after the duration is met, but there may be streams
+     that have not completed.  These are still written out so
+     the actual duration may well be longer than that designated,
+     but should not be less.
 
   - -e eval: Create just one packet for each rule in the rule-set.
      Ignores all other input except -f.  Each packet will have
