@@ -7,7 +7,7 @@ from sniffles.snifflesconfig import *
 class TestRuleTrafficGenerator(TestCase):
     def test_tcp_overlap(self):
         myurl = RuleList()
-        myurl.readRuleFile('examples/test_tcp_overlap.xml')
+        myurl.readRuleFile('sniffles/test/data_files/test_tcp_overlap.xml')
         rules = myurl.getParsedRules()
         self.assertEqual(len(rules), 1)
         rules = myurl.getParsedRules()
