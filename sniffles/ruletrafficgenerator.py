@@ -312,6 +312,11 @@ class TrafficStream(object):
             self.proto = protos[pick]
             self.rand = True
 
+        if self.proto != 'tcp':
+            handshake = False
+            teardown = False
+            self.flow_ack = False
+
         if sconf is None and rule is None:
             self.rand = True
 
