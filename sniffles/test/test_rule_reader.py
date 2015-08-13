@@ -379,7 +379,7 @@ class TestRuleReader(TestCase):
 
     def test_read_petabi_rule_file(self):
         myrulelist = RuleList()
-        myrulelist.readRuleFile('examples/test_all.xml')
+        myrulelist.readRuleFile('sniffles/test/data_files/test_all.xml')
         rules = myrulelist.getParsedRules()
         self.assertEqual(len(rules), 1)
         conrule = rules[0]
