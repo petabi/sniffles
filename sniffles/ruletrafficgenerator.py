@@ -543,7 +543,14 @@ class TrafficStream(object):
                     self.eval_pkts.append(self.buildPkt(dir, ACK, con))
                     con = cg.get_next_published_content()
                 self.packets_in_stream = len(self.eval_pkts)
-            pkt = self.eval_pkts.pop(0)
+            if self.eval_pkts:
+                pkt = self.eval_pkts.pop(0)
+            else:
+                print("Problem building full eval packets.")
+                print("Most likely you are trying to build full-eval")
+                print("Packets for rules that are not regular expressions.")
+                print("Sniffles only supports this feature for regular expressions.")
+                sys.exit(1)
             self.packets_in_stream -= 1
         else:
             if not ack_only:
