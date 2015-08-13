@@ -20,17 +20,8 @@ if __name__ == '__main__':
     from sniffles.test.test_regex_generator import *
     from sniffles.test.test_rand_rule_gen import *
     suites = [
-        unittest.TestLoader().loadTestsFromTestCase(TestTTLExpiryAttack),
-        unittest.TestLoader().loadTestsFromTestCase(TestRandRuleGen),
-        unittest.TestLoader().loadTestsFromTestCase(TestRegexGenerator),
-        unittest.TestLoader().loadTestsFromTestCase(TestRuleFormat),
-        unittest.TestLoader().loadTestsFromTestCase(TestFeature),
-        unittest.TestLoader().loadTestsFromTestCase(TestRuleReader),
-        unittest.TestLoader().loadTestsFromTestCase(TestRuleTrafficGenerator),
-        unittest.TestLoader().loadTestsFromTestCase(TestTrafficSplitter),
-        unittest.TestLoader().loadTestsFromTestCase(TestXMLRuleReader),
         unittest.TestLoader().loadTestsFromTestCase(TestExamples),
-        unittest.TestLoader().loadTestsFromTestCase(TestPcreComp),
+        unittest.TestLoader().loadTestsFromTestCase(TestFeature),
         unittest.TestLoader().loadTestsFromTestCase(TestNFABuild),
         unittest.TestLoader().loadTestsFromTestCase(TestOpAny),
         unittest.TestLoader().loadTestsFromTestCase(TestOpBra),
@@ -61,7 +52,15 @@ if __name__ == '__main__':
         unittest.TestLoader().loadTestsFromTestCase(TestOpWhitespace),
         unittest.TestLoader().loadTestsFromTestCase(TestOpWordchar),
         unittest.TestLoader().loadTestsFromTestCase(TestOpNotStarI),
-        unittest.TestLoader().loadTestsFromTestCase(TestRegexOptions)
+        unittest.TestLoader().loadTestsFromTestCase(TestPcreComp),
+        unittest.TestLoader().loadTestsFromTestCase(TestRandRuleGen),
+        unittest.TestLoader().loadTestsFromTestCase(TestRegexGenerator),
+        unittest.TestLoader().loadTestsFromTestCase(TestRegexOptions),
+        unittest.TestLoader().loadTestsFromTestCase(TestRuleFormat),
+        unittest.TestLoader().loadTestsFromTestCase(TestRuleReader),
+        unittest.TestLoader().loadTestsFromTestCase(TestRuleTrafficGenerator),
+        unittest.TestLoader().loadTestsFromTestCase(TestTTLExpiryAttack),
+        unittest.TestLoader().loadTestsFromTestCase(TestXMLRuleReader)
     ]
     tests = unittest.TestSuite(suites)
     unittest.TextTestRunner().run(tests)

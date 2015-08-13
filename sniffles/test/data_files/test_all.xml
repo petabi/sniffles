@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<petabi_rules>
+  <rule name="testall" >
+    <traffic_stream proto="tcp" src="1.2.3.1" dst="9.8.7.1" sport="9000"
+      dport="100" handshake="True" teardown="True" synch="True" ip="4">
+      <pkt dir="to server" content="/abc/i" fragment="0" times="1" />
+      <pkt dir="to client" content="/def/i" fragment="0" times="1" />
+    </traffic_stream>
+    <traffic_stream proto="tcp" src="1.2.3.2" dst="9.8.7.2" sport="9001"
+      dport="101" handshake="True" teardown="True" synch="True" ip="4"
+      out_of_order="true" >
+      <pkt dir="to client" content="/zxywvutsrqponmlkjihgfedcba/" fragment="5"
+        times="1" ack="true" />
+    </traffic_stream>
+    <traffic_stream proto="udp" src="1.2.3.3" dst="9.8.7.3" sport="9002"
+      dport="102" ip="4" out_of_order="true" >
+      <pkt dir="to server" content="/abcdefghijklmnopqrstuvwxyz/" fragment="3"
+        times="1" ack="true" />
+    </traffic_stream>
+    <traffic_stream proto="tcp" src="1.2.3.4" dst="9.8.7.4" sport="9003"
+      dport="103" handshake="True" teardown="True" synch="True" ip="4"
+      out_of_order="true" >
+      <pkt dir="to server" content="/JKLMNOPQRST/" fragment="0" times="4"
+        ack="true" />
+    </traffic_stream>
+    <traffic_stream proto="tcp" src="1.2.3.5" dst="9.8.7.5" sport="9004"
+      dport="104" handshake="True" teardown="True" synch="True" ip="4"
+      out_of_order="true" out_of_order_prob="25" packet_loss="30" >
+      <pkt dir="to server" content="/123456/" fragment="0" times="5"
+        ack="true" />
+    </traffic_stream>
+    <traffic_stream proto="udp" src="1.2.3.6" dst="9.8.7.6" sport="9005"
+      dport="105" >
+      <pkt dir="to server" content="/789/" fragment="0" times="3" />
+      <pkt dir="to client" content="/321/" fragment="0" times="3" />
+    </traffic_stream>
+  </rule>
+</petabi_rules>
