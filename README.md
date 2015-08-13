@@ -109,7 +109,7 @@ Supported Formats:
     `alert tcp $EXTERNAL_NET any -> $HOME_NET 8080 (msg:"SERVER-APACHE Apache Tomcat UNIX platform directory traversal"; flow:to_server; content:"/..|5C|/"; content:"/..|5C|/"; http_raw_uri;`
 
 - Regular expressions: Raw regular expressions 1 to a line written as
-  either abc or /abc/i.  Currently supports the options i s, and m.
+  either abc or /abc/i.  Currently supports the options i, s, and m.
   Other options are ignored.  Example:
 
     `/ab*c(d|e)f/i`
@@ -149,7 +149,7 @@ Command Line Options:
      next to each other and to create the illusion of many
      concurrent flows.  In our tests, we have managed up to 2-3
      million concurrent flows before memory becomes an issue.
-     Also, we should mention that different latencies can among
+     Also, we should mention that different latencies among
      streams can cause some flows to terminate ealier than others.
 
   - -d Rules Directory: path to directory containing rule files.
