@@ -3,9 +3,9 @@
 from setuptools import find_packages, setup, Extension
 
 setup(name='sniffles',
-      version='3.0.3',
+      version='3.1.0',
       description='Sniffles pcap generator',
-      long_description='Packet capture generator for IDS evaluation',
+      long_descrip0tion='Packet capture generator for IDS evaluation',
       maintainer='Victor C. Valgenti',
       maintainer_email='vvalgenti@petabi.com',
       url='http://petabi.com',
