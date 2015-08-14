@@ -5,6 +5,7 @@ import random
 from os import listdir
 from os.path import isfile, join
 import xml.etree.ElementTree as ET
+from sniffles.ruletrafficgenerator import *
 
 # Variables used for Snort rules
 CONTENT_MODIFIERS = ['distance', 'offset', 'nocase', 'fast_pattern',
@@ -416,24 +417,28 @@ class TrafficStreamRule(object):
     def __init__(self, proto="any", sip="$EXTERNAL_NET", dip="$HOME_NET",
                  sport="any", dport="any", len=-1, ipv=4, synch=False,
                  handshake=False, teardown=False, ooo=False,
-                 ooo_prob=50, loss=0, flow="to server"):
-        self.proto = proto
-        self.src_ip = sip
-        self.dst_ip = dip
-        self.sport = sport
+                 ooo_prob=50, loss=0, flow="to server", ack=False,
+                 latency=None):
+
+        self.ack = ack
+        self.content = []
         self.dport = dport
-        self.len = len
-        self.ipv = ipv
+        self.dst_ip = dip
         self.flow = flow
-        self.synch = synch
-        self.teardown = teardown
         self.handshake = handshake
+        self.ipv = ipv
+        self.latency = latency
+        self.len = len
+        self.loss = loss
         self.ooo = False
         self.ooo_prob = ooo_prob
-        self.loss = loss
-        self.content = []
-        self.typets = None
+        self.proto = proto
+        self.sport = sport
+        self.src_ip = sip
+        self.synch = synch
         self.tcp_overlap = False
+        self.teardown = teardown
+        self.typets = None
 
     def __str__(self):
         mystr = "Traffic Stream Rule\n"
@@ -475,6 +480,9 @@ class TrafficStreamRule(object):
         return False
 
     # accessors
+    def getAck(self):
+        return self.ack
+
     def getTCPOverlap(self):
         return self.tcp_overlap
 
@@ -498,6 +506,9 @@ class TrafficStreamRule(object):
 
     def getLength(self):
         return self.len
+
+    def getLatency(self):
+        return self.latency
 
     def getOOOProb(self):
         return self.ooo_prob
@@ -534,6 +545,9 @@ class TrafficStreamRule(object):
             else:
                 self.content = [pktrule]
 
+    def setAck(self, value):
+        self.ack = value
+
     def setTCPOverlap(self, value):
         self.tcp_overlap = value
 
@@ -554,6 +568,9 @@ class TrafficStreamRule(object):
 
     def setIPV(self, ipv=4):
         self.ipv = ipv
+
+    def setLatency(self, lat):
+        self.latency = lat
 
     def setLen(self, len=-1):
         self.len = len
@@ -582,17 +599,20 @@ class TrafficStreamRule(object):
     def setTeardown(self, td=False):
         self.teardown = td
 
+    def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
+        return TrafficStream(self, sconf, secs, usecs)
+
 
 class ScanAttackRule(TrafficStreamRule):
 
     def __init__(self, scan_type=SYN_SCAN, target=None,
-                 target_ports=None, base_port=None, duration=1,
+                 target_ports=None, src_port=None, duration=1,
                  intensity=5, offset=0.0, reply_chance=OPEN_PORT_CHANCE):
         super().__init__()
         self.scan_type = scan_type
         self.target = target
         self.target_ports = target_ports
-        self.base_port = base_port
+        self.src_port = src_port
         self.duration = duration
         self.intensity = intensity
         self.offset = offset
@@ -627,11 +647,11 @@ class ScanAttackRule(TrafficStreamRule):
     def setTargetPorts(self, value):
         self.target_ports = value
 
-    def getBasePort(self):
-        return self.base_port
+    def getSrcPort(self):
+        return self.src_port
 
-    def setBasePort(self, value):
-        self.base_port = value
+    def setSrcPort(self, value):
+        self.src_port = value
 
     def getDuration(self):
         return self.duration
@@ -650,6 +670,9 @@ class ScanAttackRule(TrafficStreamRule):
 
     def setOffset(self, value):
         self.offset = value
+
+    def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
+        return ScanAttack(self, sconf, secs, usecs)
 
 
 class SnortRuleContent(RuleContent):
@@ -1050,19 +1073,24 @@ class PetabiRuleParser(RuleParser):
                     mytsrule.setTypeTS(typeRuleTS)
                 else:
                     mytsrule = TrafficStreamRule()
+                if 'ack' in ts.attrib:
+                    if ts.attrib['ack'].lower() == 'true':
+                        mytsrule.setAck(True)
                 if 'tcp_overlap' in ts.attrib:
                     if ts.attrib['tcp_overlap'].lower() == 'true':
                         mytsrule.setTCPOverlap(True)
                 if 'scantype' in ts.attrib:
                     mytsrule.setScanType(int(ts.attrib['scantype']))
-                if 'baseport' in ts.attrib:
-                    mytsrule.setBasePort(ts.attrib['baseport'])
+                if 'srcport' in ts.attrib:
+                    mytsrule.setSrcPort(ts.attrib['srcport'])
                 if 'duration' in ts.attrib:
                     mytsrule.setDuration(int(ts.attrib['duration']))
                 if 'intensity' in ts.attrib:
                     mytsrule.setIntensity(int(ts.attrib['intensity']))
                 if 'offset' in ts.attrib:
                     mytsrule.setOffset(int(ts.attrib['offset']))
+                if 'latency' in ts.attrib:
+                    mytsrule.setLatency(int(ts.attrib['latency']))
                 if 'replychance' in ts.attrib:
                     mytsrule.setReplyChance(int(ts.attrib['replychance']))
                 if 'target' in ts.attrib:
@@ -1137,7 +1165,9 @@ class PetabiRuleParser(RuleParser):
                         if int(pkt.attrib['times']) > 1:
                             mypkt.setTimes(int(pkt.attrib['times']))
                         elif int(pkt.attrib['times']) < -1:
-                            mypkt.setTimes(random.randint(1, abs(int(pkt.attrib['times']))))
+                            mypkt.setTimes(random.randint(
+                                1, abs(int(pkt.attrib['times'])))
+                            )
                     if 'length' in pkt.attrib:
                         if int(pkt.attrib['length']) > -1:
                             mypkt.setLength(int(pkt.attrib['length']))
@@ -1215,6 +1245,9 @@ class RuleList:
                 myp = p()
                 if myp.testForRuleFile(filename):
                     return myp
+        print("Could not find a parser for the rules provided.")
+        print("Using a generic rule parser.  This probably does")
+        print("not do what you are expecting!")
         return RuleParser()
 
     def readRuleFile(self, filename):

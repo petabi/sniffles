@@ -19,9 +19,9 @@ class TestRuleReader(TestCase):
         myrule.setTargetPorts(-3)
         self.assertEqual(myrule.getTargetPorts(), -3)
 
-        self.assertEqual(myrule.getBasePort(), 4)
-        myrule.setBasePort(-4)
-        self.assertEqual(myrule.getBasePort(), -4)
+        self.assertEqual(myrule.getSrcPort(), 4)
+        myrule.setSrcPort(-4)
+        self.assertEqual(myrule.getSrcPort(), -4)
 
         self.assertEqual(myrule.getDuration(), 5)
         myrule.setDuration(-5)
@@ -343,7 +343,7 @@ class TestRuleReader(TestCase):
 
     def test_read_single_file(self):
         myrulelist = RuleList()
-        myrulelist.readRuleFile('rules/test_rules2.rules')
+        myrulelist.readRuleFile('sniffles/test/data_files/rules/test_rules2.rules')
         rules = myrulelist.getParsedRules()
         self.assertEqual(len(rules), 9)
         conrule1 = rules[0]
@@ -358,7 +358,7 @@ class TestRuleReader(TestCase):
 
     def test_read_multiple_files(self):
         myrulelist = RuleList()
-        myrulelist.readRuleFiles('rules/')
+        myrulelist.readRuleFiles('sniffles/test/data_files/rules/')
         rules = myrulelist.getParsedRules()
         self.assertEqual(len(rules), 19)
         conrule1 = rules[0]
@@ -379,7 +379,7 @@ class TestRuleReader(TestCase):
 
     def test_read_petabi_rule_file(self):
         myrulelist = RuleList()
-        myrulelist.readRuleFile('examples/test_all.xml')
+        myrulelist.readRuleFile('sniffles/test/data_files/test_all.xml')
         rules = myrulelist.getParsedRules()
         self.assertEqual(len(rules), 1)
         conrule = rules[0]

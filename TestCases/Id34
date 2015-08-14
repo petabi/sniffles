@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<petabi_rules>
-  <rule name="testall">
-    <traffic_stream typets="ScanAttack" scantype="1" target="10.0.0.1" targetports="[15,20,25]" baseport="10" duration="3" intensity="1">
-    </traffic_stream>
-  </rule>
-</petabi_rules>

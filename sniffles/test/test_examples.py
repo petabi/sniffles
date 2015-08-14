@@ -18,8 +18,8 @@ class TestExamples(TestCase):
         myts = TrafficStream(mytsrule, myConfig)
 
         mycount = 0
-        while myts.has_packets():
-            mypkt = myts.getNextPacket()[0]
+        while myts.hasPackets():
+            mypkt = myts.getNextPacket()
             self.assertEqual(mypkt.get_size(), 67)
             self.assertEqual(mypkt.get_src_ip(), '1.2.3.6')
             self.assertEqual(mypkt.get_dst_ip(), '9.8.7.6')
@@ -40,8 +40,8 @@ class TestExamples(TestCase):
         myts = TrafficStream(mytsrule, myConfig)
 
         mycount = 0
-        while myts.has_packets():
-            mypkt = myts.getNextPacket()[0]
+        while myts.hasPackets():
+            mypkt = myts.getNextPacket()
             self.assertIn(mypkt.get_size(), [116, 122])
             self.assertEqual(mypkt.get_src_ip(), '1.2.3.6')
             self.assertEqual(mypkt.get_dst_ip(), '9.8.7.6')
@@ -68,8 +68,8 @@ class TestExamples(TestCase):
         myfragid = 0
         mylastoff = -1
         ooo = False
-        while myts.has_packets():
-            mypkt = myts.getNextPacket()[0]
+        while myts.hasPackets():
+            mypkt = myts.getNextPacket()
             if mypkt.network_hdr.get_frag_id() != myfragid:
                 myfragid = mypkt.network_hdr.get_frag_id()
                 mylastid = -1
@@ -103,8 +103,8 @@ class TestExamples(TestCase):
         myts = TrafficStream(mytsrule, myConfig)
         
         mycount = 0
-        while myts.has_packets():
-            mypkt = myts.getNextPacket()[0]
+        while myts.hasPackets():
+            mypkt = myts.getNextPacket()
             mycount += 1
         self.assertNotEqual(mycount, 6)
 
@@ -122,25 +122,25 @@ class TestExamples(TestCase):
         myts = TrafficStream(mytsrule, myConfig)
         
         mycount = 0
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         myseq = mypkt.transport_hdr.get_seq_num()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN + ACK)
         for i in range(0, 3):
-            mypkt = myts.getNextPacket()[0]
+            mypkt = myts.getNextPacket()
             self.assertEqual(mypkt.transport_hdr.get_seq_num(),
                              myseq + (i * 100) + 1)
             self.assertEqual(mypkt.get_src_ip(), '1.2.3.4')
             self.assertEqual(mypkt.get_dst_ip(), '9.8.7.5')
 
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
 
     def test_tcp_stream_frag(self):
@@ -156,24 +156,24 @@ class TestExamples(TestCase):
         myts = TrafficStream(mytsrule, myConfig)
         
         mycount = 0
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         myseq = mypkt.transport_hdr.get_seq_num()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN + ACK)
         for i in range(0, 12):
-            mypkt = myts.getNextPacket()[0]
+            mypkt = myts.getNextPacket()
             self.assertNotEqual(mypkt.network_hdr.get_frag_id(), 0)
             self.assertIn(mypkt.network_hdr.get_frag_offset(), [8192, 8197,
                           8202, 8207, 15])
 
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
 
     def test_tcp_stream_frag_ooo(self):
@@ -189,16 +189,16 @@ class TestExamples(TestCase):
 
         myts = TrafficStream(mytsrule, myConfig)
         
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         myseq = mypkt.transport_hdr.get_seq_num()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN + ACK)
         myfragid = 0
         mylastoff = -1
         ooo = False
         for i in range(0, 12):
-            mypkt = myts.getNextPacket()[0]
+            mypkt = myts.getNextPacket()
             self.assertNotEqual(mypkt.network_hdr.get_frag_id(), 0)
             self.assertIn(mypkt.network_hdr.get_frag_offset(), [8192, 8197,
                           8202, 8207, 15])
@@ -212,13 +212,13 @@ class TestExamples(TestCase):
             else:
                 mylastoff = (mypkt.network_hdr.get_frag_offset() & 0xFF)
         self.assertEqual(ooo, True)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
-        mypkt = myts.getNextPacket()[0]
+        mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
 
     def test_split(self):
@@ -236,8 +236,8 @@ class TestExamples(TestCase):
         myts = TrafficStream(mytsrule, myConfig)
 
         mycount = 0
-        while myts.has_packets():
-            mypkt = myts.getNextPacket()[0]
+        while myts.hasPackets():
+            mypkt = myts.getNextPacket()
             self.assertEqual(mypkt.get_size(), 62)
             mycount += 1
         self.assertEqual(mycount, 2)
@@ -260,8 +260,8 @@ class TestExamples(TestCase):
         myts = TrafficStream(mytsrule, myConfig)
 
         mycount = 0
-        while myts.has_packets():
-            mypkt = myts.getNextPacket()[0]
+        while myts.hasPackets():
+            mypkt = myts.getNextPacket()
             self.assertEqual(mypkt.get_ttl(), 115)
             mycount += 1
         self.assertEqual(mycount, 2)
@@ -284,8 +284,8 @@ class TestExamples(TestCase):
         myts = TrafficStream(mytsrule, myConfig)
 
         mycount = 0
-        while myts.has_packets():
-            mypkt = myts.getNextPacket()[0]
+        while myts.hasPackets():
+            mypkt = myts.getNextPacket()
             self.assertEqual(mypkt.get_ttl(), 110)
             mycount += 1
         self.assertEqual(mycount, 1)
@@ -310,8 +310,8 @@ class TestExamples(TestCase):
         myts = TrafficStream(mytsrule, myConfig)
         
         mycount = 0
-        while myts.has_packets():
-            mypkt = myts.getNextPacket()[0]
+        while myts.hasPackets():
+            mypkt = myts.getNextPacket()
             if mycount % 2 == 0:
                 self.assertEqual(mypkt.get_ttl(), 110)
             else:
@@ -338,8 +338,8 @@ class TestExamples(TestCase):
         myts = TrafficStream(mytsrule, myConfig)
 
         mycount = 0
-        while myts.has_packets():
-            mypkt = myts.getNextPacket()[0]
+        while myts.hasPackets():
+            mypkt = myts.getNextPacket()
             self.assertEqual(mypkt.get_ttl(), 147)
             mycount += 1
         self.assertEqual(mycount, 2)
@@ -364,8 +364,8 @@ class TestExamples(TestCase):
         myts = TrafficStream(mytsrule, myConfig)
         
         mycount = 0
-        while myts.has_packets():
-            mypkt = myts.getNextPacket()[0]
+        while myts.hasPackets():
+            mypkt = myts.getNextPacket()
             if mycount % 2 != 0:
                 self.assertEqual(mypkt.get_ttl(), 9)
             mycount += 1

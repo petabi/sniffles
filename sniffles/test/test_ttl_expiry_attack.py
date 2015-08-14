@@ -16,8 +16,8 @@ class TestTTLExpiryAttack(TestCase):
                              mytsrule.getOutOfOrder(), mytsrule.getSynch(),
                              mytsrule.getPkts())
         mycount = 0
-        while myts.has_packets():
-            mypkt = myts.getNextPacket()[0]
+        while myts.hasPackets():
+            mypkt = myts.getNextPacket()
             self.assertEqual(mypkt.get_ttl(), 110)
             mycount += 1
         self.assertEqual(mycount, 1)
