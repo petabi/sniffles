@@ -167,7 +167,8 @@ Command Line Options:
      created after the duration is met, but there may be streams
      that have not completed.  These are still written out so
      the actual duration may well be longer than that designated,
-     but should not be less.
+     but should not be less.  Finally, set a larger latency if
+     you wish to have fewer streams created during generation.
 
   - -e eval: Create just one packet for each rule in the rule-set.
      Ignores all other input except -f.  Each packet will have

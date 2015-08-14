@@ -440,7 +440,6 @@ class TrafficStreamRule(object):
         self.teardown = teardown
         self.typets = None
 
-
     def __str__(self):
         mystr = "Traffic Stream Rule\n"
         mystr += "Packet lengths are: "
@@ -674,6 +673,7 @@ class ScanAttackRule(TrafficStreamRule):
 
     def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
         return ScanAttack(self, sconf, secs, usecs)
+
 
 class SnortRuleContent(RuleContent):
     def __init__(self, type=None, content=None):
@@ -1165,7 +1165,9 @@ class PetabiRuleParser(RuleParser):
                         if int(pkt.attrib['times']) > 1:
                             mypkt.setTimes(int(pkt.attrib['times']))
                         elif int(pkt.attrib['times']) < -1:
-                            mypkt.setTimes(random.randint(1, abs(int(pkt.attrib['times']))))
+                            mypkt.setTimes(random.randint(
+                                1, abs(int(pkt.attrib['times'])))
+                            )
                     if 'length' in pkt.attrib:
                         if int(pkt.attrib['length']) > -1:
                             mypkt.setLength(int(pkt.attrib['length']))

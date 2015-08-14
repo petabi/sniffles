@@ -121,11 +121,11 @@ class Conversation(object):
 
     def __str__(self):
         mystr = "Active TS:\n"
-        for ts in self.ts_active:
-            mystr += self.ts_active[ts]
+        for ts in self.ts_active.values():
+            mystr += str(ts)
         mystr += "Waiting TS:"
         for ts in self.ts:
-            mystr += self.tx
+            mystr += str(ts)
         return myts
 
     # Returns the timestamp and the packet of the next packet to
@@ -146,13 +146,6 @@ class Conversation(object):
         self.updateStreams()
         return sec, usec, pkt
 
-    def getNextTS(self):
-        if self.ts_active:
-            myts = self.ts_active.pop(0)
-            self.updateStreams()
-            return myts
-        return None
-
     def getNumberOfStreams(self):
         return len(self.ts_active) + len(self.ts)
 
@@ -160,7 +153,9 @@ class Conversation(object):
         next_sec = -1
         next_usec = 0
         if self.ts_active:
-            next_sec, next_usec = self.ts_active[self.ts_active.iloc[0]].getNextTimeStamp()
+            next_sec, next_usec = self.ts_active[
+                self.ts_active.iloc[0]
+            ].getNextTimeStamp()
         else:
             self.updateStreams()
             if self.ts_active:
@@ -169,23 +164,20 @@ class Conversation(object):
 
     def hasPackets(self):
         if self.ts_active:
-            for ts in self.ts_active:
-                if self.ts_active[ts].hasPackets():
+            for value in self.ts_active.values():
+                if value.hasPackets():
                     return True
         if self.ts:
             for ts in self.ts:
-                if self.ts[ts].hasPackets():
+                if ts.hasPackets():
                     return True
         return False
 
-    def hasStarted(self):
-        return self.started
-
     def updateStreams(self):
         if self.ts_active and len(self.ts_active) > 0:
-            for key in self.ts_active:
-                if self.ts_active[key].isFinished():
-                    del(self.ts_active[key])
+            for value in self.ts_active.values():
+                if value.isFinished():
+                    del(value)
         if not self.ts_active or len(self.ts_active) < 1:
             if self.ts and len(self.ts) > 0:
                 while self.ts:
@@ -198,6 +190,7 @@ class Conversation(object):
                     self.ts_active[timekey] = myts
                     if myts.getSynch():
                         break
+
 
 class TrafficStream(object):
     """
@@ -240,7 +233,7 @@ class TrafficStream(object):
         self.header = 0
         self.ip_type = 4
         self.last_off = 0
-        self.latency = random.randint(1,200)
+        self.latency = random.randint(1, 200)
         self.lost_pkt_string = None
         self.mac_def_file = None
         self.mac_gen = ETHERNET_HDR_GEN_RANDOM
@@ -425,8 +418,10 @@ class TrafficStream(object):
         # to shift the sequence number
         # and direction is to server
         # content is not None
-        if self.tcp_overlap and self.shift_seq and \
-           content is not None and dir=="to server":
+        if (
+            self.tcp_overlap and self.shift_seq and
+            content is not None and dir == "to server"
+        ):
             seq_no -= 1
             newContent = [48]
             newContent.extend(content.data)
@@ -537,7 +532,7 @@ class TrafficStream(object):
         if self.full_eval:
             if len(self.eval_pkts) == 0:
                 cg = ContentGenerator(myrule, self.pkt_len, self.rand,
-                                  self.full_match, self.full_eval)
+                                      self.full_match, self.full_eval)
                 con = cg.get_next_published_content()
                 while con:
                     self.eval_pkts.append(self.buildPkt(dir, ACK, con))
@@ -549,13 +544,14 @@ class TrafficStream(object):
                 print("Problem building full eval packets.")
                 print("Most likely you are trying to build full-eval")
                 print("Packets for rules that are not regular expressions.")
-                print("Sniffles only supports this feature for regular expressions.")
+                print("Sniffles only supports this feature for regular")
+                print("expressions.")
                 sys.exit(1)
             self.packets_in_stream -= 1
         else:
             if not ack_only:
                 cg = ContentGenerator(myrule, self.pkt_len, self.rand,
-                                  self.full_match, self.full_eval)
+                                      self.full_match, self.full_eval)
                 con = cg.get_next_published_content()
             pkt = self.buildPkt(dir, ACK, con, seq, ack)
         return pkt
@@ -1110,7 +1106,7 @@ class ScanAttack(TrafficStream):
             else:
                 next_port = self.getNextPort(self.t_ports)
                 pkt = self.scanPacket(self.dip, next_port, self.mac_gen,
-                                       self.mac_def_file)
+                                      self.mac_def_file)
                 pick = random.randint(0, 100)
                 if pick <= self.reply_chance:
                     self.next_is_ack = True
@@ -1147,7 +1143,7 @@ class ScanAttack(TrafficStream):
             return False
 
     def scanPacket(self, dip=None, dport=None,
-                    mac_gen=ETHERNET_HDR_GEN_RANDOM, dist_file=None):
+                   mac_gen=ETHERNET_HDR_GEN_RANDOM, dist_file=None):
         if dip is None or dport is None:
             print("Can't get any work done!")
             return None
@@ -1289,6 +1285,7 @@ class Packet(object):
 
     def get_data_len(self):
         return self.content
+
 
 class Content(object):
     """
@@ -2458,6 +2455,7 @@ class TCP(TransportLayer):
 
     def set_flags(self, flags=0):
         self.flags = flags
+
 
 class UDP(TransportLayer):
 

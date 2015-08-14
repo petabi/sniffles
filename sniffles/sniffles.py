@@ -165,7 +165,7 @@ def start_generation(sconf):
             1, sconf.getConcurrentFlows() + 100000
         )
         conversation = Conversation(
-              myrule, sconf, current_sec, current_usec + flow_start_offset
+            myrule, sconf, current_sec, current_usec + flow_start_offset
         )
         sec, usec = conversation.getNextTimeStamp()
         timekey = timekey = sec + (usec/1000000)
@@ -178,8 +178,9 @@ def start_generation(sconf):
         # Need to track global value in case of interupt
         TOTAL_GENERATED_STREAMS = total_generated_streams
         if len(traffic_queue) >= sconf.getConcurrentFlows():
-            pkts, current_sec, current_usec = write_packets(traffic_queue, traffic_writer,
-                                                            sconf)
+            pkts, current_sec, current_usec = write_packets(
+                traffic_queue, traffic_writer, sconf
+            )
             total_generated_packets += pkts
 
             # Need to track global values in case of interupt
@@ -192,8 +193,9 @@ def start_generation(sconf):
             current = total_generated_streams
 
     while traffic_queue and len(traffic_queue) > 0:
-        pkts, current_sec, current_usec = write_packets(traffic_queue, traffic_writer,
-                                                        sconf)
+        pkts, current_sec, current_usec = write_packets(
+            traffic_queue, traffic_writer, sconf
+        )
         total_generated_packets += pkts
 
         # Track global values
@@ -288,47 +290,37 @@ def write_packets(queue, traffic_writer, sconf):
         half_threshold = int(len(queue)/2)
     num_packets = 0
     while queue and len(queue) > half_threshold:
-
         key, con_list = queue.popitem(last=False)
         for current_conversation in con_list:
             if current_conversation.hasPackets():
                 # write that packet
                 pkt = None
-                current_secs, current_usecs = current_conversation.getNextTimeStamp()
-                if current_secs > last_sec:
-                    last_sec = current_secs
-                if current_usecs > last_usec:
-                    last_usec = current_usecs
                 s, u, pkt = current_conversation.getNextPacket()
+                if s > last_sec:
+                    last_sec = s
+                if u > last_usec:
+                    last_usec = u
                 if pkt is not None:
-                    traffic_writer.write_packet(pkt.get_size(), pkt.get_packet(),
-                                                s, u)
+                    traffic_writer.write_packet(
+                        pkt.get_size(), pkt.get_packet(), s, u
+                    )
                     num_packets += 1
 
                 else:
                     print("Packets is none!!! Something is wrong")
-                    continue
-            else:
-                continue
 
         for current_conversation in con_list:
             if current_conversation.hasPackets():
                 next_sec, next_usec = current_conversation.getNextTimeStamp()
                 if next_sec > last_sec:
                     last_sec = next_sec
-                if next_usec > next_usec:
-                    last_usec = current_usecs
+                if next_usec > last_usec:
+                    last_usec = next_usec
                 timekey = next_sec + (next_usec/1000000)
                 if timekey in queue:
                     queue[timekey].append(current_conversation)
                 else:
                     queue[timekey] = [current_conversation]
-            else:
-                next_sec, next_usec = current_conversation.getNextTimeStamp()
-                if next_sec > last_sec:
-                    last_sec = next_sec
-                if next_usec > next_usec:
-                    last_usec = current_usecs
 
     return (num_packets, last_sec, last_usec)
 

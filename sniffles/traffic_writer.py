@@ -82,9 +82,9 @@ class TrafficWriter:
         if pkt and self.writer_handle:
             time_lapse = 0
             if secs < 0:
-              secs = self.current_time_sec
+                secs = self.current_time_sec
             if usecs < 0:
-              usecs = self.current_time_usecs
+                usecs = self.current_time_usecs
             self.set_timestamp(secs, usecs)
             pcap_hdr = struct.pack("IIII", self.current_time_sec,
                                    self.current_time_usec, len, len)
