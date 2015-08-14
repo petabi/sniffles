@@ -646,7 +646,7 @@ class SnifflesConfig(object):
         print("   this value.  The default is the current time (in seconds).")
         print("-h IP Home Prefixes: A list of IP Home Network Prefixes.")
         print("   IP addresses meant to come from an internal address will")
-        print("   use these prefixes.  Prefixes may desginate an entire, or")
+        print("   use these prefixes.  Prefixes may designate an entire, or")
         print("   partial 4 byte IPv4 address in xxx.xxx format.")
         print("   For example: \"10.192.168.,172.16\".")
         print("-H IP v6 Home Prefixes: Same as IPv4 Home Prefixes just")

@@ -192,7 +192,7 @@ Command Line Options:
 
   - -h IP Home Prefixes: A list of IP Home Network Prefixes.  IP
      addresses meant to come from an internal address will use these
-     prefixes.  Prefixes may desginate an entire 4 byte IPv4 address
+     prefixes.  Prefixes may designate an entire 4 byte IPv4 address
      in xxx.xxx format.  For example: "10.192.168,172.16".
 
   - -H IP v6 Home Prefixes: Same as IPv4 Home Prefixes just for IPv6.
