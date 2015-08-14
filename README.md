@@ -290,7 +290,7 @@ Command Line Options:
   - -W Window: The window, or duration, in seconds of a scan attack.
 
   - -Z Reply Chance: chance that a scan will have a reply.
-     In other words, chance the targer port is open
+     In other words, chance the target port is open
      (default 20%).
 
 
@@ -443,7 +443,7 @@ In detail, the tags work as follows:
                 - offset: Offset before starting a scan attack.  Also used when
                   inserting multiple scans into the traffic.
                 - replychance: Chance that a scan will have a reply.
-                  In other words, chance the targer port is open
+                  In other words, chance the target port is open
                   (default 20%). It is used with ScanAttack.
                 - proto: Designates the protocol of this traffic stream.
                   Should be TCP or or UDP or ICMP (not tested).

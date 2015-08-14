@@ -729,7 +729,7 @@ class SnifflesConfig(object):
         print("   called \'all.re\'.")
         print("-W Window: The window, or duration, of a scan attack.")
         print("-Z Reply Chance: chance that a scan will have a reply.")
-        print("   In other words, chance the targer port is open")
+        print("   In other words, chance the target port is open")
         print("   (default 20%).")
         print("")
         print("Please see README for examples and further details.")
