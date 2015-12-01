@@ -15,7 +15,7 @@ def main():
     rfmt = None
     print("Random Rule Generator")
     try:
-        options, args = getopt.getopt(sys.argv[1:], "c:f:o:s?",
+        options, args = getopt.getopt(sys.argv[1:], "c:f:o:prs?",
                                       [])
     except getopt.GetoptError as err:
         print("Error: ", err)
@@ -30,6 +30,10 @@ def main():
         elif opt == "-o":
             if arg is not None:
                 outfile = arg
+        elif opt == "-p":
+            rfmt = "petabipktclass"
+        elif opt == "-r":
+            rfmt = "regex"
         elif opt == "-s":
             rfmt = "snort"
         elif opt == "-?":
@@ -74,6 +78,10 @@ def getRuleWithFormat(rule=None, fmt=None):
                 rulefmt = SnortRuleFormat(
                     rule, getRuleWithFormat.rule_counter)
                 getRuleWithFormat.rule_counter += 1
+            if fmt == "petabipktclass":
+                rulefmt = PetabiPacketClassifierFormat(rule)
+            if fmt == "regex":
+                rulefmt = RegexFormat(rule)
 
         if rulefmt is None:
             rulefmt = RuleFormat(rule)

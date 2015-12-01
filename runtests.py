@@ -10,7 +10,6 @@ if __name__ == '__main__':
     from sniffles.test.test_ttl_expiry_attack import *
     from sniffles.test.test_rule_reader import *
     from sniffles.test.test_rule_traffic_generator import *
-    from sniffles.test.test_traffic_splitter import *
     from sniffles.test.test_xml_rule_reader import *
     from sniffles.test.test_examples import *
     from sniffles.test.test_pcrecomp import *
