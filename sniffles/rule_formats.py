@@ -65,7 +65,7 @@ class PetabiPacketClassifierFormat(RuleFormat):
             proto = mymap["proto"]
         if "action" in mymap:
             action = mymap["action"]
-        myrule = "{}, {}, {}, {}, {}, {}".format(
+        myrule = "{} {} {} {} {} {}".format(
             dip, sip, dport, sport, proto, action)
         return myrule
 
