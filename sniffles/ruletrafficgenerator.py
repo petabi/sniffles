@@ -1700,6 +1700,7 @@ class ContentGenerator:
             state = nfa.start
             visited = []
             while state != nfa.accept:
+                next_symbol = ""
                 visited.append(state)
                 possible_symbols = []
                 depth = state.get_depth()
@@ -1716,13 +1717,14 @@ class ContentGenerator:
                     searching = True
                     while searching and len(possible_symbols) > 0:
                         next_symbol = possible_symbols.pop(
-                            random.randint(0, len(possible_symbols)-1))
+                            random.randrange(len(possible_symbols)))
                         for next_state in state.tx[next_symbol]:
                             if next_state != state and \
                                next_state not in visited:
                                 next_states.append(next_state)
                                 generated.append(next_symbol)
                                 searching = False
+                                break
                 else:
                     for next_state in state.tx[E]:
                         if next_state == nfa.accept:
