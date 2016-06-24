@@ -212,11 +212,11 @@ class TestRuleTrafficGenerator(TestCase):
     def test_transport_header(self):
         mydata = struct.pack("!HH", 0, 0)
         mytrans = ICMP("1", "0")
-        mytesttrans = struct.pack("!BBH", 1, 0, 0)
+        mytesttrans = struct.pack("!BBHI", 1, 0, 0, 0)
         self.assertEqual(mytrans.get_transport_header(), mytesttrans)
         mytrans.set_checksum('10.0.0.1', '10.0.0.2', 1, mytrans.get_size() + 4,
                              mydata)
-        self.assertEqual(mytrans.get_checksum(), 0xeaf3)
+        self.assertEqual(mytrans.get_checksum(), 0xeaef)
 
         mytrans = TCP("4660", "128", 1, 0)
         mytesttrans = struct.pack("!HHIIHHHH", 0x1234, 0x80, 1, 0, 0x5000,
@@ -623,7 +623,7 @@ class TestRuleTrafficGenerator(TestCase):
             elif mypkt.get_proto() == 'udp':
                 self.assertEqual(mypkt.get_size(), 142)
             elif mypkt.get_proto() == 'icmp':
-                self.assertEqual(mypkt.get_size(), 138)
+                self.assertEqual(mypkt.get_size(), 142)
             mycount += 1
         self.assertEqual(mycount, 5)
 
