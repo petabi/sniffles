@@ -2398,19 +2398,23 @@ class TransportLayer(object):
 
 class ICMP(TransportLayer):
 
-    def __init__(self, type, code=None):
+    def __init__(self, type, code=None, roh=None):
         self.proto = "icmp"
         self.type = int(type)
         if code:
             self.code = int(code)
         else:
             self.code = 1
+        if roh:
+            self.rest_of_header = int(roh)
+        else:
+            self.rest_of_header = 0
         self.checksum = 0
-        self.size = 4
+        self.size = 8
 
     def get_transport_header(self):
-        icmp_bin = struct.pack('!BBH', self.type, self.code,
-                               self.checksum)
+        icmp_bin = struct.pack('!BBHI', self.type, self.code,
+                               self.checksum, self.rest_of_header)
         return icmp_bin
 
 
