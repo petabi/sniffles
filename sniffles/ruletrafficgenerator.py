@@ -232,6 +232,7 @@ class TrafficStream(object):
         self.full_match = False
         self.header = 0
         self.ip_type = 4
+        self.proto = 'any'
         self.last_off = 0
         self.latency = random.randint(1, 200)
         self.lost_pkt_string = None
@@ -293,21 +294,26 @@ class TrafficStream(object):
             flow_opts = rule.getFlowOptions()
             self.myp = rule.getPkts()
             self.packets_in_stream = len(rule.getPkts())
-            self.proto = rule.getProto()
-            if self.proto.lower() not in SUPPORTED_PROTOCOLS:
-                pick = random.randint(0, len(SUPPORTED_PROTOCOLS)-1)
-                protos = list(SUPPORTED_PROTOCOLS.keys())
-                self.proto = protos[pick]
+            rule_proto = rule.getProto()
+            if rule_proto.lower() in SUPPORTED_PROTOCOLS:
+                self.proto = rule_proto.lower()
             self.dport = Port(rule.getDport())
             self.sport = Port(rule.getSport())
             self.stream_ooo = rule.getOutOfOrder()
             self.synch = rule.getSynch()
             self.tcp_overlap = rule.getTCPOverlap()
         else:
-            pick = random.randint(0, len(SUPPORTED_PROTOCOLS)-1)
-            protos = list(SUPPORTED_PROTOCOLS.keys())
-            self.proto = protos[pick]
             self.rand = True
+
+        # if protocol is still not determined
+        # consult with configuration first and then pick random one
+        if self.proto == 'any':
+            if sconf and (sconf.getProto().lower() in SUPPORTED_PROTOCOLS):
+                self.proto = sconf.getProto().lower()
+            else:
+                pick = random.randint(0, len(SUPPORTED_PROTOCOLS)-1)
+                protos = list(SUPPORTED_PROTOCOLS.keys())
+                self.proto = protos[pick]
 
         if self.proto != 'tcp':
             handshake = False
