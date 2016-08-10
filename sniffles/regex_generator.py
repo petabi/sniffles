@@ -3,6 +3,8 @@ import sys
 import datetime
 import re
 import random
+import sniffles.pcrecomp
+from sniffles.nfa import PCRE_CASELESS, PCRE_DOTALL, PCRE_MULTILINE, PCRE_OPT
 
 """
   regex_generator.  This is a simple regular expression generator.
@@ -114,7 +116,8 @@ def create_regex_list(number=1, lambd=10, type_dist=None, char_dist=None,
         mygroups = getREGroups(number, type_dist, char_dist,
                                class_dist, rep_dist, rep_chance, negation_prob)
 
-    for i in range(0, number):
+    count = 0
+    while count < number:
         myregex = '/'
         if mygroups:
             myregex += mygroups[random.randint(0, len(mygroups) - 1)]
@@ -133,8 +136,13 @@ def create_regex_list(number=1, lambd=10, type_dist=None, char_dist=None,
                 myoptions.append(options[new_pick])
             for o in myoptions:
                 myregex += o
+        # check if this compiles or not
+        if not check_pcre_compile(myregex):
+            print("pcre compile failed ... continuing")
+            continue
         myregex += "\n"
         myrelist.append(myregex)
+        count += 1
     fd = open(re_file, 'wb')
     for re in myrelist:
         fd.write(bytes(re, 'UTF-8'))
@@ -419,6 +427,24 @@ def getREGroups(number=1, type_dist=None, char_dist=None, class_dist=None,
                                     rep_chance, negation_prob)
             new_groups.append(prefix)
     return new_groups
+
+
+def check_pcre_compile(re):
+    options = []
+    if len(re) and re[0] == '/':
+        optp = re.rfind('/')
+        if optp > 0:
+            options = list(re[optp + 1:])
+            re = re[1:optp]
+    opts = 0
+    for opt in options:
+        if opt in PCRE_OPT:
+            opts |= PCRE_OPT[opt]
+    try:
+        sniffles.pcrecomp.compile(re, opts)
+    except:
+        return False
+    return True
 
 
 def usage():
