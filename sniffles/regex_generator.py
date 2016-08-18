@@ -25,15 +25,15 @@ from sniffles.nfa import PCRE_CASELESS, PCRE_DOTALL, PCRE_MULTILINE, PCRE_OPT
 ##############################################################################
 def main():
     number = 1
-    lambd = 10
-    type_dist = None
-    char_dist = None
-    class_dist = None
+    lambd = 65                         # Based on average rule size
+    type_dist = [85, 10, 5]            # Mostly chars, rest classes and alt
+    char_dist = [15, 10, 30, 30, 15]   # Emphasis on digits and alpha
+    class_dist = [50, 50]
     groups = False
-    rep_dist = None
-    rep_chance = 10
-    option_chance = 10
-    negation_prob = 50
+    rep_dist = [15, 30, 30, 25]        # Emphasis on * and +
+    rep_chance = 5
+    option_chance = 20
+    negation_prob = 15
     re_file = "rand.re"
     try:
         options, args = getopt.getopt(sys.argv[1:], "C:c:D:f:gl:o:n:R:r:t:?",
@@ -99,10 +99,9 @@ def main():
 ##############################################################################
 
 
-def create_regex_list(number=1, lambd=10, type_dist=None, char_dist=None,
-                      class_dist=None, rep_dist=None, rep_chance=10,
-                      option_chance=10, negation_prob=50, re_file="rand.re",
-                      groups=False):
+def create_regex_list(number, lambd, type_dist, char_dist, class_dist,
+                      rep_dist, rep_chance, option_chance, negation_prob,
+                      re_file, groups=False):
     """Manages the creation of the new regular expression list.
     Steps invloved:
       1. Create the regex.
@@ -126,14 +125,10 @@ def create_regex_list(number=1, lambd=10, type_dist=None, char_dist=None,
         myregex += '/'
         pick = random.randint(0, 100)
         if pick < option_chance:
-            options = ['i', 's']
-            pick = random.randint(0, len(options)-1)
-            myoptions = []
-            for i in range(0, pick):
-                new_pick = random.randint(0, len(options)-1)
-                while options[new_pick] in myoptions:
-                    new_pick = random.randint(0, len(options)-1)
-                myoptions.append(options[new_pick])
+            options = ['i', 's', 'm']
+            total_opts = random.randint(1, len(options))
+            random.shuffle(options)
+            myoptions = options[0:total_opts]
             for o in myoptions:
                 myregex += o
         # check if this compiles or not
@@ -149,9 +144,9 @@ def create_regex_list(number=1, lambd=10, type_dist=None, char_dist=None,
     fd.close()
 
 
-def generate_regex(lambd=10, max_len=0, type_dist=None, char_dist=None,
-                   class_dist=None, rep_dist=None, rep_chance=10,
-                   negation_prob=50):
+def generate_regex(lambd, max_len, type_dist, char_dist,
+                   class_dist, rep_dist, rep_chance,
+                   negation_prob):
     """Creates a regular expression.
 
     Lambda designates the mean of the length of the regular expression
@@ -167,7 +162,7 @@ def generate_regex(lambd=10, max_len=0, type_dist=None, char_dist=None,
     """
     if lambd <= 0:
         lambd = 10
-    mylen = int(random.expovariate(1/lambd))+10
+    mylen = int(random.expovariate(1/lambd)) + 1
     if max_len > 0:
         mylen = max_len
     total_types = 3
@@ -180,7 +175,7 @@ def generate_regex(lambd=10, max_len=0, type_dist=None, char_dist=None,
         if index == 0:
             myregex += get_char(char_dist)
         elif index == 1:
-            myregex += get_class(class_dist, negation_prob)
+            myregex += get_class(class_dist, negation_prob, char_dist)
         elif index == 2:
             max_len = random.randint(1, mylen-i)
             i += max_len
@@ -198,7 +193,7 @@ def generate_regex(lambd=10, max_len=0, type_dist=None, char_dist=None,
     return myregex
 
 
-def get_char(char_dist=None):
+def get_char(char_dist):
     """Determines which character type to return.
 
     This is the base content generation function for the regex.  If
@@ -271,17 +266,18 @@ def get_digit():
 
 
 def get_letter():
-    pick = random.randint(1, 26)
+    char_tbl = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
+                'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'X', 'Y',
+                'Z']
+    chr_pick = random.choice(char_tbl)
 
     upper_lower = random.randint(0, 100)
     if upper_lower < 50:
-        pick += 96
-    else:
-        pick += 64
-    return chr(pick)
+        chr_pick = chr_pick.lower()
+    return chr_pick
 
 
-def get_class(class_distribution=None, negation_prob=50):
+def get_class(class_distribution, negation_prob, char_dist):
     """This function will attempt to build an ad-hoc class of characters.
     Minimal effort is made to avoid duplicates.  Thus, it is possible,
     for ranges at least, that two ranges overlap.
@@ -298,9 +294,9 @@ def get_class(class_distribution=None, negation_prob=50):
     if index == 0:
         end = random.randint(1, 5)
         for i in range(0, end):
-            next_char = get_char()
+            next_char = get_char(char_dist)
             while next_char == '.':
-                next_char = get_char()
+                next_char = get_char(char_dist)
             if next_char not in class_set:
                 class_set.append(next_char)
             else:
@@ -328,9 +324,9 @@ def get_class(class_distribution=None, negation_prob=50):
     else:
         end = random.randint(1, 5)
         for i in range(0, end):
-            next_char = get_char()
+            next_char = get_char(char_dist)
             while next_char == '.':
-                next_char = get_char()
+                next_char = get_char(char_dist)
             if next_char not in class_set:
                 class_set.append(next_char)
             else:
@@ -346,9 +342,8 @@ def get_class(class_distribution=None, negation_prob=50):
     return myclass
 
 
-def get_alternation(max_length=1, type_dist=None, char_dist=None,
-                    class_dist=None, rep_dist=None,
-                    rep_chance=10, negation_prob=50):
+def get_alternation(max_length, type_dist, char_dist,
+                    class_dist, rep_dist, rep_chance, negation_prob):
     """This will create a set of alternates potentially up to the maximum
     length provided.  The length of the alternation (alt_max_length)
     denotes the length of the longest path of alternation.  The number
@@ -375,13 +370,12 @@ def get_alternation(max_length=1, type_dist=None, char_dist=None,
     return myalternation
 
 
-def get_index(total_options=1, dist=None):
+def get_index(total_options, dist):
     """This function is used to determine what index of a given
     distribution is returned.
     """
     if total_options <= 0:
         total_options = 1
-
     if dist is None:
         return random.randint(0, total_options-1)
     else:
@@ -396,7 +390,7 @@ def get_index(total_options=1, dist=None):
                 index += 1
 
 
-def get_repetition(rep_dist=None, rep_start_max=5, rep_end_max=10):
+def get_repetition(rep_dist, rep_start_max=5, rep_end_max=10):
     total_repetion = 4
     index = get_index(total_repetion, rep_dist)
 
@@ -416,8 +410,8 @@ def get_repetition(rep_dist=None, rep_start_max=5, rep_end_max=10):
     return myrep
 
 
-def getREGroups(number=1, type_dist=None, char_dist=None, class_dist=None,
-                rep_dist=None, rep_chance=10, negation_prob=50):
+def getREGroups(number, type_dist, char_dist, class_dist,
+                rep_dist, rep_chance, negation_prob):
     new_groups = []
     if number > 1:
         num_groups = random.randint(1, int(number/2))
@@ -457,11 +451,12 @@ def usage():
 
     -C \t Character Distribution: This sets the possibility of seeing
     particular constructs or characters.  See a brief explanation of
-    distibutions below for examples on how to use this.  By default
-    this distribution is an equal distribution.  This distribution
-    has five slots: ASCII Characters, Binary characters in \x00 format,
-    Alphabetical letters (upper or lower case), Digits, and substitution
-    classes (like \w).  An example input to this would be "10,20,10,40,20"
+    distibutions below for examples on how to use this.  The default
+    distribution puts some emphasis on alphabet and number characters.
+    This distribution has five slots: ASCII Characters, Binary characters
+    in \x00 (hex) format, Alphabetical letters (upper or lower case),
+    Digits, and substitution classes (like \w).
+    An example input to this would be "10,20,10,40,20"
     which would mean 10% chance any generated chae would come from ASCII,
     20% binary, 10% letters, etc.  One Caveat is that ASCII chars that
     might cause problems with regular expressions (like `[' or '{')
@@ -483,19 +478,23 @@ def usage():
     total regular expressions to generate.  The default value for this
     is false.  This option takes no parameters.
     -l \t lambda for length:  This is the mean length for an exponentional
-    distribution of regular expression lengths.  The default value is 10.
+    distribution of regular expression lengths.  The default value is 65
+    (derived from the average regex length taken from several regular
+    expression sets used in computer security).
     -n \t negation probability: The probability that a character class will
     be a negation class ([^xyz]) rather than a normal character class ([xyz]).
-    Default probability is 50%.
+    Default probability is 15% (arbitrarily set).
     -o \t option chance:  This is the chance for an option to be appended
     to the regular expression.  Current options are 'i', 'm', and 's'.
-    A random number of options are added to the list with those options
-    chose through a uniform distribution.
+    If options are appended to a regular expression one or more are
+    appended.  The default chance is 20%.
     -R \t repetition chance: The chance of repetition occuring after
     any structural component has been added to the regular expression.
+    The default value is 5% which is roughly the amount of repetition
+    seen in the regular expression files we have examined.
     -r \t repetion distribution: The distribution of repetition structures.
     The slots are: Zero to one (?), Zero to many (*), one to many (+), and
-    counting ({x,y}).
+    counting ({x,y}).  The default distribution favors * and +.
     -t \t Re structural type distribution: The distribution for the
     primary structural components of the regular expression.  These
     are comprised of three slots, or categories: characters, classes,
@@ -504,7 +503,9 @@ def usage():
     the re.  In other words, alternation will result in several smaller
     regular expressions being joined into the overall regular expression.
     The alternation uses the exact same methodology in creating those
-    smaller regular expressions.
+    smaller regular expressions.  The default distribution of these
+    types is 85% characters, 10% classes, and 5% alternation.  These
+    values were derived from the regular expression sets we examined.
     -? \t print this help.
 
     This generator will create random regular expressions.  It is possible

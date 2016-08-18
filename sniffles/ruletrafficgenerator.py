@@ -28,6 +28,7 @@ SYN = 0x02
 ACK = 0x10
 MORE_FRAGMENTS = 0x2000
 SUPPORTED_PROTOCOLS = {'icmp': 1, 'tcp': 6, 'udp': 17}
+PROTO_PICK_PROB = [5, 80, 15]
 
 # Scan attack types
 SYN_SCAN = 0
@@ -294,9 +295,7 @@ class TrafficStream(object):
             flow_opts = rule.getFlowOptions()
             self.myp = rule.getPkts()
             self.packets_in_stream = len(rule.getPkts())
-            rule_proto = rule.getProto()
-            if rule_proto.lower() in SUPPORTED_PROTOCOLS:
-                self.proto = rule_proto.lower()
+            self.proto = rule.getProto()
             self.dport = Port(rule.getDport())
             self.sport = Port(rule.getSport())
             self.stream_ooo = rule.getOutOfOrder()
@@ -307,13 +306,22 @@ class TrafficStream(object):
 
         # if protocol is still not determined
         # consult with configuration first and then pick random one
-        if self.proto == 'any':
+        if self.proto is None or self.proto == 'any' or \
+           self.proto.lower() not in SUPPORTED_PROTOCOLS:
             if sconf and (sconf.getProto().lower() in SUPPORTED_PROTOCOLS):
                 self.proto = sconf.getProto().lower()
             else:
-                pick = random.randint(0, len(SUPPORTED_PROTOCOLS)-1)
+                pick = random.randint(1, 100)
+                myindex = 0
                 protos = list(SUPPORTED_PROTOCOLS.keys())
-                self.proto = protos[pick]
+                for prob in PROTO_PICK_PROB:
+                    pick = pick - prob
+                    if pick <= 0:
+                        self.proto = protos[myindex]
+                        break
+                    myindex = myindex + 1
+        else:
+            self.proto = self.proto.lower()
 
         if self.proto != 'tcp':
             handshake = False
@@ -853,8 +861,8 @@ class TrafficStream(object):
         seq += next * self.content_string.get_size()
         pkt = self.buildPkt(p.getDir(), ACK, self.content_string,
                             seq)
-        if self.window >= max_window or ((self.p_count - self.window) <= 0
-           and self.p_count > 1):
+        if self.window >= max_window or \
+           ((self.p_count - self.window) <= 0 and self.p_count > 1):
             pkts_acked = 0
             try:
                 first = self.order_sent.index(0)
