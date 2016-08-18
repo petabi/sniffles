@@ -110,6 +110,7 @@ def start_generation(sconf):
     total_generated_streams = 0
     total_generated_packets = 0
     flow_start_offset = 0
+    mix_count = sconf.getMixCount()
     traffic_queue = SortedDict()
 
     if sconf.getWriteRegEx():
@@ -155,40 +156,16 @@ def start_generation(sconf):
     else:
         end = sconf.getTotalStreams()
 
-    do_mix_random = False
-    mix_points = []
-    if sconf.getMixMode():
-        if sconf.getTrafficDuration() > 0:
-            print("When using mix mode, duraion setting cannot be used together (exiting)")
-            return [0, 0, 0]
-        do_mix_random = True
-        mix_points = random.sample(range(end), min(sconf.getMixCount(), end))
-        if sconf.getVerbosity():
-            print("We are gonna use mixing mode :")
-            print(" ... mixing points are ...")
-            print(str(mix_points))
-
-    # make random rule for random mixing
-    rand_rule = Rule("random")
-    rand_ts = TrafficStreamRule()
-    rand_pkt = RulePkt()
-    rand_con = RuleContent('pcre', "/[\\x00-\\xff]+/")
-    rand_pkt.addContent(rand_con)
-    rand_ts.addPktRule(rand_pkt)
-    rand_rule.addTS(rand_ts)
-
     while current < end:
         myrule = None
-        if do_mix_random:
-            if current in mix_points:
-                myrule = copy.deepcopy(allrules[mix_points.index(current) % len(allrules)])
-            else:
-                myrule = copy.deepcopy(rand_rule)
-        else:
-            if allrules:
+        if mix_count >= 0:
+            if mix_count > 0 and allrules:
                 myrule = copy.deepcopy(random.choice(allrules))
-                if sconf.getVerbosity():
-                    print(myrule)
+                mix_count = mix_count - 1
+        elif allrules:
+            myrule = copy.deepcopy(random.choice(allrules))
+        if sconf.getVerbosity():
+            print(myrule)
 
         flow_start_offset = random.randint(
             1, sconf.getConcurrentFlows() + 100000
