@@ -158,7 +158,7 @@ def start_generation(sconf):
 
     while current < end:
         myrule = None
-        if mix_count >= 0:
+        if sconf.getMixMode() and mix_count >= 0:
             if mix_count > 0 and allrules:
                 myrule = copy.deepcopy(random.choice(allrules))
                 mix_count = mix_count - 1
