@@ -28,7 +28,6 @@ SYN = 0x02
 ACK = 0x10
 MORE_FRAGMENTS = 0x2000
 SUPPORTED_PROTOCOLS = {'icmp': 1, 'tcp': 6, 'udp': 17}
-PROTO_PICK_PROB = [5, 80, 15]
 
 # Scan attack types
 SYN_SCAN = 0
@@ -91,6 +90,16 @@ def get_all_subclasses(myCls):
 
     return all_subclasses
 
+def get_random_protocol():
+    proto_distribution = {'icmp':5, 'udp':15, 'tcp':80}
+    pick = random.randint(1, 100)
+    for proto in SUPPORTED_PROTOCOLS.keys():
+        if proto not in proto_distribution:
+            continue
+        pick = pick - proto_distribution[proto]
+        if pick <= 0:
+            return proto
+    return 'tcp'
 
 class Conversation(object):
     """
@@ -311,15 +320,7 @@ class TrafficStream(object):
             if sconf and (sconf.getProto().lower() in SUPPORTED_PROTOCOLS):
                 self.proto = sconf.getProto().lower()
             else:
-                pick = random.randint(1, 100)
-                myindex = 0
-                protos = list(SUPPORTED_PROTOCOLS.keys())
-                for prob in PROTO_PICK_PROB:
-                    pick = pick - prob
-                    if pick <= 0:
-                        self.proto = protos[myindex]
-                        break
-                    myindex = myindex + 1
+                self.proto = get_random_protocol()
         else:
             self.proto = self.proto.lower()
 

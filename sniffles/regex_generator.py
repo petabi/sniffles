@@ -267,8 +267,8 @@ def get_digit():
 
 def get_letter():
     char_tbl = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
-                'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'X', 'Y',
-                'Z']
+                'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                'Y', 'Z']
     chr_pick = random.choice(char_tbl)
 
     upper_lower = random.randint(0, 100)
