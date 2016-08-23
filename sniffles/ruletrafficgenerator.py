@@ -1374,13 +1374,13 @@ class ContentGenerator:
         length.  If full_match is not set to true, it will clip content
         generated from a rule so that it should not match the rule.
     """
-    def __init__(self, rule=None, length=-1, rand=False, full_match=False,
+    def __init__(self, rule=None, length=-1, rand=False, full_match=True,
                  full_eval=False):
         self.published = []
         self.index = 0
         if rand or rule is None:
             if length < 0:
-                length = random.randint(0, 1400)+10
+                length = random.randint(0, 1400) + 10
             self.published.append(Content(self.generate_random_data(length),
                                           length, False, False))
         elif full_eval:
@@ -1520,7 +1520,7 @@ class ContentGenerator:
                         generated = self.generate_from_content_strings(
                             con.getContentString())
                     elif con.getType() == 'pcre':
-                        generated = self.generate_from_regex(
+                        generated = self.generate_from_regex_wrapper(
                             con.getContentString())
                         if len(generated) < 1:
                             print(
@@ -1590,7 +1590,7 @@ class ContentGenerator:
                             rule.getContentString()
                         )
                     else:
-                        http_method = self.generate_from_regex(
+                        http_method = self.generate_from_regex_wrapper(
                             rule.getContentString())
                 elif rule.getHttpStatCode():
                     if rule.getType() == 'content':
@@ -1598,7 +1598,7 @@ class ContentGenerator:
                             rule.getContentString()
                         )
                     else:
-                        http_stat_code = self.generate_from_regex(
+                        http_stat_code = self.generate_from_regex_wrapper(
                             rule.getContentString())
                 elif rule.getHttpStatMsg():
                     if rule.getType() == 'content':
@@ -1606,7 +1606,7 @@ class ContentGenerator:
                             rule.getContentString()
                         )
                     else:
-                        http_stat_msg = self.generate_from_regex(
+                        http_stat_msg = self.generate_from_regex_wrapper(
                             rule.getContentString())
                 elif rule.getHttpUri() or rule.getHttpRawUri():
                     if rule.getType() == 'content':
@@ -1614,7 +1614,7 @@ class ContentGenerator:
                             rule.getContentString()
                         )
                     else:
-                        http_uri = self.generate_from_regex(
+                        http_uri = self.generate_from_regex_wrapper(
                             rule.getContentString())
                 elif rule.getHttpCookie() or rule.getHttpRawCookie():
                     if rule.getType() == 'content':
@@ -1622,7 +1622,7 @@ class ContentGenerator:
                             rule.getContentString()
                         )
                     else:
-                        http_cookie = self.generate_from_regex(
+                        http_cookie = self.generate_from_regex_wrapper(
                             rule.getContentString())
                 elif rule.getHttpHeader() or rule.getHttpRawHeader():
                     if rule.getType() == 'content':
@@ -1630,7 +1630,7 @@ class ContentGenerator:
                             rule.getContentString()
                         )
                     else:
-                        http_header = self.generate_from_regex(
+                        http_header = self.generate_from_regex_wrapper(
                             rule.getContentString())
                 elif rule.getHttpClientBody():
                     body = ""
@@ -1639,7 +1639,7 @@ class ContentGenerator:
                             rule.getContentString()
                         )
                     else:
-                        body = self.generate_from_regex(
+                        body = self.generate_from_regex_wrapper(
                             rule.getContentString())
                     if http_body is None:
                         http_body = body
@@ -1681,6 +1681,17 @@ class ContentGenerator:
 
         return generated
 
+    def generate_from_regex_wrapper(self, pcre=None):
+        generated = []
+        if len(generated) < 1:
+            for i in range(0, 10):
+                generated = self.generate_from_regex(pcre)
+                if len(generated) > 0:
+                    break
+        if len(generated) < 1:
+            print("No content generated!")
+        return generated
+
     """
       This Function will build an NFA of a given regular expression.
       It will then take a random walk of said NFA building a string
@@ -1705,6 +1716,7 @@ class ContentGenerator:
                 possible_symbols = []
                 depth = state.get_depth()
                 next_states = []
+                loop_symbols = []
                 for sym in range(0, NSYMBOLS):
                     for next_state in state.tx[sym]:
                         if next_state == nfa.accept:
@@ -1713,11 +1725,19 @@ class ContentGenerator:
                             break
                         if next_state != state and sym not in possible_symbols:
                             possible_symbols.append(sym)
+                        if next_state == state and sym not in possible_symbols:
+                            loop_symbols.append(sym)
+                if loop_symbols and state != nfa.start:
+                    pick = random.randint(0, 100)
+                    if pick > 50:
+                        random.shuffle(loop_symbols)
+                        loop_sym = loop_symbols.pop(0)
+                        generated.append(loop_sym)
                 if possible_symbols and not next_states:
                     searching = True
                     while searching and len(possible_symbols) > 0:
-                        next_symbol = possible_symbols.pop(
-                            random.randrange(len(possible_symbols)))
+                        random.shuffle(possible_symbols)
+                        next_symbol = possible_symbols.pop(0)
                         for next_state in state.tx[next_symbol]:
                             if next_state != state and \
                                next_state not in visited:
@@ -1739,13 +1759,6 @@ class ContentGenerator:
                 # something broke--just bail for now.
                 else:
                     break
-        if len(generated) < 1:
-            for i in range(0, 10):
-                generated = self.generate_from_regex(pcre)
-                if len(generated) > 0:
-                    break
-        if len(generated) < 1:
-            print("No content generated!")
         return generated
 
     """

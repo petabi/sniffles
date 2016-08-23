@@ -560,6 +560,13 @@ class TestRuleTrafficGenerator(TestCase):
         mycon = cg.get_next_published_content()
         self.assertEqual(mycon.get_size(), 10)
 
+    def test_content_gen_zero_data(self):
+        mypkt = RulePkt("to client", "/a*/", 1)
+        cg = ContentGenerator(mypkt)
+        mycon = cg.get_next_published_content()
+        self.assertEqual(mycon.get_size(), 1)
+        self.assertEqual(mycon.get_data(), b'a')
+
     def test_packet(self):
         myrpkt = RulePkt("to server", "/12345/")
         cg = ContentGenerator(myrpkt)
