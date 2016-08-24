@@ -158,11 +158,13 @@ def generate_regex(lambd, max_len, type_dist, char_dist,
     max_len variable is larger than 0, then it is assumed that this is
     a recursive call and max_len is used as the length.  This function
     will continue concatenating structures to the regular expression
-    until the entire length has been generated.
+    until the entire length has been generated.  Note: the minimum
+    regex lenght is fixed at 3 characters (with possible decoration
+    i.e. repetition).
     """
     if lambd <= 0:
         lambd = 10
-    mylen = int(random.expovariate(1/lambd)) + 1
+    mylen = int(random.expovariate(1/lambd)) + 3
     if max_len > 0:
         mylen = max_len
     total_types = 3

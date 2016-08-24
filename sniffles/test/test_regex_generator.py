@@ -96,3 +96,8 @@ class TestRegexGenerator(TestCase):
             lower = int(values[0])
             upper = int(values[1])
             self.assertTrue(lower <= upper)
+
+    def test_min_regex(self):
+        for i in range(0, 100):
+            myre = generate_regex(1, 10, None, None, None, None, 0, 0)
+            self.assertTrue(len(myre) > 3)
