@@ -110,6 +110,7 @@ def start_generation(sconf):
     total_generated_streams = 0
     total_generated_packets = 0
     flow_start_offset = 0
+    mix_count = sconf.getMixCount()
     traffic_queue = SortedDict()
 
     if sconf.getWriteRegEx():
@@ -157,10 +158,15 @@ def start_generation(sconf):
 
     while current < end:
         myrule = None
-        if allrules:
+        if sconf.getMixMode() and mix_count >= 0:
+            if mix_count > 0 and allrules:
+                myrule = copy.deepcopy(random.choice(allrules))
+                mix_count = mix_count - 1
+        elif allrules:
             myrule = copy.deepcopy(random.choice(allrules))
-            if sconf.getVerbosity():
-                print(myrule)
+        if sconf.getVerbosity():
+            print(myrule)
+
         flow_start_offset = random.randint(
             1, sconf.getConcurrentFlows() + 100000
         )

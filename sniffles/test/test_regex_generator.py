@@ -6,10 +6,10 @@ import random
 class TestRegexGenerator(TestCase):
 
     def test_get_index(self):
-        test = get_index(1)
+        test = get_index(1, None)
         self.assertEqual(test, 0)
 
-        test = get_index(3)
+        test = get_index(3, None)
         self.assertTrue(test >= 0)
         self.assertTrue(test <= 2)
 
@@ -62,7 +62,7 @@ class TestRegexGenerator(TestCase):
 
     def test_get_class(self):
         for i in range(0, 100):
-            test = get_class([0, 100], 0)
+            test = get_class([0, 100], 0, None)
             test = test[1:-1]
             values = test.split("-")
             if values[0].islower():
@@ -72,7 +72,7 @@ class TestRegexGenerator(TestCase):
             self.assertTrue(ord(values[0]) < ord(values[1]))
 
         for i in range(0, 100):
-            test = get_class([0, 100], 100)
+            test = get_class([0, 100], 100, None)
             self.assertEqual(test[1], "^")
 
     def test_get_repetition(self):

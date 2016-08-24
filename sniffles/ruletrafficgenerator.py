@@ -90,6 +90,16 @@ def get_all_subclasses(myCls):
 
     return all_subclasses
 
+def get_random_protocol():
+    proto_distribution = {'icmp':5, 'udp':15, 'tcp':80}
+    pick = random.randint(1, 100)
+    for proto in SUPPORTED_PROTOCOLS.keys():
+        if proto not in proto_distribution:
+            continue
+        pick = pick - proto_distribution[proto]
+        if pick <= 0:
+            return proto
+    return 'tcp'
 
 class Conversation(object):
     """
@@ -232,6 +242,7 @@ class TrafficStream(object):
         self.full_match = False
         self.header = 0
         self.ip_type = 4
+        self.proto = 'any'
         self.last_off = 0
         self.latency = random.randint(1, 200)
         self.lost_pkt_string = None
@@ -294,20 +305,24 @@ class TrafficStream(object):
             self.myp = rule.getPkts()
             self.packets_in_stream = len(rule.getPkts())
             self.proto = rule.getProto()
-            if self.proto.lower() not in SUPPORTED_PROTOCOLS:
-                pick = random.randint(0, len(SUPPORTED_PROTOCOLS)-1)
-                protos = list(SUPPORTED_PROTOCOLS.keys())
-                self.proto = protos[pick]
             self.dport = Port(rule.getDport())
             self.sport = Port(rule.getSport())
             self.stream_ooo = rule.getOutOfOrder()
             self.synch = rule.getSynch()
             self.tcp_overlap = rule.getTCPOverlap()
         else:
-            pick = random.randint(0, len(SUPPORTED_PROTOCOLS)-1)
-            protos = list(SUPPORTED_PROTOCOLS.keys())
-            self.proto = protos[pick]
             self.rand = True
+
+        # if protocol is still not determined
+        # consult with configuration first and then pick random one
+        if self.proto is None or self.proto == 'any' or \
+           self.proto.lower() not in SUPPORTED_PROTOCOLS:
+            if sconf and (sconf.getProto().lower() in SUPPORTED_PROTOCOLS):
+                self.proto = sconf.getProto().lower()
+            else:
+                self.proto = get_random_protocol()
+        else:
+            self.proto = self.proto.lower()
 
         if self.proto != 'tcp':
             handshake = False
@@ -847,8 +862,8 @@ class TrafficStream(object):
         seq += next * self.content_string.get_size()
         pkt = self.buildPkt(p.getDir(), ACK, self.content_string,
                             seq)
-        if self.window >= max_window or ((self.p_count - self.window) <= 0
-           and self.p_count > 1):
+        if self.window >= max_window or \
+           ((self.p_count - self.window) <= 0 and self.p_count > 1):
             pkts_acked = 0
             try:
                 first = self.order_sent.index(0)
