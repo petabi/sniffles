@@ -851,6 +851,7 @@ Content Feature -- Inherits from Feature:
          m to the regex.
 - length: Defines the average length of the generated
           content.
+-  min_regex_length: Defines the minimum length of the regex.
 
 Protocol Feature -- Inherits from Feature:
 - proto_list: Defines the list of possible protocols,

@@ -34,6 +34,7 @@ def main():
     rep_chance = 5
     option_chance = 20
     negation_prob = 15
+    min_regex_length = 3             # Default to regex at least 3 chars in len
     re_file = "rand.re"
     try:
         options, args = getopt.getopt(sys.argv[1:], "C:c:D:f:gl:o:n:R:r:t:?",
@@ -61,6 +62,10 @@ def main():
             lambd = int(arg)
             if lambd <= 0:
                 lambd = 10
+        elif opt == "-m":
+            min_regex_length = int(arg)
+            if min_regex_length < 1:
+                min_regex_length = 1
         elif opt == "-n":
             negation_prob = int(arg)
             if negation_prob < 0:
@@ -86,7 +91,7 @@ def main():
             usage()
     create_regex_list(number, lambd, type_dist, char_dist, class_dist,
                       rep_dist, rep_chance, option_chance, negation_prob,
-                      re_file, groups)
+                      re_file, min_regex_length, groups)
     print("Finished creating random regular expressions.")
     sys.exit(0)
 
@@ -101,7 +106,7 @@ def main():
 
 def create_regex_list(number, lambd, type_dist, char_dist, class_dist,
                       rep_dist, rep_chance, option_chance, negation_prob,
-                      re_file, groups=False):
+                      re_file, min_regex_length, groups=False):
     """Manages the creation of the new regular expression list.
     Steps invloved:
       1. Create the regex.
@@ -121,7 +126,8 @@ def create_regex_list(number, lambd, type_dist, char_dist, class_dist,
         if mygroups:
             myregex += mygroups[random.randint(0, len(mygroups) - 1)]
         myregex += generate_regex(lambd, 0, type_dist, char_dist, class_dist,
-                                  rep_dist, rep_chance, negation_prob)
+                                  rep_dist, rep_chance, negation_prob,
+                                  min_regex_length)
         myregex += '/'
         pick = random.randint(0, 100)
         if pick < option_chance:
@@ -146,7 +152,7 @@ def create_regex_list(number, lambd, type_dist, char_dist, class_dist,
 
 def generate_regex(lambd, max_len, type_dist, char_dist,
                    class_dist, rep_dist, rep_chance,
-                   negation_prob):
+                   negation_prob, min_regex_length):
     """Creates a regular expression.
 
     Lambda designates the mean of the length of the regular expression
@@ -164,9 +170,13 @@ def generate_regex(lambd, max_len, type_dist, char_dist,
     """
     if lambd <= 0:
         lambd = 10
-    mylen = int(random.expovariate(1/lambd)) + 3
-    if max_len > 0:
+    mylen = int(random.expovariate(1/lambd))
+
+    if mylen < min_regex_length:
+      mylen = min_regex_length
+    if max_len > 0 and mylen > max_len:
         mylen = max_len
+
     total_types = 3
     index = 0
     myregex = ''
@@ -365,7 +375,7 @@ def get_alternation(max_length, type_dist, char_dist,
             this_length = random.randint(1, alt_max_length)
         myalternation += generate_regex(0, this_length, type_dist, char_dist,
                                         class_dist, rep_dist, rep_chance,
-                                        negation_prob)
+                                        negation_prob, 1)
         if i < alternates - 1:
             myalternation += '|'
     myalternation += ')'
@@ -483,6 +493,9 @@ def usage():
     distribution of regular expression lengths.  The default value is 65
     (derived from the average regex length taken from several regular
     expression sets used in computer security).
+    -m \t Minimum Regex Length: make regular expressions at least this
+    this length or longer.  Defaults to 3, and will automatically use a
+    value of 1 if the input is zero or less.
     -n \t negation probability: The probability that a character class will
     be a negation class ([^xyz]) rather than a normal character class ([xyz]).
     Default probability is 15% (arbitrarily set).
