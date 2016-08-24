@@ -39,6 +39,7 @@ class TrafficWriter:
             self.save_file = save_file
             self.open_save_file()
         self.set_timestamp(start_ts, 0)
+        self.total_pkts = 0
 
     def close_save_file(self):
         if self.writer_handle:
@@ -53,6 +54,9 @@ class TrafficWriter:
 
     def get_timestamp(self):
         return (self.current_time_sec + (self.current_time_usec/1000000))
+
+    def get_total_pkts(self):
+        return self.total_pkts
 
     def open_save_file(self):
         if self.save_file:
@@ -90,6 +94,7 @@ class TrafficWriter:
                                    self.current_time_usec, len, len)
             self.writer_handle.write(pcap_hdr)
             self.writer_handle.write(pkt)
+            self.total_pkts += 1
         else:
             print("No packet to write!")
         return self.current_time_sec, self.current_time_usec
