@@ -698,6 +698,8 @@ class TrafficStream(object):
             # Nothing left.
         # Increment time stamp for next packet
         self.incrementTime(int(round(random.expovariate(1/self.latency)))+1)
+        if self.rule:
+            pkt.set_ts_rule(self.rule)
         return pkt
 
     def getNextTeardownPacket(self):
@@ -1184,6 +1186,7 @@ class Packet(object):
                  ack=0, mac_gen=ETHERNET_HDR_GEN_RANDOM,
                  dist_file=None, content=None, frag_id=0,
                  offset=0, mf=False, ttl=None):
+        self.ts_rule = None # ref to TrafficStreamRule
         self.transport_hdr = None
         self.proto = proto
         if ipv == 6:
@@ -1194,8 +1197,10 @@ class Packet(object):
                                           self.network_hdr.get_dip(),
                                           mac_gen, dist_file, ipv)
 
+        self.content_set = False
         if content is not None:
             self.content = content
+            self.content_set = True
         else:
             self.content = Content(None, 0)
         if frag_id == 0:
@@ -1223,8 +1228,17 @@ class Packet(object):
             pkt_str += '\n'
         return pkt_str
 
+    def get_ts_rule(self):
+        return self.ts_rule
+
     def get_content(self):
         return self.content
+
+    def get_content_set(self):
+        return self.content_set
+
+    def get_content_truncated(self):
+        return self.content.get_truncated()
 
     def get_packet(self):
         packet = self.datalink_hdr.get_ethernet_header() + \
@@ -1280,6 +1294,9 @@ class Packet(object):
                                     self.transport_hdr.get_size() +
                                     self.content.get_size())
 
+    def set_ts_rule(self, rule):
+        self.ts_rule = rule
+
     def set_ack_num(self, ack=0):
         self.transport_hdr.set_ack_num(ack)
 
@@ -1315,6 +1332,7 @@ class Content(object):
         self.frag = frag
         self.rand = rand
         self.data = []
+        self.truncated = False # this should come before set_data
         if data:
             self.set_data(data)
 
@@ -1350,6 +1368,7 @@ class Content(object):
 
             if len(self.data) > self.length:
                 self.data = self.data[0:self.length]
+                self.truncated = True
             if self.length > len(self.data):
                 temp_data = []
                 if self.full_match and len(self.data) > 1:
@@ -1370,6 +1389,9 @@ class Content(object):
                     temp_data.extend(
                         cgen.get_next_published_content().get_data())
                 self.data = temp_data
+
+    def get_truncated(self):
+        return self.truncated
 
     def set_data(self, data=None):
         self.data = data

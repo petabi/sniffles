@@ -54,6 +54,7 @@ class SnifflesConfig(object):
         self.ipv6_percent = 0
         self.mac_addr_def = None
         self.output_file = "sniffles.pcap"
+        self.result_file = "result.txt"
         self.pcap_start_sec = int(calendar.timegm(time.gmtime()))
         self.pkt_length = -1
         self.pkts_per_stream = 1
@@ -245,6 +246,9 @@ class SnifflesConfig(object):
     def getOutputFile(self):
         return self.output_file
 
+    def getResultFile(self):
+        return self.result_file
+
     def setOutputFile(self, value):
         self.output_file = value
 
@@ -389,8 +393,9 @@ class SnifflesConfig(object):
         """
         cmd_options = "abc:C:d:D:eEf:F:g:h:H:i:I:l:L:" + \
                       "mM:o:O:p:P:q:rRs:S:tTvwW:x:Z:?"
+        long_options = ["resultfile="]
         try:
-            options, args = getopt.getopt(cmd, cmd_options, [])
+            options, args = getopt.getopt(cmd, cmd_options, long_options)
         except getopt.GetoptError as err:
             print("Error reading command line: ", err)
             self.usage()
@@ -537,6 +542,10 @@ class SnifflesConfig(object):
         # Set output file name, default is sniffles.pcap.
         elif opt == "-o":
             self.output_file = arg
+
+        # Set result file name, default is result.txt
+        elif opt == "--resultfile":
+            self.result_file = arg
 
         # For scan attacks.  The offset designates the offset from
         # the beginning of the traffic generation to when the
