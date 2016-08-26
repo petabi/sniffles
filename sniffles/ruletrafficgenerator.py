@@ -90,6 +90,16 @@ def get_all_subclasses(myCls):
 
     return all_subclasses
 
+def get_random_protocol():
+    proto_distribution = {'icmp':5, 'udp':15, 'tcp':80}
+    pick = random.randint(1, 100)
+    for proto in SUPPORTED_PROTOCOLS.keys():
+        if proto not in proto_distribution:
+            continue
+        pick = pick - proto_distribution[proto]
+        if pick <= 0:
+            return proto
+    return 'tcp'
 
 class Conversation(object):
     """
@@ -232,6 +242,7 @@ class TrafficStream(object):
         self.full_match = False
         self.header = 0
         self.ip_type = 4
+        self.proto = 'any'
         self.last_off = 0
         self.latency = random.randint(1, 200)
         self.lost_pkt_string = None
@@ -294,20 +305,24 @@ class TrafficStream(object):
             self.myp = rule.getPkts()
             self.packets_in_stream = len(rule.getPkts())
             self.proto = rule.getProto()
-            if self.proto.lower() not in SUPPORTED_PROTOCOLS:
-                pick = random.randint(0, len(SUPPORTED_PROTOCOLS)-1)
-                protos = list(SUPPORTED_PROTOCOLS.keys())
-                self.proto = protos[pick]
             self.dport = Port(rule.getDport())
             self.sport = Port(rule.getSport())
             self.stream_ooo = rule.getOutOfOrder()
             self.synch = rule.getSynch()
             self.tcp_overlap = rule.getTCPOverlap()
         else:
-            pick = random.randint(0, len(SUPPORTED_PROTOCOLS)-1)
-            protos = list(SUPPORTED_PROTOCOLS.keys())
-            self.proto = protos[pick]
             self.rand = True
+
+        # if protocol is still not determined
+        # consult with configuration first and then pick random one
+        if self.proto is None or self.proto == 'any' or \
+           self.proto.lower() not in SUPPORTED_PROTOCOLS:
+            if sconf and (sconf.getProto().lower() in SUPPORTED_PROTOCOLS):
+                self.proto = sconf.getProto().lower()
+            else:
+                self.proto = get_random_protocol()
+        else:
+            self.proto = self.proto.lower()
 
         if self.proto != 'tcp':
             handshake = False
@@ -683,6 +698,8 @@ class TrafficStream(object):
             # Nothing left.
         # Increment time stamp for next packet
         self.incrementTime(int(round(random.expovariate(1/self.latency)))+1)
+        if self.rule:
+            pkt.set_ts_rule(self.rule)
         return pkt
 
     def getNextTeardownPacket(self):
@@ -847,8 +864,8 @@ class TrafficStream(object):
         seq += next * self.content_string.get_size()
         pkt = self.buildPkt(p.getDir(), ACK, self.content_string,
                             seq)
-        if self.window >= max_window or ((self.p_count - self.window) <= 0
-           and self.p_count > 1):
+        if self.window >= max_window or \
+           ((self.p_count - self.window) <= 0 and self.p_count > 1):
             pkts_acked = 0
             try:
                 first = self.order_sent.index(0)
@@ -1169,6 +1186,7 @@ class Packet(object):
                  ack=0, mac_gen=ETHERNET_HDR_GEN_RANDOM,
                  dist_file=None, content=None, frag_id=0,
                  offset=0, mf=False, ttl=None):
+        self.ts_rule = None # ref to TrafficStreamRule
         self.transport_hdr = None
         self.proto = proto
         if ipv == 6:
@@ -1179,8 +1197,10 @@ class Packet(object):
                                           self.network_hdr.get_dip(),
                                           mac_gen, dist_file, ipv)
 
+        self.content_set = False
         if content is not None:
             self.content = content
+            self.content_set = True
         else:
             self.content = Content(None, 0)
         if frag_id == 0:
@@ -1208,8 +1228,17 @@ class Packet(object):
             pkt_str += '\n'
         return pkt_str
 
+    def get_ts_rule(self):
+        return self.ts_rule
+
     def get_content(self):
         return self.content
+
+    def get_content_set(self):
+        return self.content_set
+
+    def get_content_truncated(self):
+        return self.content.get_truncated()
 
     def get_packet(self):
         packet = self.datalink_hdr.get_ethernet_header() + \
@@ -1265,6 +1294,9 @@ class Packet(object):
                                     self.transport_hdr.get_size() +
                                     self.content.get_size())
 
+    def set_ts_rule(self, rule):
+        self.ts_rule = rule
+
     def set_ack_num(self, ack=0):
         self.transport_hdr.set_ack_num(ack)
 
@@ -1300,6 +1332,7 @@ class Content(object):
         self.frag = frag
         self.rand = rand
         self.data = []
+        self.truncated = False # this should come before set_data
         if data:
             self.set_data(data)
 
@@ -1335,6 +1368,7 @@ class Content(object):
 
             if len(self.data) > self.length:
                 self.data = self.data[0:self.length]
+                self.truncated = True
             if self.length > len(self.data):
                 temp_data = []
                 if self.full_match and len(self.data) > 1:
@@ -1356,6 +1390,9 @@ class Content(object):
                         cgen.get_next_published_content().get_data())
                 self.data = temp_data
 
+    def get_truncated(self):
+        return self.truncated
+
     def set_data(self, data=None):
         self.data = data
         if self.length > 0:
@@ -1374,13 +1411,13 @@ class ContentGenerator:
         length.  If full_match is not set to true, it will clip content
         generated from a rule so that it should not match the rule.
     """
-    def __init__(self, rule=None, length=-1, rand=False, full_match=False,
+    def __init__(self, rule=None, length=-1, rand=False, full_match=True,
                  full_eval=False):
         self.published = []
         self.index = 0
         if rand or rule is None:
             if length < 0:
-                length = random.randint(0, 1400)+10
+                length = random.randint(0, 1400) + 10
             self.published.append(Content(self.generate_random_data(length),
                                           length, False, False))
         elif full_eval:
@@ -1520,7 +1557,7 @@ class ContentGenerator:
                         generated = self.generate_from_content_strings(
                             con.getContentString())
                     elif con.getType() == 'pcre':
-                        generated = self.generate_from_regex(
+                        generated = self.generate_from_regex_wrapper(
                             con.getContentString())
                         if len(generated) < 1:
                             print(
@@ -1590,7 +1627,7 @@ class ContentGenerator:
                             rule.getContentString()
                         )
                     else:
-                        http_method = self.generate_from_regex(
+                        http_method = self.generate_from_regex_wrapper(
                             rule.getContentString())
                 elif rule.getHttpStatCode():
                     if rule.getType() == 'content':
@@ -1598,7 +1635,7 @@ class ContentGenerator:
                             rule.getContentString()
                         )
                     else:
-                        http_stat_code = self.generate_from_regex(
+                        http_stat_code = self.generate_from_regex_wrapper(
                             rule.getContentString())
                 elif rule.getHttpStatMsg():
                     if rule.getType() == 'content':
@@ -1606,7 +1643,7 @@ class ContentGenerator:
                             rule.getContentString()
                         )
                     else:
-                        http_stat_msg = self.generate_from_regex(
+                        http_stat_msg = self.generate_from_regex_wrapper(
                             rule.getContentString())
                 elif rule.getHttpUri() or rule.getHttpRawUri():
                     if rule.getType() == 'content':
@@ -1614,7 +1651,7 @@ class ContentGenerator:
                             rule.getContentString()
                         )
                     else:
-                        http_uri = self.generate_from_regex(
+                        http_uri = self.generate_from_regex_wrapper(
                             rule.getContentString())
                 elif rule.getHttpCookie() or rule.getHttpRawCookie():
                     if rule.getType() == 'content':
@@ -1622,7 +1659,7 @@ class ContentGenerator:
                             rule.getContentString()
                         )
                     else:
-                        http_cookie = self.generate_from_regex(
+                        http_cookie = self.generate_from_regex_wrapper(
                             rule.getContentString())
                 elif rule.getHttpHeader() or rule.getHttpRawHeader():
                     if rule.getType() == 'content':
@@ -1630,7 +1667,7 @@ class ContentGenerator:
                             rule.getContentString()
                         )
                     else:
-                        http_header = self.generate_from_regex(
+                        http_header = self.generate_from_regex_wrapper(
                             rule.getContentString())
                 elif rule.getHttpClientBody():
                     body = ""
@@ -1639,7 +1676,7 @@ class ContentGenerator:
                             rule.getContentString()
                         )
                     else:
-                        body = self.generate_from_regex(
+                        body = self.generate_from_regex_wrapper(
                             rule.getContentString())
                     if http_body is None:
                         http_body = body
@@ -1681,6 +1718,17 @@ class ContentGenerator:
 
         return generated
 
+    def generate_from_regex_wrapper(self, pcre=None):
+        generated = []
+        if len(generated) < 1:
+            for i in range(0, 10):
+                generated = self.generate_from_regex(pcre)
+                if len(generated) > 0:
+                    break
+        if len(generated) < 1:
+            print("No content generated!")
+        return generated
+
     """
       This Function will build an NFA of a given regular expression.
       It will then take a random walk of said NFA building a string
@@ -1705,6 +1753,7 @@ class ContentGenerator:
                 possible_symbols = []
                 depth = state.get_depth()
                 next_states = []
+                loop_symbols = []
                 for sym in range(0, NSYMBOLS):
                     for next_state in state.tx[sym]:
                         if next_state == nfa.accept:
@@ -1713,11 +1762,19 @@ class ContentGenerator:
                             break
                         if next_state != state and sym not in possible_symbols:
                             possible_symbols.append(sym)
+                        if next_state == state and sym not in possible_symbols:
+                            loop_symbols.append(sym)
+                if loop_symbols and state != nfa.start:
+                    pick = random.randint(0, 100)
+                    if pick > 50:
+                        random.shuffle(loop_symbols)
+                        loop_sym = loop_symbols.pop(0)
+                        generated.append(loop_sym)
                 if possible_symbols and not next_states:
                     searching = True
                     while searching and len(possible_symbols) > 0:
-                        next_symbol = possible_symbols.pop(
-                            random.randrange(len(possible_symbols)))
+                        random.shuffle(possible_symbols)
+                        next_symbol = possible_symbols.pop(0)
                         for next_state in state.tx[next_symbol]:
                             if next_state != state and \
                                next_state not in visited:
@@ -1739,13 +1796,6 @@ class ContentGenerator:
                 # something broke--just bail for now.
                 else:
                     break
-        if len(generated) < 1:
-            for i in range(0, 10):
-                generated = self.generate_from_regex(pcre)
-                if len(generated) > 0:
-                    break
-        if len(generated) < 1:
-            print("No content generated!")
         return generated
 
     """
@@ -2398,19 +2448,23 @@ class TransportLayer(object):
 
 class ICMP(TransportLayer):
 
-    def __init__(self, type, code=None):
+    def __init__(self, type, code=None, roh=None):
         self.proto = "icmp"
         self.type = int(type)
         if code:
             self.code = int(code)
         else:
             self.code = 1
+        if roh:
+            self.rest_of_header = int(roh)
+        else:
+            self.rest_of_header = 0
         self.checksum = 0
-        self.size = 4
+        self.size = 8
 
     def get_transport_header(self):
-        icmp_bin = struct.pack('!BBH', self.type, self.code,
-                               self.checksum)
+        icmp_bin = struct.pack('!BBHI', self.type, self.code,
+                               self.checksum, self.rest_of_header)
         return icmp_bin
 
 

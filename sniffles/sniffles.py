@@ -110,6 +110,7 @@ def start_generation(sconf):
     total_generated_streams = 0
     total_generated_packets = 0
     flow_start_offset = 0
+    mix_count = sconf.getMixCount()
     traffic_queue = SortedDict()
 
     if sconf.getWriteRegEx():
@@ -155,12 +156,19 @@ def start_generation(sconf):
     else:
         end = sconf.getTotalStreams()
 
+    fd_result = open(sconf.getResultFile(), 'w') # for recording how packets are generated
+
     while current < end:
         myrule = None
-        if allrules:
+        if sconf.getMixMode() and mix_count >= 0:
+            if mix_count > 0 and allrules:
+                myrule = copy.deepcopy(random.choice(allrules))
+                mix_count = mix_count - 1
+        elif allrules:
             myrule = copy.deepcopy(random.choice(allrules))
-            if sconf.getVerbosity():
-                print(myrule)
+        if sconf.getVerbosity():
+            print(myrule)
+
         flow_start_offset = random.randint(
             1, sconf.getConcurrentFlows() + 100000
         )
@@ -179,7 +187,7 @@ def start_generation(sconf):
         TOTAL_GENERATED_STREAMS = total_generated_streams
         if len(traffic_queue) >= sconf.getConcurrentFlows():
             pkts, current_sec, current_usec = write_packets(
-                traffic_queue, traffic_writer, sconf
+                traffic_queue, traffic_writer, sconf, fd_result
             )
             total_generated_packets += pkts
 
@@ -194,7 +202,7 @@ def start_generation(sconf):
 
     while traffic_queue and len(traffic_queue) > 0:
         pkts, current_sec, current_usec = write_packets(
-            traffic_queue, traffic_writer, sconf
+            traffic_queue, traffic_writer, sconf, fd_result
         )
         total_generated_packets += pkts
 
@@ -202,6 +210,7 @@ def start_generation(sconf):
         TOTAL_GENERATED_PACKETS = total_generated_packets
         FINAL = current_sec
     traffic_writer.close_save_file()
+    fd_result.close()
     return [total_generated_streams, total_generated_packets, current_sec]
 
 
@@ -272,7 +281,7 @@ def printRegEx(rules):
     return [0, 0, 0]
 
 
-def write_packets(queue, traffic_writer, sconf):
+def write_packets(queue, traffic_writer, sconf, fd_result):
     """
         Packets are written out interleaved (round-robin) from
         each stream until the batch is complete, or there are no more packets
@@ -305,6 +314,29 @@ def write_packets(queue, traffic_writer, sconf):
                         pkt.get_size(), pkt.get_packet(), s, u
                     )
                     num_packets += 1
+
+                    # print the rule & traffic stream info
+                    result_line = "\n"
+                    pkt_rule = None
+                    pkt_rule_idx = 0
+                    pkt_ts_rule = pkt.get_ts_rule()
+                    if pkt_ts_rule:
+                        pkt_rule = pkt_ts_rule.getRule()
+                        pkt_rule_idx = pkt_ts_rule.getRuleIndex()
+                    if pkt_rule:
+                        result_line = "Pkt " + \
+                          str(traffic_writer.get_total_pkts()) + \
+                          " : rule = " + pkt_rule.getRuleName() + \
+                          ", ts idx = " + str(pkt_rule_idx)
+                        if pkt.get_content_set():
+                            result_line += ", content_set ";
+                            result_line += ("(truncated)" \
+                              if pkt.get_content_truncated() else "")
+                            result_line += "\n"
+                    else:
+                        result_line = "Pkt " + str(traffic_writer.get_total_pkts()) + \
+                                " : (rule none)\n"
+                    fd_result.write(result_line)
 
                 else:
                     print("Packets is none!!! Something is wrong")

@@ -61,8 +61,13 @@ class Rule(object):
         if ts is not None:
             if type(ts) is list:
                 self.ts.extend(ts)
+                idx = 0
+                for t in self.ts:
+                    t.setRule(self, idx)
+                    idx += 1
             else:
                 self.ts = [ts]
+                ts.setRule(self, 0)
 
     def __str__(self):
         mystr = "Rule-Name: "
@@ -77,6 +82,7 @@ class Rule(object):
     def addTS(self, stream=None):
         if stream:
             self.ts.append(stream)
+            stream.setRule(self, len(self.ts) - 1)
 
     def getRuleName(self):
         return self.name
@@ -126,6 +132,7 @@ class RuleParser(object):
     def __init__(self, filename=None):
         self.rules = []
         self.filename = filename
+        self.rule_no = 0
 
     def addRule(self, rule=None):
         if rule:
@@ -151,6 +158,7 @@ class RuleParser(object):
         mypkt.addContent(mycon)
         ts.addPktRule(mypkt)
         basic_rule.addTS(ts)
+        basic_rule.setRuleName("Rule-" + str(self.rule_no))
         self.addRule(basic_rule)
 
     def parseRuleFile(self, filename=None):
@@ -166,6 +174,7 @@ class RuleParser(object):
             line = line.strip()
             if len(line) > 0 and line[0] != '#':
                 self.parseRule(line)
+                self.rule_no += 1
             line = self.fd.readline()
         self.fd.close()
 
@@ -267,6 +276,8 @@ class RulePkt(object):
     def __init__(self, dir="to server", content=None, fragment=0, times=1,
                  length=-1, ack_this=False, ooo=False, split=0, ttl=256,
                  ttl_expiry=0):
+        self.ts_rule = None # ref to parent TrafficStreamRule
+        self.index = 0 # index in ts_rule
         self.dir = dir
         self.content = None
         if content:
@@ -314,6 +325,12 @@ class RulePkt(object):
     def ackThis(self):
         return self.ack_this
 
+    def getTsRule(self):
+        return self.ts_rule
+
+    def getTsRuleIndex(self):
+        return self.index
+
     def getContent(self):
         return self.content
 
@@ -353,6 +370,10 @@ class RulePkt(object):
                 self.content.append(tempcon)
             else:
                 self.content = [tempcon]
+
+    def setTsRule(self, rule, index):
+        self.ts_rule = rule
+        self.index = index
 
     def setAckThis(self, a=False):
         self.ack_this = a
@@ -420,6 +441,8 @@ class TrafficStreamRule(object):
                  ooo_prob=50, loss=0, flow="to server", ack=False,
                  latency=None):
 
+        self.rule = None # ref to parent Rule object
+        self.index = 0 # index of itself in the rule
         self.ack = ack
         self.content = []
         self.dport = dport
@@ -480,6 +503,12 @@ class TrafficStreamRule(object):
         return False
 
     # accessors
+    def getRule(self):
+        return self.rule
+
+    def getRuleIndex(self):
+        return self.index
+
     def getAck(self):
         return self.ack
 
@@ -544,6 +573,11 @@ class TrafficStreamRule(object):
                 self.content.append(pktrule)
             else:
                 self.content = [pktrule]
+            pktrule.setTsRule(self, len(self.content) - 1)
+
+    def setRule(self, rule, index):
+        self.rule = rule
+        self.index = index
 
     def setAck(self, value):
         self.ack = value

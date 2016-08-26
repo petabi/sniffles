@@ -42,15 +42,19 @@ class SnifflesConfig(object):
         self.bi = False
         self.concurrent_flows = 1000
         self.config_file = None
+        self.mix_mode = False
+        self.mix_count = 0
         self.eval = False
         self.full_eval = False
         self.full_match = False
         self.intensity = 1
+        self.proto = 'any'
         self.ipv4_home = None
         self.ipv6_home = None
         self.ipv6_percent = 0
         self.mac_addr_def = None
         self.output_file = "sniffles.pcap"
+        self.result_file = "result.txt"
         self.pcap_start_sec = int(calendar.timegm(time.gmtime()))
         self.pkt_length = -1
         self.pkts_per_stream = 1
@@ -113,12 +117,17 @@ class SnifflesConfig(object):
         if self.ipv6_home:
             mystr += "  IPv6 Home addresses are: " + str(self.ipv6_home) + \
                      ".\n"
+        if self.proto:
+            mystr += "  Protocol specified is: " + self.proto + ".\n"
         if self.tcp_handshake:
             mystr += "  TCP handshakes will be included in the pcap.\n"
         if self.tcp_teardown:
             mystr += "  TCP teardown sequences will be inlcuded in the pcap.\n"
         if self.tcp_ack:
             mystr += "  TCP acknowledgements will be sent.\n"
+
+        if self.mix_mode:
+            mystr += "  Will use mix mode (with " + str(self.mix_count) + " streams matched).\n"
 
         if self.scan:
             mystr += "  Will insert Scan attacks into the pcap.\n"
@@ -237,6 +246,9 @@ class SnifflesConfig(object):
     def getOutputFile(self):
         return self.output_file
 
+    def getResultFile(self):
+        return self.result_file
+
     def setOutputFile(self, value):
         self.output_file = value
 
@@ -251,6 +263,15 @@ class SnifflesConfig(object):
 
     def setPktsPerStream(self, value):
         self.pkts_per_stream = value
+
+    def getProto(self):
+        return self.proto
+
+    def getMixMode(self):
+        return self.mix_mode
+
+    def getMixCount(self):
+        return self.mix_count
 
     def getRandom(self):
         return self.rand
@@ -371,9 +392,10 @@ class SnifflesConfig(object):
             Standard function for reading command line input.
         """
         cmd_options = "abc:C:d:D:eEf:F:g:h:H:i:I:l:L:" + \
-                      "mM:o:O:p:P:rRs:S:tTvwW:Z:?"
+                      "mM:o:O:p:P:q:rRs:S:tTvwW:x:Z:?"
+        long_options = ["resultfile="]
         try:
-            options, args = getopt.getopt(cmd, cmd_options, [])
+            options, args = getopt.getopt(cmd, cmd_options, long_options)
         except getopt.GetoptError as err:
             print("Error reading command line: ", err)
             self.usage()
@@ -521,6 +543,10 @@ class SnifflesConfig(object):
         elif opt == "-o":
             self.output_file = arg
 
+        # Set result file name, default is result.txt
+        elif opt == "--resultfile":
+            self.result_file = arg
+
         # For scan attacks.  The offset designates the offset from
         # the beginning of the traffic generation to when the
         # scan attack will start.  If used with Random, this becomes
@@ -537,6 +563,15 @@ class SnifflesConfig(object):
         # a scan attack.
         elif opt == "-P":
             self.target_ports = arg.split(',')
+
+
+        # This setting tells sniffles what protocol to use
+        # when it's not obvious which protocol to use
+        elif opt == "-q":
+            if arg is not None:
+                global SUPPORTED_PROTOCOLS
+                if arg.lower() in SUPPORTED_PROTOCOLS:
+                    self.proto = arg.lower()
 
         # This setting tells sniffles to use random generation wherever
         # possible.  When used with a rule, most of the rule features
@@ -580,6 +615,12 @@ class SnifflesConfig(object):
         elif opt == "-W":
             if int(arg) > 1:
                 self.scan_duration = int(arg)
+
+        # Sets the mix mode and count
+        elif opt == "-x":
+            if arg is not None and int(arg) > 0:
+                self.mix_mode = True
+                self.mix_count = int(arg)
 
         # Ran out of letters.  This sets the chance that a
         # target will reply to a scan packet.
@@ -706,6 +747,7 @@ class SnifflesConfig(object):
         print("   scanned from that point onward, returning to the starting")
         print("   port after 65535 is reached.  For a list, the ports are")
         print("   scanned through in round-robin fashion.")
+        print("-q protocol: specify protocol to use when not specified")
         print("-r Random: Generate random content rather than from the")
         print("   rules.  If rules are still provided, the rules are used")
         print("   in the generation of the headers if they provide headers")
@@ -728,6 +770,8 @@ class SnifflesConfig(object):
         print("-w write content: Write the content strings to a file")
         print("   called \'all.re\'.")
         print("-W Window: The window, or duration, of a scan attack.")
+        print("-x MixCount: will use rule pattern for MixCount streams.")
+        print("   (while rest of the streams are random)")
         print("-Z Reply Chance: chance that a scan will have a reply.")
         print("   In other words, chance the target port is open")
         print("   (default 20%).")

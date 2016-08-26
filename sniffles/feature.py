@@ -198,11 +198,13 @@ class Feature(object):
 
 
 class ContentFeature(Feature):
-    def __init__(self, name="content", regex=True, complexity_prob=0, len=0):
+    def __init__(self, name="content", regex=True, complexity_prob=0, len=0,
+                 min_regex_length=3):
         self.feature_name = name
         self.regex = regex
         self.complexity_prob = complexity_prob
         self.length = len
+        self.min_regex_length = min_regex_length
 
     def __str__(self):
         return self.toString()
@@ -222,12 +224,12 @@ class ContentFeature(Feature):
                                        [60, 30, 10],
                                        None, None,
                                        [20, 20, 40, 20],
-                                       50, 30)
+                                       50, 30, self.min_regex_length)
         else:
             mystring += generate_regex(self.length, 0,
                                        [100, 0, 0],
                                        [20, 35, 20, 20, 0],
-                                       None, None, 0, 0)
+                                       None, None, 0, 0, self.min_regex_length)
         if self.regex:
             mystring += "/"
             if complex:
@@ -461,6 +463,7 @@ class FeatureParser(object):
             len = 0
             proto_list = None
             version = 4
+            min_regex_length = 3
             if 'name' in mypairs:
                 name = mypairs['name']
             if 'lower_bound' in mypairs:
@@ -477,6 +480,10 @@ class FeatureParser(object):
                     regex = True
             if 'len' in mypairs:
                 len = int(mypairs['len'])
+            if 'min_regex_length' in mypairs:
+                min_regex_length = int(mypairs['min_regex_length'])
+                if min_regex_length < 1:
+                    min_regex_length = 1
             if 'proto_list' in mypairs:
                 plist = mypairs['proto_list']
                 plist = plist[1:-1]
@@ -492,7 +499,8 @@ class FeatureParser(object):
                 myfeature = Feature(name, lower_bound, upper_bound,
                                     complexity_prob, ambiguity_list)
             elif mypairs['type'].lower() == 'content':
-                myfeature = ContentFeature(name, regex, complexity_prob, len)
+                myfeature = ContentFeature(name, regex, complexity_prob, len,
+                                           min_regex_length)
             elif mypairs['type'].lower() == 'ip':
                 myfeature = IPFeature(name, version, complexity_prob)
             elif mypairs['type'].lower() == 'protocol':
