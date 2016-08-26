@@ -1089,6 +1089,8 @@ class PetabiRuleParser(RuleParser):
 
         for xmlrule in root.iter('rule'):
             myprule = Rule('Petabi')
+            if 'name' in xmlrule.attrib:
+                myprule.setRuleName(xmlrule.attrib['name'])
             for ts in xmlrule.iter('traffic_stream'):
 
                 mytsrule = None

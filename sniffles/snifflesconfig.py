@@ -775,6 +775,10 @@ class SnifflesConfig(object):
         print("-Z Reply Chance: chance that a scan will have a reply.")
         print("   In other words, chance the target port is open")
         print("   (default 20%).")
+        print("--resultfile result file: designate the name of the result file.")
+        print("   it conatains information about how packets are created"
+        print("   for example which rules are used for which packets.")
+        print("   by default, the file is named: result.txt.")
         print("")
         print("Please see README for examples and further details.")
 
