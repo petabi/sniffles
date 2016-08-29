@@ -963,6 +963,7 @@ class SnortRuleParser(RuleParser):
     def __init__(self, filename=None):
         self.filename = None
         self.rules = []
+        self.rule_no = 0
 
     def parseHeader(self, line=None, ts=None):
         if line and ts:
@@ -1030,6 +1031,7 @@ class SnortRuleParser(RuleParser):
             self.parseHeader(rule, snort_ts)
             self.parseOptions(rule, snort_ts)
             snort_rule.addTS(snort_ts)
+            snort_rule.setRuleName("Snort-" + str(self.rule_no))
             self.addRule(snort_rule)
 
     def parseRuleFile(self, filename=None):
@@ -1039,6 +1041,7 @@ class SnortRuleParser(RuleParser):
             line = line.strip()
             if len(line) > 0 and line[0] != '#':
                 self.parseRule(line)
+                self.rule_no += 1
             line = self.fd.readline()
         self.fd.close()
 
