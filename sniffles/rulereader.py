@@ -132,7 +132,6 @@ class RuleParser(object):
     def __init__(self, filename=None):
         self.rules = []
         self.filename = filename
-        self.rule_no = 0
 
     def addRule(self, rule=None):
         if rule:
@@ -158,7 +157,7 @@ class RuleParser(object):
         mypkt.addContent(mycon)
         ts.addPktRule(mypkt)
         basic_rule.addTS(ts)
-        basic_rule.setRuleName("Rule-" + str(self.rule_no))
+        basic_rule.setRuleName("Rule-" + str(len(self.rules)))
         self.addRule(basic_rule)
 
     def parseRuleFile(self, filename=None):
@@ -174,7 +173,6 @@ class RuleParser(object):
             line = line.strip()
             if len(line) > 0 and line[0] != '#':
                 self.parseRule(line)
-                self.rule_no += 1
             line = self.fd.readline()
         self.fd.close()
 
@@ -1030,6 +1028,7 @@ class SnortRuleParser(RuleParser):
             self.parseHeader(rule, snort_ts)
             self.parseOptions(rule, snort_ts)
             snort_rule.addTS(snort_ts)
+            snort_rule.setRuleName("Snort-" + str(len(self.rules)))
             self.addRule(snort_rule)
 
     def parseRuleFile(self, filename=None):
@@ -1089,6 +1088,8 @@ class PetabiRuleParser(RuleParser):
 
         for xmlrule in root.iter('rule'):
             myprule = Rule('Petabi')
+            if 'name' in xmlrule.attrib:
+                myprule.setRuleName(xmlrule.attrib['name'])
             for ts in xmlrule.iter('traffic_stream'):
 
                 mytsrule = None

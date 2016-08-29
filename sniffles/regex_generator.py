@@ -139,7 +139,7 @@ def create_regex_list(number, lambd, type_dist, char_dist, class_dist,
                 myregex += o
         # check if this compiles or not
         if not check_pcre_compile(myregex):
-            print("pcre compile failed ... continuing")
+            # pcre compile failed. give another try until it passes
             continue
         myregex += "\n"
         myrelist.append(myregex)
