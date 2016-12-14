@@ -106,8 +106,12 @@ class Conversation(object):
         Dictates rules for a particular communication or series of
         communications.
     """
-
-    def __init__(self, con, sconf, sec=-1, usec=0):
+    # !!Added background traffic argument, 
+    # True if TrafficStream is background traffic
+    # False if TrafficStream is non background Traffic
+    def __init__(self, con, sconf, sec=-1, usec=0, b_traffic=False):
+        # !! 
+        self.b_traffic = b_traffic
         self.ts = []
         self.ts_active = SortedDict()
         self.started = False
@@ -124,6 +128,9 @@ class Conversation(object):
             myrule = tsrules.pop(0)
             if myrule:
                 myts = myrule.getTrafficStreamObject(sconf, sec, usec)
+            # !!Added background traffic argument
+            elif b_traffic:
+                myts = TrafficStream(None, sconf, sec, usec, b_traffic)
             else:
                 myts = TrafficStream(None, sconf, sec, usec)
             self.ts.append(myts)
@@ -137,6 +144,10 @@ class Conversation(object):
         for ts in self.ts:
             mystr += str(ts)
         return myts
+    # !!Returns True, if the conversation is background traffic
+    # False, if the conversation is not a background traffic
+    def getBackgroundTraffic(self):
+        return self.b_traffic
 
     # Returns the timestamp and the packet of the next packet to
     # send among the streams for this particular conversation.
@@ -218,8 +229,11 @@ class TrafficStream(object):
           isFinished() returns true if the stream has no packets, or false
           otherwise (deprecated).
     """
-
-    def __init__(self, rule=None, sconf=None, start_sec=-1, start_usec=0):
+    # !!Added background traffic argument, 
+    # True if TrafficStream is background traffic
+    # False if TrafficStream is non background Traffic
+    def __init__(self, rule=None, sconf=None, start_sec=-1, 
+                 start_usec=0, b_traffic=False):
         # local
         flow_opts = None
         handshake = False
@@ -230,6 +244,8 @@ class TrafficStream(object):
         self.ack_dir = "to client"
         self.advance_pkt = False
         self.bi = False
+        # !!Set background traffic member
+        self.b_traffic = b_traffic
         self.content_string = None
         self.dropped = False
         self.eval_pkts = []
@@ -310,6 +326,13 @@ class TrafficStream(object):
             self.stream_ooo = rule.getOutOfOrder()
             self.synch = rule.getSynch()
             self.tcp_overlap = rule.getTCPOverlap()
+        # !!Set traffic info about background traffic
+        # For now, only http background traffic is generated
+        # Additional application layer info can be added here
+        elif b_traffic:
+            self.proto = 'tcp'
+            self.sport = Port('any')
+            self.dport = Port('bt_http')
         else:
             self.rand = True
 
@@ -350,8 +373,11 @@ class TrafficStream(object):
         if rule:
             self.sip = self.calculateIP(rule.getSrcIp(), True)
             self.dip = self.calculateIP(rule.getDstIp(), False)
-
-        if self.rand:
+        #!!Changed so that background traffic's info does not change
+        if b_traffic:
+            self.sip = self.calculateIP('any', True)
+            self.dip = self.calculateIP('any', False)
+        if self.rand and not b_traffic:
             self.sip = self.calculateIP('any', True)
             self.dip = self.calculateIP('any', False)
             self.sport = Port('any')
@@ -563,6 +589,14 @@ class TrafficStream(object):
                 print("expressions.")
                 sys.exit(1)
             self.packets_in_stream -= 1
+        # !!Create content based on background traffic argument
+        elif self.b_traffic:
+            if not ack_only:
+                cg = ContentGenerator(myrule, self.pkt_len, self.rand,
+                                      self.full_match, self.full_eval,
+                                      self.b_traffic)
+                con = cg.get_next_published_content()
+            pkt = self.buildPkt(dir, ACK, con, seq, ack)
         else:
             if not ack_only:
                 cg = ContentGenerator(myrule, self.pkt_len, self.rand,
@@ -1411,11 +1445,19 @@ class ContentGenerator:
         length.  If full_match is not set to true, it will clip content
         generated from a rule so that it should not match the rule.
     """
+    # !!Added b_traffic argument for creating background traffic contents
     def __init__(self, rule=None, length=-1, rand=False, full_match=True,
-                 full_eval=False):
+                 full_eval=False, b_traffic=False):
         self.published = []
         self.index = 0
-        if rand or rule is None:
+        # !!Generate background traffic contents (only http for now)
+        if b_traffic:
+            generated = self.generate_http_content(None)
+            if length < 0:
+                length = len(generated)
+            self.published.append(
+                Content(generated, length, False, False))
+        elif rand or rule is None:
             if length < 0:
                 length = random.randint(0, 1400) + 10
             self.published.append(Content(self.generate_random_data(length),
@@ -1600,15 +1642,19 @@ class ContentGenerator:
     def generate_http_content(self, rules):
         http_directive_map = {}
         # HTTP/1.1
-        http_text = [72, 84, 84, 80, 47, 49, 46, 49]
+        http_text = [72, 84, 84, 80, 47, 49, 46, 49, 13, 10]
         # GET
         http_method = [71, 69, 84]
         # /
         http_uri = [47]
+        # !! Host (To be changed to get random hosts)
+        host = "Host: google.com\r\n"
+        http_host = [ord(h) for h in host]
         # Content-type: text-html
         http_header = [99, 111, 110, 116, 101, 110, 116, 45, 116, 121, 112,
                        101, 58, 32, 116, 101, 120, 116, 45, 104, 116, 109,
                        108]
+        
         # Cookie:
         http_cookie = []
         # Stat Code:
@@ -1616,79 +1662,87 @@ class ContentGenerator:
         # Stat Msg:
         http_stat_msg = []
         http_body = []
+
         generated = []
         cr_lf = [13, 10]
         space = [32]
-        for rule in rules:
-            if rule.getName() == 'Snort Rule Content':
-                if rule.getHttpMethod():
-                    if rule.getType() == 'content':
-                        http_method = self.generate_from_content_strings(
-                            rule.getContentString()
-                        )
-                    else:
-                        http_method = self.generate_from_regex_wrapper(
-                            rule.getContentString())
-                elif rule.getHttpStatCode():
-                    if rule.getType() == 'content':
-                        http_stat_code = self.generate_from_content_strings(
-                            rule.getContentString()
-                        )
-                    else:
-                        http_stat_code = self.generate_from_regex_wrapper(
-                            rule.getContentString())
-                elif rule.getHttpStatMsg():
-                    if rule.getType() == 'content':
-                        http_stat_msg = self.generate_from_content_strings(
-                            rule.getContentString()
-                        )
-                    else:
-                        http_stat_msg = self.generate_from_regex_wrapper(
-                            rule.getContentString())
-                elif rule.getHttpUri() or rule.getHttpRawUri():
-                    if rule.getType() == 'content':
-                        http_uri = self.generate_from_content_strings(
-                            rule.getContentString()
-                        )
-                    else:
-                        http_uri = self.generate_from_regex_wrapper(
-                            rule.getContentString())
-                elif rule.getHttpCookie() or rule.getHttpRawCookie():
-                    if rule.getType() == 'content':
-                        http_cookie = self.generate_from_content_strings(
-                            rule.getContentString()
-                        )
-                    else:
-                        http_cookie = self.generate_from_regex_wrapper(
-                            rule.getContentString())
-                elif rule.getHttpHeader() or rule.getHttpRawHeader():
-                    if rule.getType() == 'content':
-                        http_header = self.generate_from_content_strings(
-                            rule.getContentString()
-                        )
-                    else:
-                        http_header = self.generate_from_regex_wrapper(
-                            rule.getContentString())
-                elif rule.getHttpClientBody():
-                    body = ""
-                    if rule.getType() == 'content':
-                        body = self.generate_from_content_strings(
-                            rule.getContentString()
-                        )
-                    else:
-                        body = self.generate_from_regex_wrapper(
-                            rule.getContentString())
-                    if http_body is None:
-                        http_body = body
-                    else:
-                        http_body += body
-
+        # !!Only apply rule if background traffic is not being generated
+        if rules is None:
+            msg = "This is background traffic\r\n"
+            http_body.extend([ord(m) for m in msg])
+        else:
+            for rule in rules:
+                if rule.getName() == 'Snort Rule Content':
+                    if rule.getHttpMethod():
+                        if rule.getType() == 'content':
+                            http_method = self.generate_from_content_strings(
+                                rule.getContentString()
+                            )
+                        else:
+                            http_method = self.generate_from_regex_wrapper(
+                                rule.getContentString())
+                    elif rule.getHttpStatCode():
+                        if rule.getType() == 'content':
+                            http_stat_code = self.generate_from_content_strings(
+                                rule.getContentString()
+                            )
+                        else:
+                            http_stat_code = self.generate_from_regex_wrapper(
+                                rule.getContentString())
+                    elif rule.getHttpStatMsg():
+                        if rule.getType() == 'content':
+                            http_stat_msg = self.generate_from_content_strings(
+                                rule.getContentString()
+                            )
+                        else:
+                            http_stat_msg = self.generate_from_regex_wrapper(
+                                rule.getContentString())
+                    elif rule.getHttpUri() or rule.getHttpRawUri():
+                        if rule.getType() == 'content':
+                            http_uri = self.generate_from_content_strings(
+                                rule.getContentString()
+                            )
+                        else:
+                            http_uri = self.generate_from_regex_wrapper(
+                                rule.getContentString())
+                    elif rule.getHttpCookie() or rule.getHttpRawCookie():
+                        if rule.getType() == 'content':
+                            http_cookie = self.generate_from_content_strings(
+                                rule.getContentString()
+                            )
+                        else:
+                            http_cookie = self.generate_from_regex_wrapper(
+                                rule.getContentString())
+                    elif rule.getHttpHeader() or rule.getHttpRawHeader():
+                        if rule.getType() == 'content':
+                            http_header = self.generate_from_content_strings(
+                                rule.getContentString()
+                            )
+                        else:
+                            http_header = self.generate_from_regex_wrapper(
+                                rule.getContentString())
+                    elif rule.getHttpClientBody():
+                        body = ""
+                        if rule.getType() == 'content':
+                            body = self.generate_from_content_strings(
+                                rule.getContentString()
+                            )
+                        else:
+                            body = self.generate_from_regex_wrapper(
+                                rule.getContentString())
+                        if http_body is None:
+                            http_body = body
+                        else:
+                            http_body += body
+        
         request_line = []
         request_line.extend(http_method)
         request_line.extend(space)
         request_line.extend(http_uri)
         request_line.extend(space)
         request_line.extend(http_text)
+        #!! Add host info
+        request_line.extend(http_host)
 
         if http_stat_code:
             request_line.extend(space)
@@ -1715,7 +1769,6 @@ class ContentGenerator:
         if http_body:
             for c in http_body:
                 generated.append(c)
-
         return generated
 
     def generate_from_regex_wrapper(self, pcre=None):
@@ -2309,6 +2362,9 @@ class Port:
         # Contains a list
         if snort_port_val.find(',') > -1:
             self.process_list(snort_port_val)
+        # !!Add port for background traffic
+        elif snort_port_val == 'bt_http':
+            self.port_value = 80
         else:
             self.process_port_val(snort_port_val)
 
