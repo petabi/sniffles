@@ -327,12 +327,15 @@ class TrafficStream(object):
             self.synch = rule.getSynch()
             self.tcp_overlap = rule.getTCPOverlap()
         # !!Set traffic info about background traffic
-        # For now, only http background traffic is generated
+        # For now, http and ftp background traffic is generated
         # Additional application layer info can be added here
         elif b_traffic:
+            bt_list = ['bt_http', 'bt_ftp']
+            #self.b_traffic = bt_list[random.randint(0, len(bt_list)-1)]
+            self.b_traffic = random.choice(bt_list)
             self.proto = 'tcp'
             self.sport = Port('any')
-            self.dport = Port('bt_http')
+            self.dport = Port(self.b_traffic)
         else:
             self.rand = True
 
@@ -1450,9 +1453,12 @@ class ContentGenerator:
                  full_eval=False, b_traffic=False):
         self.published = []
         self.index = 0
-        # !!Generate background traffic contents (only http for now)
+        # !!Generate background traffic contents (http and ftp)
         if b_traffic:
-            generated = self.generate_http_content(None)
+            if b_traffic == 'bt_http':
+                generated = self.generate_http_content(None)
+            elif b_traffic == 'bt_ftp':
+                generated = self.generate_bt_content(b_traffic)
             if length < 0:
                 length = len(generated)
             self.published.append(
@@ -1647,9 +1653,12 @@ class ContentGenerator:
         http_method = [71, 69, 84]
         # /
         http_uri = [47]
-        # !! Host (To be changed to get random hosts)
-        host = "Host: google.com\r\n"
-        http_host = [ord(h) for h in host]
+        # !! Host
+        host_tag = "Host: "
+        host = ["google.com", "amazon.com", "youtube.com", "facebook.com",
+                "wikipedia.org", "live.com", "ebay.com", "yahoo.com"]
+        host_tag += random.choice(host) + "\r\n"
+        http_host = [ord(h) for h in host_tag]
         # Content-type: text-html
         http_header = [99, 111, 110, 116, 101, 110, 116, 45, 116, 121, 112,
                        101, 58, 32, 116, 101, 120, 116, 45, 104, 116, 109,
@@ -1770,6 +1779,13 @@ class ContentGenerator:
             for c in http_body:
                 generated.append(c)
         return generated
+    # !!Generate background traffic content
+    def generate_bt_content(self, b_traffic):
+        if b_traffic == 'bt_ftp':
+            content = "This is background Traffic.\r\n"
+        generated = [ord(c) for c in content]
+        return generated
+
 
     def generate_from_regex_wrapper(self, pcre=None):
         generated = []
@@ -2365,6 +2381,8 @@ class Port:
         # !!Add port for background traffic
         elif snort_port_val == 'bt_http':
             self.port_value = 80
+        elif snort_port_val == 'bt_ftp':
+            self.port_value = 21
         else:
             self.process_port_val(snort_port_val)
 
