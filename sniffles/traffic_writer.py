@@ -12,7 +12,7 @@ class TrafficWriter:
         write, call write_packet(length, pkt) where length
         is the length of the packet and pkt is the binary
         string for the packet.  When finished, call close_save_file()
-        to close the file handl.
+        to close the file handle.
 
         Optional api:
             set_timestamp: Timestamps default to 0 secs and 0 msecs.
