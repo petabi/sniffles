@@ -330,8 +330,7 @@ class TrafficStream(object):
         # For now, http and ftp background traffic is generated
         # Additional application layer info can be added here
         elif b_traffic:
-            bt_list = ['bt_http', 'bt_ftp']
-            #self.b_traffic = bt_list[random.randint(0, len(bt_list)-1)]
+            bt_list = ['bt_http', 'bt_ftp', 'bt_pop', 'bt_mail']
             self.b_traffic = random.choice(bt_list)
             self.proto = 'tcp'
             self.sport = Port('any')
@@ -1457,8 +1456,8 @@ class ContentGenerator:
         if b_traffic:
             if b_traffic == 'bt_http':
                 generated = self.generate_http_content(None)
-            elif b_traffic == 'bt_ftp':
-                generated = self.generate_bt_content(b_traffic)
+            else:
+                generated = self.generate_bt_content()
             if length < 0:
                 length = len(generated)
             self.published.append(
@@ -1780,9 +1779,8 @@ class ContentGenerator:
                 generated.append(c)
         return generated
     # !!Generate background traffic content
-    def generate_bt_content(self, b_traffic):
-        if b_traffic == 'bt_ftp':
-            content = "This is background Traffic.\r\n"
+    def generate_bt_content(self):
+        content = "This is background Traffic.\r\n"
         generated = [ord(c) for c in content]
         return generated
 
@@ -2380,9 +2378,13 @@ class Port:
             self.process_list(snort_port_val)
         # !!Add port for background traffic
         elif snort_port_val == 'bt_http':
-            self.port_value = 80
+            self.port_value = random.choice(HTTP_PORTS)
         elif snort_port_val == 'bt_ftp':
             self.port_value = 21
+        elif snort_port_val == 'bt_pop':
+            self.port_value = 110
+        elif snort_port_val == 'bt_mail':
+            self.port_value = random.choice(MAIL_PORTS)
         else:
             self.process_port_val(snort_port_val)
 
