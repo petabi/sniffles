@@ -633,7 +633,28 @@ class TrafficStreamRule(object):
 
     def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
         return TrafficStream(self, sconf, secs, usecs)
+# !!Create HTTP traffic rules
+class BackgroundTrafficRule(TrafficStreamRule):
+    def __init__(self):
+        super().__init__()
+        self.proto = 'tcp'
+        self.sport = 'any'
+        self.dport = '$HTTP_PORTS'
+        mypkt = RulePkt()
+        content = []
+        content.append('/')
+        content.append('http_uri')
+        mycon = [] 
+        mycon.append(SnortRuleContent('Snort Rule Content', content))
+        self.ruleContent = mycon
+        mypkt.addContent(mycon)
+        self.addPktRule(mypkt)
 
+    def getContent(self):
+        return self.ruleContent
+
+    def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
+        return BackgroundTraffic(self, sconf, secs, usecs)
 
 class ScanAttackRule(TrafficStreamRule):
 

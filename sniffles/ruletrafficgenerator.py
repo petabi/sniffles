@@ -136,7 +136,7 @@ class Conversation(object):
         mystr += "Waiting TS:"
         for ts in self.ts:
             mystr += str(ts)
-        return myts
+        return mystr
 
     # Returns the timestamp and the packet of the next packet to
     # send among the streams for this particular conversation.
@@ -985,6 +985,19 @@ class TrafficStream(object):
                 self.current_seq_b_to_a += data_len
                 self.current_ack_a_to_b = self.current_seq_b_to_a
 
+# !!Create background traffic.
+class BackgroundTraffic(TrafficStream):
+    def __init__(self, rule=None, sconf=None, start_sec=-1, u_sec=0):
+        super().__init__()
+        self.proto = rule.getProto()
+        self.sport = Port(rule.getSport())
+        self.dport = rule.getDport()
+        self.current_seq_a_to_b = random.randint(0, 4000000000)
+        self.current_ack_a_to_b = 0
+        self.current_seq_b_to_a = random.randint(0, 4000000000)
+        self.current_ack_b_to_a = 0
+        self.rule = rule
+        self.rand = False
 
 class ScanAttack(TrafficStream):
     """
