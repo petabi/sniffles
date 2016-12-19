@@ -103,8 +103,6 @@ def start_generation(sconf):
     if sconf.getIPV6Home() is not None:
         set_ipv6_home(sconf.getIPV6Home())
     allrules = myrulelist.getParsedRules()
-    # !!Retrieve Background Traffic percentage
-    back_traffic_percent = sconf.getBackgroundTraffic()
     current = 0
     end = 0
     current_sec = sconf.getFirstTimestamp()
@@ -174,20 +172,9 @@ def start_generation(sconf):
         flow_start_offset = random.randint(
             1, sconf.getConcurrentFlows() + 100000
         )
-        # !!Create background traffic conversation based on 
-        # background_traffic percentage
-        if back_traffic_percent > 0:
-            pick = random.randint(0, 99)
-            if pick < back_traffic_percent:
-                conversation = Conversation(None, sconf, current_sec, 
-                        current_usec + flow_start_offset, True)
-            else:
-                conversation = Conversation(myrule, sconf, current_sec, 
-                        current_usec + flow_start_offset)
-        else:
-            conversation = Conversation(myrule, sconf, current_sec, 
-                    current_usec + flow_start_offset)
-
+        conversation = Conversation(
+            myrule, sconf, current_sec, current_usec + flow_start_offset
+        )
         sec, usec = conversation.getNextTimeStamp()
         timekey = timekey = sec + (usec/1000000)
         if timekey in traffic_queue:
@@ -346,10 +333,6 @@ def write_packets(queue, traffic_writer, sconf, fd_result):
                             result_line += ("(truncated)" \
                               if pkt.get_content_truncated() else "")
                             result_line += "\n"
-                    # !!Identify background Traffic on result.txt
-                    elif current_conversation.getBackgroundTraffic():
-                        result_line = "Pkt " + str(traffic_writer.get_total_pkts()) + \
-                                " : Background Traffic\n"
                     else:
                         result_line = "Pkt " + str(traffic_writer.get_total_pkts()) + \
                                 " : (rule none)\n"

@@ -395,7 +395,7 @@ class SnifflesConfig(object):
 
     def setWriteRegExe(self, value):
         self.write_reg_ex = value
-    
+
     def parse_cmd(self, cmd):
         """
             Standard function for reading command line input.
