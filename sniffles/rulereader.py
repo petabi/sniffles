@@ -637,18 +637,29 @@ class TrafficStreamRule(object):
 class BackgroundTrafficRule(TrafficStreamRule):
     def __init__(self):
         super().__init__()
+        # Local Variable
+        application_protocol = ['http', 'ftp']
+        background_traffic = random.choice(application_protocol)
+
         self.proto = 'tcp'
-        self.sport = 'any'
-        self.dport = '$HTTP_PORTS'
-        mypkt = RulePkt()
-        content = []
-        content.append('/')
-        content.append('http_uri')
-        mycon = [] 
-        mycon.append(SnortRuleContent('Snort Rule Content', content))
-        mypkt.addContent(mycon)
-        self.ruleContent = mycon
-        self.addPktRule(mypkt)
+        self.content = []
+        self.ruleContent = []
+        # Set variable depending on the type of application
+        if background_traffic == 'http':
+            self.sport = 'any'
+            self.dport = '80'
+            contentString = 'GET / HTTP/1.1\r\n'
+            contentString += 'Host: \r\n'
+            contentString += 'content-type: text-html\r\n'
+            self.content.extend(list(contentString))
+            self.ruleContent.append(RuleContent('content', 
+                                                  self.content))
+        elif background_traffic == 'ftp':
+            self.sport = 'any'
+            self.dport = '21'
+            contentString = '220 FTP server ready\r\n'
+            self.content.extend(list(contentString))
+            self.ruleContent.append(RuleContent('content', self.content))
 
     def getContent(self):
         return self.ruleContent
