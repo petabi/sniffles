@@ -182,12 +182,9 @@ def start_generation(sconf):
                 btrule = Rule("Background Traffic")
                 btr_ts = BackgroundTrafficRule()
                 btrule.addTS(btr_ts)
-                print (btrule)
                 conversation = Conversation(btrule, sconf, current_sec, 
                         current_usec + flow_start_offset)
-                print(conversation)
             else:
-                print(myrule)
                 conversation = Conversation(myrule, sconf, current_sec, 
                         current_usec + flow_start_offset)
         else:

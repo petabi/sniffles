@@ -987,17 +987,56 @@ class TrafficStream(object):
 
 # !!Create background traffic.
 class BackgroundTraffic(TrafficStream):
-    def __init__(self, rule=None, sconf=None, start_sec=-1, u_sec=0):
+    def __init__(self, rule=None, sconf=None, start_sec=-1, start_usec=0):
         super().__init__()
         self.proto = rule.getProto()
         self.sport = Port(rule.getSport())
         self.dport = rule.getDport()
+        self.rule = rule
+        self.rand = False
         self.current_seq_a_to_b = random.randint(0, 4000000000)
         self.current_ack_a_to_b = 0
         self.current_seq_b_to_a = random.randint(0, 4000000000)
         self.current_ack_b_to_a = 0
-        self.rule = rule
-        self.rand = False
+
+        if sconf:
+            handshake = sconf.getTCPHandshake()
+            teardown = sconf.getTCPTeardown()
+            self.bi = sconf.getBi()
+            self.flow_ack = sconf.getTCPACK()
+            self.full_eval = sconf.getFullEval()
+            self.full_match = sconf.getFullMatch()
+            ipv6_percent = sconf.getIPV6Percent()
+            if sconf.getLatency() > 0:
+                self.latency = sconf.getLatency()
+            self.mac_def_file = sconf.getMacAddrDef()
+            if self.mac_def_file:
+                self.mac_gen = ETHERNET_HDR_GEN_DISTRIBUTION
+            self.pkt_len = sconf.getPktLength()
+            if sconf.getPktsPerStream() > 1:
+                self.packets_in_stream = sconf.getPktsPerStream()
+
+        if ipv6_percent > 0:
+            pick = random.randint(0, 99)
+            if pick < ipv6_percent:
+                self.ip_type = 6
+
+        if self.ip_type == 6:
+            self.sip = self.calculateIP('any', True)
+            self.dip = self.calculateIP('any', False)
+
+        if start_sec > 0:
+            self.next_time_sec = start_sec
+        else:
+            if sconf:
+                self.next_time_sec = sconf.getFirstTimeStamp()
+            else:
+                self.next_time_sec = int(calendar.timegm(time.gmtime()))
+        self.next_time_usec = start_usec
+        while self.next_time_usec >= 1000000:
+            self.next_time_sec += 1
+            self.next_time_usec -= 1000000
+
 
 class ScanAttack(TrafficStream):
     """

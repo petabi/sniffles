@@ -646,8 +646,8 @@ class BackgroundTrafficRule(TrafficStreamRule):
         content.append('http_uri')
         mycon = [] 
         mycon.append(SnortRuleContent('Snort Rule Content', content))
-        self.ruleContent = mycon
         mypkt.addContent(mycon)
+        self.ruleContent = mycon
         self.addPktRule(mypkt)
 
     def getContent(self):
