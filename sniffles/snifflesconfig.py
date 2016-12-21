@@ -666,7 +666,11 @@ class SnifflesConfig(object):
         print("-b Bi-directional data: Send data in both directions.")
         print("   Off by default.  Automatically sets TCP acks.")
         # !! Usage for background Traffic
-        print("-B Background Traffic: Percentage of Background traffic to create")
+        print("-B Background Traffic Percentage: Set this value between 1 and")
+        print("   100 to produce Background Traffic. This traffic will")
+        print("   consist of even selections of following generic application")
+        print("   protocols: FTP, HTTP, IMAP, POP and SMTP. By default, ")
+        print("   it is set to 0.")
         print("-c Count: Number of streams to create.  Each stream will")
         print("   contain a minimum of 1 packet.  Packet will be between")
         print("   two end-points as defined by the rule or randomly chosen.")
