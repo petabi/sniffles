@@ -637,45 +637,55 @@ class TrafficStreamRule(object):
 class BackgroundTrafficRule(TrafficStreamRule):
     def __init__(self):
         super().__init__()
-        # Local Variable
+        # List of Application Protocols
         application_protocol = ['http', 'ftp', 'pop', 'smtp', 'imap']
-        background_traffic = random.choice(application_protocol)
 
-        self.proto = 'tcp'
+        self.background_traffic = random.choice(application_protocol)
         self.content = []
+        self.contentString = ''
+        self.proto = 'tcp'
         self.ruleContent = []
         # Set variable depending on the type of application
-        if background_traffic == 'http':
+        if self.background_traffic == 'http':
             self.sport = 'any'
             self.dport = '80'
-            contentString = 'GET / HTTP/1.1\r\n\r\n'
-            contentString += 'Host: \r\n'
-            contentString += 'content-type: text-html\r\n'
-            contentString += 'text\r\n'
-        elif background_traffic == 'ftp':
+            self.contentString += 'GET / HTTP/1.1\r\n\r\n'
+            self.contentString += 'Host: \r\n'
+            self.contentString += 'content-type: text-html\r\n'
+            self.contentString += 'text\r\n'
+        elif self.background_traffic == 'ftp':
             self.sport = '21'
             self.dport = 'any'
-            contentString = '220 FTP server ready\r\n'
-        elif background_traffic == 'pop':
+            self.contentString += '220 FTP server ready\r\n'
+        elif self.background_traffic == 'pop':
             self.sport = '110'
             self.dport = 'any'
-            contentString = '+OK \r\n'
-        elif background_traffic == 'smtp':
+            self.contentString += '+OK \r\n'
+        elif self.background_traffic == 'smtp':
             self.sport = '25'
             self.dport = 'any'
-            contentString = '220 \r\n'
-        elif background_traffic == 'imap':
+            self.contentString += '220 \r\n'
+        elif self.background_traffic == 'imap':
             self.sport = '143'
             self.dport = 'any'
-            contentString = '16 OK \r\n'
-        self.content.extend(list(contentString))
+            self.contentString += '16 OK \r\n'
+        self.content.extend(list(self.contentString))
         self.ruleContent.append(RuleContent('content', self.content))
+
+    def getProtocolType(self):
+        return self.background_traffic
 
     def getContent(self):
         return self.ruleContent
 
+    def getContentString(self):
+        return self.contentString
+
     def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
         return BackgroundTraffic(self, sconf, secs, usecs)
+
+    def setProtocolType(self, protocol):
+        self.background_traffic = protocol
 
 class ScanAttackRule(TrafficStreamRule):
 

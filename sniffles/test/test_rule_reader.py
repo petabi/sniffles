@@ -4,6 +4,27 @@ from sniffles.rulereader import *
 
 class TestRuleReader(TestCase):
 
+    def test_background_traffic_rule(self):
+
+        myrule = BackgroundTrafficRule()
+        protocols = ['http', 'ftp', 'pop', 'smtp', 'imap']
+
+        # Asserts for rule settings
+        self.assertEqual(myrule.getProto(), 'tcp')
+        for prtcl in protocols:
+            myrule.setProtocolType(prtcl)
+            self.assertEqual(myrule.getProtocolType(), prtcl)
+
+        # Asserts for rule contents
+        myrule.setProtocolType('ftp')
+        content = myrule.getContent()
+        contentString = myrule.getContentString()
+        
+        self.assertEqual(contentString, '220 FTP server ready\r\n')
+        self.assertEqual(len(content), 1)
+        self.assertEqual(content[0].getType(), 'content')
+        self.assertEqual(content[0].getName(), 'Basic Regex Rule Content')
+
     def test_scan_attack_rule(self):
         myrule = ScanAttackRule(1, 2, 3, 4, 5, 6, 7, 8)
 
