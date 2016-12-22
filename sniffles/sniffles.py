@@ -103,6 +103,8 @@ def start_generation(sconf):
     if sconf.getIPV6Home() is not None:
         set_ipv6_home(sconf.getIPV6Home())
     allrules = myrulelist.getParsedRules()
+    # !!Retrieve Background Traffic percentage
+    back_traffic_percent = sconf.getBackgroundTraffic()
     current = 0
     end = 0
     current_sec = sconf.getFirstTimestamp()
@@ -172,9 +174,23 @@ def start_generation(sconf):
         flow_start_offset = random.randint(
             1, sconf.getConcurrentFlows() + 100000
         )
-        conversation = Conversation(
-            myrule, sconf, current_sec, current_usec + flow_start_offset
-        )
+        # !!Create background traffic conversation based on 
+        # Background traffic rule
+        if back_traffic_percent > 0:
+            pick = random.randint(0, 99)
+            if pick < back_traffic_percent:
+                btrule = Rule("Background Traffic")
+                btr_ts = BackgroundTrafficRule()
+                btrule.addTS(btr_ts)
+                conversation = Conversation(btrule, sconf, current_sec, 
+                        current_usec + flow_start_offset)
+            else:
+                conversation = Conversation(myrule, sconf, current_sec, 
+                        current_usec + flow_start_offset)
+        else:
+            conversation = Conversation(myrule, sconf, current_sec, 
+                    current_usec + flow_start_offset)
+
         sec, usec = conversation.getNextTimeStamp()
         timekey = timekey = sec + (usec/1000000)
         if timekey in traffic_queue:

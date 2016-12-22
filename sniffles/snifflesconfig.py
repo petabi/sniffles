@@ -40,6 +40,8 @@ class SnifflesConfig(object):
 
     def __init__(self, cmd=None):
         self.bi = False
+        # !!Set background traffic percentage
+        self.background_traffic = 0
         self.concurrent_flows = 1000
         self.config_file = None
         self.mix_mode = False
@@ -86,6 +88,9 @@ class SnifflesConfig(object):
         mystr = "Sniffles Configuration: \n"
         if self.bi:
             mystr += "  Bi-directional content generation is turned on.\n"
+        # !!Write background traffic percentage
+        mystr += "  Background Traffic percentage set to: " + \
+                      str(self.background_traffic) + "%.\n"
         if self.config_file:
             mystr += "  Using a configuration file: " + self.config_file + \
                      ".\n"
@@ -182,6 +187,10 @@ class SnifflesConfig(object):
 
     def setBi(self, value):
         self.bi = value
+
+    # !!Return percentage of background traffic
+    def getBackgroundTraffic(self):
+        return self.background_traffic
 
     def getConcurrentFlows(self):
         return self.concurrent_flows
@@ -391,7 +400,8 @@ class SnifflesConfig(object):
         """
             Standard function for reading command line input.
         """
-        cmd_options = "abc:C:d:D:eEf:F:g:h:H:i:I:l:L:" + \
+        # !!Added B for background traffic percentage
+        cmd_options = "abB:c:C:d:D:eEf:F:g:h:H:i:I:l:L:" + \
                       "mM:o:O:p:P:q:rRs:S:tTvwW:x:Z:?"
         long_options = ["resultfile="]
         try:
@@ -451,7 +461,13 @@ class SnifflesConfig(object):
         elif opt == "-b":
             self.bi = True
             self.tcp_ack = True
-
+        # !! Set percentage of background traffics to be added
+        elif opt == "-B":
+            self.background_traffic = int(arg)
+            if self.background_traffic < 0 or self.background_traffic > 100:
+                print("Must set percentage between 0 and 100")
+                self.usage()
+        
         # Set total number of streams.  The amount of traffic generated
         # is dependent on either the number of streams, of a duration.
         elif opt == "-c":
@@ -635,7 +651,8 @@ class SnifflesConfig(object):
 
     def usage(self):
         print("Sniffles--Traffic Generator for testing IDS")
-        print("usage: ./sniffles [-d dir | -f file] [-c count]")
+        # !! Background traffic argument info
+        print("usage: ./sniffles [-d dir | -f file] [-B percentage] [-c count]")
         print(" [-C # concurrent flows] [-D traffic duration] [-F config]")
         print(" [-h \"comma-sep list\"] [-H \"comma-sep list\"]")
         print(" [-i ipv6 chance] [-I scan intensity]")
@@ -648,6 +665,12 @@ class SnifflesConfig(object):
         print("   sent.  Off by default.")
         print("-b Bi-directional data: Send data in both directions.")
         print("   Off by default.  Automatically sets TCP acks.")
+        # !! Usage for background Traffic
+        print("-B Background Traffic Percentage: Set this value between 1 and")
+        print("   100 to produce Background Traffic. This traffic will")
+        print("   consist of even selections of following generic application")
+        print("   protocols: FTP, HTTP, IMAP, POP and SMTP. By default, ")
+        print("   it is set to 0.")
         print("-c Count: Number of streams to create.  Each stream will")
         print("   contain a minimum of 1 packet.  Packet will be between")
         print("   two end-points as defined by the rule or randomly chosen.")

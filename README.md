@@ -125,6 +125,10 @@ Command Line Options:
   - -b Bidirectional data: Data will be generated in both directions
      of a TCP stream. ACKs will be turned on.  This feature is off
      by default.
+  - -B Background Traffic Percentage: Set this value between 1 and
+     100 to produce Background Traffic. This traffic will consit of
+     even selection of following generic application protocols:
+     FTP, HTTP, IMAP, POP and SMTP. By default it is set to 0.
 
   - -c Count: Number of streams to create.  Each stream will contain a
      minimum of 1 packet.  Packet will be between two end-points as
@@ -324,6 +328,12 @@ To generate a pcap with 10 streams (1 packet each) and with random
 data:
 
   `sniffles -c 10`
+
+To generate a pcap with 10 streams where 50% of streams will be the 
+background traffic and the rest of the streams will contain packets 
+matching a rule:
+
+  `sniffles -c 10 -B 50 myrules.rules`
 
 To generate a pcap with 10 streams, each stream with 5 packets, with
 ACKs and handshake and teardown as well as a fixed length of 50 for

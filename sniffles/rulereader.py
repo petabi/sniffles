@@ -633,7 +633,49 @@ class TrafficStreamRule(object):
 
     def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
         return TrafficStream(self, sconf, secs, usecs)
+# Create Background Traffic rules
+class BackgroundTrafficRule(TrafficStreamRule):
+    def __init__(self):
+        super().__init__()
+        # Local Variable
+        application_protocol = ['http', 'ftp', 'pop', 'smtp', 'imap']
+        background_traffic = random.choice(application_protocol)
 
+        self.proto = 'tcp'
+        self.content = []
+        self.ruleContent = []
+        # Set variable depending on the type of application
+        if background_traffic == 'http':
+            self.sport = 'any'
+            self.dport = '80'
+            contentString = 'GET / HTTP/1.1\r\n\r\n'
+            contentString += 'Host: \r\n'
+            contentString += 'content-type: text-html\r\n'
+            contentString += 'text\r\n'
+        elif background_traffic == 'ftp':
+            self.sport = '21'
+            self.dport = 'any'
+            contentString = '220 FTP server ready\r\n'
+        elif background_traffic == 'pop':
+            self.sport = '110'
+            self.dport = 'any'
+            contentString = '+OK \r\n'
+        elif background_traffic == 'smtp':
+            self.sport = '25'
+            self.dport = 'any'
+            contentString = '220 \r\n'
+        elif background_traffic == 'imap':
+            self.sport = '143'
+            self.dport = 'any'
+            contentString = '16 OK \r\n'
+        self.content.extend(list(contentString))
+        self.ruleContent.append(RuleContent('content', self.content))
+
+    def getContent(self):
+        return self.ruleContent
+
+    def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
+        return BackgroundTraffic(self, sconf, secs, usecs)
 
 class ScanAttackRule(TrafficStreamRule):
 
