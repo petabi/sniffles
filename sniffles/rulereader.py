@@ -635,16 +635,19 @@ class TrafficStreamRule(object):
         return TrafficStream(self, sconf, secs, usecs)
 # Create Background Traffic rules
 class BackgroundTrafficRule(TrafficStreamRule):
-    def __init__(self):
+    def __init__(self, protocol=None):
         super().__init__()
         # List of Application Protocols
         application_protocol = ['http', 'ftp', 'pop', 'smtp', 'imap']
-
-        self.background_traffic = random.choice(application_protocol)
+        
         self.content = []
         self.contentString = ''
         self.proto = 'tcp'
         self.ruleContent = []
+        if protocol == None:
+            self.background_traffic = random.choice(application_protocol)
+        else:
+            self.background_traffic = protocol
         # Set variable depending on the type of application
         if self.background_traffic == 'http':
             self.sport = 'any'
@@ -683,9 +686,6 @@ class BackgroundTrafficRule(TrafficStreamRule):
 
     def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
         return BackgroundTraffic(self, sconf, secs, usecs)
-
-    def setProtocolType(self, protocol):
-        self.background_traffic = protocol
 
 class ScanAttackRule(TrafficStreamRule):
 

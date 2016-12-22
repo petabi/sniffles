@@ -1003,7 +1003,7 @@ class BackgroundTraffic(TrafficStream):
             self.next_time_sec = start_sec
         else:
             if sconf:
-                self.next_time_sec = sconf.getFirstTimeStamp()
+                self.next_time_sec = sconf.getFirstTimestamp()
             else:
                 self.next_time_sec = int(calendar.timegm(time.gmtime()))
         self.next_time_usec = start_usec
