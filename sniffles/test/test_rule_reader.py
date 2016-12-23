@@ -14,16 +14,6 @@ class TestRuleReader(TestCase):
         for protocolType in protocols:
             myrule = BackgroundTrafficRule(protocolType)
             self.assertEqual(myrule.getProtocolType(), protocolType)
-            if myrule.getProtocolType() == 'http':
-                self.assertEqual(myrule.getDport(), '80')
-            elif myrule.getProtocolType() == 'ftp':
-                self.assertEqual(myrule.getSport(), '21')
-            elif myrule.getProtocolType() == 'pop':
-                self.assertEqual(myrule.getSport(), '110')
-            elif myrule.getProtocolType() == 'smtp':
-                self.assertEqual(myrule.getSport(), '25')
-            elif myrule.getProtocolType() == 'imap':
-                self.assertEqual(myrule.getSport(), '143')
 
         # Asserts for rule contents
         myrule = BackgroundTrafficRule('ftp')
