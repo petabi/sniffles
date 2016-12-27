@@ -7,12 +7,21 @@ class TestRuleReader(TestCase):
     def test_background_traffic_rule(self):
 
         myrule = BackgroundTrafficRule()
-        protocols = ['http', 'ftp', 'pop', 'smtp', 'imap']
+        protocols = myrule.getProtocolList()
 
         # Asserts for rule settings
         self.assertEqual(myrule.getProto(), 'tcp')
         for protocolType in protocols:
             myrule = BackgroundTrafficRule(protocolType)
+            flow = myrule.getFlowOptions()
+            # Check if port is set to right setting.
+            if flow == 'to client':
+                self.assertEqual(myrule.getSport(), protocolType)
+                self.assertEqual(myrule.getDport(), 'any')
+            elif flow == 'to server':
+                self.assertEqual(myrule.getSport(), 'any')
+                self.assertEqual(myrule.getDport(), protocolType)
+
             self.assertEqual(myrule.getProtocolType(), protocolType)
 
         # Asserts for rule contents
@@ -20,7 +29,10 @@ class TestRuleReader(TestCase):
         content = myrule.getContent()
         contentString = myrule.getContentString()
         
-        self.assertEqual(contentString, '220 FTP server ready\r\n')
+        if myrule.getFlowOptions() == 'to client':
+            self.assertEqual(contentString, '220 FTP server ready\r\n')
+        elif myrule.getFlowOptions() == 'to server':
+            self.assertEqual(contentString, '')
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0].getType(), 'content')
         self.assertEqual(content[0].getName(), 'Basic Regex Rule Content')

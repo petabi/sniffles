@@ -588,21 +588,25 @@ class TestRuleTrafficGenerator(TestCase):
         for protocol in protocol_list:
             rule = BackgroundTrafficRule(protocol)
             backgroundTraffic = BackgroundTraffic(rule, None)
-            dPort = backgroundTraffic.getDport()
-            dPortValue = dPort.get_port_value()
-            sPort = backgroundTraffic.getSport()
-            sPortValue = sPort.get_port_value()
 
+            # Get port value depending on flow
+            flow = rule.getFlowOptions()
+            if flow == 'to client':
+                port = backgroundTraffic.getSport()
+                port_value = port.get_port_value()
+            elif flow == 'to server':
+                port = backgroundTraffic.getDport()
+                port_value = port.get_port_value()
+
+            # Check if the port is chosen from correct list
             if protocol == 'http':
-                self.assertIn(dPortValue, HTTP_PORTS)
+                self.assertIn(port_value, HTTP_PORTS)
             elif protocol == 'ftp':
-                self.assertIn(sPortValue, FTP_PORTS)
+                self.assertIn(port_value, FTP_PORTS)
             elif protocol == 'pop':
-                self.assertIn(sPortValue, POP_PORTS)
-            elif protocol == 'smtp':
-                self.assertEqual(sPortValue, 25)
-            elif protocol == 'imap':
-                self.assertEqual(sPortValue, 143)
+                self.assertIn(port_value, POP_PORTS)
+            elif protocol == 'mail':
+                self.assertIn(port_value, MAIL_PORTS)
 
     def test_scan(self):
 
