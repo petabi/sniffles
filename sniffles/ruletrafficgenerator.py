@@ -990,7 +990,6 @@ class BackgroundTraffic(TrafficStream):
     def __init__(self, rule=None, sconf=None, start_sec=-1, start_usec=0):
         super().__init__(None, sconf)
         self.proto = rule.getProto()
-        self.protocolType = rule.getProtocolType()
         self.rule = rule
         self.rand = False
         self.sport = Port(rule.getSport())

@@ -637,10 +637,62 @@ class TrafficStreamRule(object):
 class BackgroundTrafficRule(TrafficStreamRule):
     def __init__(self, protocol=None):
         super().__init__()
+        # Local Variables
+        imapTag = str(random.randint(1,100))
+        cr_lf = '\r\n'
         # List of Application Protocols
         self.application_protocol = ['http', 'ftp', 'pop', 'mail']
         self.content = []
         self.contentString = ''
+        # HTTP codes & URL
+        # Retrieved from SimilarWeb top 10
+        self.httpURL = ['www.facebook.com', 'www.google.com', 
+                        'www.youtube.com', 'www.vk.com', 'www.amazon.com',
+                        'www.instagram.com', 'www.wikipedia.org', 
+                        'www.twitter.com', 'www.live.com', 'www.yahoo.com']
+        self.httpRequestCodes = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE',
+                                 'CONNECT']
+        self.httpResponseCodes = ['100 Continue','101 Switching Protocols',
+                                  '200 OK', '201 Created', '202 Accepted',
+                                  '204 No Content','301 Moved Permanently',
+                                  '302 Found', '400 Bad Request',
+                                  '403 Forbidden', '404 Not Found',
+                                  '405 Method Not Allowed',
+                                  '406 Not Acceptable', 
+                                  '408 Request Timedout',
+                                  '500 Internal Server Error',
+                                  '501 Not Implemented', '502 Bad Gateway',
+                                  '503 Service Unavailable',
+                                  '504 Gateway Timeout']
+        # FTP codes
+        self.ftpResponseCodes = ['125', '150', '200', '211', '212', '213',
+                                 '214', '220', '221', '225', '226', '230',
+                                 '250', '331', '332', '350', '421', '425',
+                                 '426', '450', '451', '452', '500', '501',
+                                 '503', '504', '530', '532', '550', '551',
+                                 '552', '553']
+        self.ftpRequestCodes = ['ABOR', 'ACCT', 'ALLO', 'APPE', 'CDUP',
+                                'DELE', 'HELP', 'LIST', 'MODE', 'NOOP', 
+                                'PASS', 'PASV', 'PORT', 'QUIT', 'REIN',
+                                'REST', 'RETR', 'SMNT', 'STAT', 'STOR',
+                                'STRU', 'TYPE', 'USER']
+        # POP3 codes
+        self.popResponseCodes = ['+OK', '-ERR']
+        self.popRequestCodes = ['DELE', 'LIST', 'NOOP', 'PASS', 'QUIT',
+                                'RETR', 'RSET', 'STAT', 'USER']
+        # SMTP codes
+        self.smtpResponseCodes = ['211', '214', '220', '221', '250', '251',
+                                  '354', '421', '450', '451', '452', '500',
+                                  '501', '502', '503', '504', '550', '552',
+                                  '553', '554']
+        self.smtpRequestCodes = ['DATA', 'EHLO', 'EXPN', 'HELO', 'HELP',
+                                 'MAIL', 'NOOP', 'QUIT', 'RCPT', 'RSET',
+                                 'SAML', 'SEND', 'SOML', 'TURN', 'VRFY']
+        # IMAP codes
+        self.imapResponseCodes = ['OK', 'BAD', 'NO']
+        self.imapRequestCodes = ['APPEND', 'AUTHENTICATE', 'CAPABILITY',
+                'CHECK', 'CLOSE', 'COPY', 'CREATE', 'DELTE', 'LOGIN', 
+                'LOGOUT', 'NOOP', 'SEARCH', 'SELECT', 'STARTTLS', 'STORE']
         # Randomize the flow
         self.flow = random.choice(VALID_DIRECTIONS)
         self.proto = 'tcp'
@@ -654,27 +706,61 @@ class BackgroundTrafficRule(TrafficStreamRule):
             self.sport = self.background_traffic
             self.dport = 'any'
             if self.background_traffic == 'http':
-                self.contentString += 'HTTP/1.1 200 OK\r\n'
+                self.response = random.choice(self.httpResponseCodes)
+                self.contentString += 'HTTP/1.1 ' + self.response + \
+                                      '\r\n\r\n'
             elif self.background_traffic == 'ftp':
-                self.contentString += '220 FTP server ready\r\n'
+                self.response = random.choice(self.ftpResponseCodes)
+                self.contentString += ' '.join([self.response, cr_lf])
             elif self.background_traffic == 'pop':
-                self.contentString += '+OK \r\n'
+                self.response = random.choice(self.popResponseCodes)
+                self.contentString += ' '.join([self.response, cr_lf])
             elif self.background_traffic == 'mail':
-                self.contentString += '220 \r\n'
+                # Further select ports for accurate contents
+                self.sport = str(random.choice(MAIL_PORTS))
+                # SMTP
+                if self.sport == '25' or self.sport == '465':
+                    self.response = random.choice(self.smtpResponseCodes)
+                    self.contentString += ' '.join([self.response, 
+                                                    cr_lf])
+                # IMAP
+                elif self.sport == '143':
+                    self.response = random.choice(self.imapResponseCodes)
+                    self.contentString += ' '.join([imapTag, 
+                                         self.response, cr_lf])
         # Set a rule to send ACK when client -> server
         # only in http, content is generated
         elif self.flow == 'to server':
             self.sport = 'any'
             self.dport = self.background_traffic
             if self.background_traffic == 'http':
-                self.contentString += 'GET / HTTP/1.1\r\n\r\n'
-                self.contentString += 'Host: \r\n'
-                self.contentString += 'content-type: text-html\r\n'
-                self.contentString += 'text\r\n'
+                self.request = random.choice(self.httpRequestCodes)
+                self.url = random.choice(self.httpURL)
+                self.contentString += self.request
+                self.contentString += ' / HTTP/1.1\r\n'
+                self.contentString += 'Host: ' + self.url + '\r\n\r\n'
+            elif self.background_traffic == 'ftp':
+                self.request = random.choice(self.ftpRequestCodes)
+                self.contentString += ' '.join([self.request, cr_lf])
+            elif self.background_traffic == 'pop':
+                self.request = random.choice(self.popRequestCodes)
+                self.contentString += ' '.join([self.request, cr_lf])
+            elif self.background_traffic == 'mail':
+                self.dport = str(random.choice(MAIL_PORTS))
+                # SMTP
+                if self.dport == '25' or self.dport == '465':
+                    self.request = random.choice(self.smtpRequestCodes)
+                    self.contentString += ' '.join([self.request, 
+                                                    cr_lf])
+                # IMAP
+                elif self.dport == '143':
+                    self.request = random.choice(self.imapRequestCodes)
+                    self.contentString += ' '.join([imapTag, 
+                                         self.request, cr_lf]) 
 
         self.content.extend(list(self.contentString))
         self.ruleContent.append(RuleContent('content', self.content))
-
+    
     def getProtocolList(self):
         return self.application_protocol
 
