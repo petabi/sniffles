@@ -638,42 +638,45 @@ class BackgroundTrafficRule(TrafficStreamRule):
     def __init__(self, protocol=None):
         super().__init__()
         # List of Application Protocols
-        application_protocol = ['http', 'ftp', 'pop', 'smtp', 'imap']
-        
+        self.application_protocol = ['http', 'ftp', 'pop', 'mail']
         self.content = []
         self.contentString = ''
+        # Randomize the flow
+        self.flow = random.choice(VALID_DIRECTIONS)
         self.proto = 'tcp'
         self.ruleContent = []
         if protocol == None:
-            self.background_traffic = random.choice(application_protocol)
+            self.background_traffic = random.choice(self.application_protocol)
         else:
             self.background_traffic = protocol
-        # Set variable depending on the type of application
-        if self.background_traffic == 'http':
+        # Set a rule to send response code when server->client
+        if self.flow == 'to client':
+            self.sport = self.background_traffic
+            self.dport = 'any'
+            if self.background_traffic == 'http':
+                self.contentString += 'HTTP/1.1 200 OK\r\n'
+            elif self.background_traffic == 'ftp':
+                self.contentString += '220 FTP server ready\r\n'
+            elif self.background_traffic == 'pop':
+                self.contentString += '+OK \r\n'
+            elif self.background_traffic == 'mail':
+                self.contentString += '220 \r\n'
+        # Set a rule to send ACK when client -> server
+        # only in http, content is generated
+        elif self.flow == 'to server':
             self.sport = 'any'
-            self.dport = '80'
-            self.contentString += 'GET / HTTP/1.1\r\n\r\n'
-            self.contentString += 'Host: \r\n'
-            self.contentString += 'content-type: text-html\r\n'
-            self.contentString += 'text\r\n'
-        elif self.background_traffic == 'ftp':
-            self.sport = '21'
-            self.dport = 'any'
-            self.contentString += '220 FTP server ready\r\n'
-        elif self.background_traffic == 'pop':
-            self.sport = '110'
-            self.dport = 'any'
-            self.contentString += '+OK \r\n'
-        elif self.background_traffic == 'smtp':
-            self.sport = '25'
-            self.dport = 'any'
-            self.contentString += '220 \r\n'
-        elif self.background_traffic == 'imap':
-            self.sport = '143'
-            self.dport = 'any'
-            self.contentString += '16 OK \r\n'
+            self.dport = self.background_traffic
+            if self.background_traffic == 'http':
+                self.contentString += 'GET / HTTP/1.1\r\n\r\n'
+                self.contentString += 'Host: \r\n'
+                self.contentString += 'content-type: text-html\r\n'
+                self.contentString += 'text\r\n'
+
         self.content.extend(list(self.contentString))
         self.ruleContent.append(RuleContent('content', self.content))
+
+    def getProtocolList(self):
+        return self.application_protocol
 
     def getProtocolType(self):
         return self.background_traffic
