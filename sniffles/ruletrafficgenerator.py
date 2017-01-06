@@ -985,13 +985,14 @@ class TrafficStream(object):
                 self.current_seq_b_to_a += data_len
                 self.current_ack_a_to_b = self.current_seq_b_to_a
 
-# !!Create background traffic.
+
 class BackgroundTraffic(TrafficStream):
     def __init__(self, rule=None, sconf=None, start_sec=-1, start_usec=0):
         super().__init__(None, sconf)
         self.proto = rule.getProto()
         self.rule = rule
         self.rand = False
+        self.full_match = True
         self.sport = Port(rule.getSport())
         self.dport = Port(rule.getDport())
         self.current_seq_a_to_b = random.randint(0, 4000000000)
@@ -1016,6 +1017,7 @@ class BackgroundTraffic(TrafficStream):
 
     def getSport(self):
         return self.sport
+
 
 class ScanAttack(TrafficStream):
     """
