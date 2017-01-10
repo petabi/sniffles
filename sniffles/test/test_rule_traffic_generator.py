@@ -584,7 +584,7 @@ class TestRuleTrafficGenerator(TestCase):
 
         rule = BackgroundTrafficRule()
         protocol_list = rule.getProtocolList()
-        
+
         for protocol in protocol_list:
             rule = BackgroundTrafficRule(protocol)
             backgroundTraffic = BackgroundTraffic(rule, None)
@@ -605,8 +605,10 @@ class TestRuleTrafficGenerator(TestCase):
                 self.assertIn(port_value, FTP_PORTS)
             elif protocol == 'pop':
                 self.assertIn(port_value, POP_PORTS)
-            elif protocol == 'mail':
-                self.assertIn(port_value, MAIL_PORTS)
+            elif protocol == 'imap':
+                self.assertEqual(port_value, 143)
+            elif protocol == 'smtp':
+                self.assertIn(port_value, [25, 465])
 
     def test_scan(self):
 

@@ -14,25 +14,36 @@ class TestRuleReader(TestCase):
         for protocolType in protocols:
             myrule = BackgroundTrafficRule(protocolType)
             flow = myrule.getFlowOptions()
-            # Check if port is set to right setting.
             if flow == 'to client':
-                self.assertEqual(myrule.getSport(), protocolType)
+                # Check if response content is set to right setting
+                responseCode = myrule.getResponseCodes(protocolType)
+                response = myrule.getResponse()
+                self.assertIn(response, responseCode)
+                # Check if port is set to right setting.
                 self.assertEqual(myrule.getDport(), 'any')
+                if protocolType == 'smtp':
+                    self.assertIn(myrule.getSport(), ['25', '465'])
+                elif protocolType == 'imap':
+                    self.assertEqual(myrule.getSport(), '143')
+                else:
+                    self.assertEqual(myrule.getSport(), protocolType)
             elif flow == 'to server':
+                # Check if response content is set to right setting
+                requestCode = myrule.getRequestCodes(protocolType)
+                request = myrule.getRequest()
+                self.assertIn(request, requestCode)
+                # Check if port is set to right setting
                 self.assertEqual(myrule.getSport(), 'any')
-                self.assertEqual(myrule.getDport(), protocolType)
-
+                if protocolType == 'smtp':
+                    self.assertIn(myrule.getDport(), ['25', '465'])
+                elif protocolType == 'imap':
+                    self.assertEqual(myrule.getDport(), '143')
+                else:
+                    self.assertEqual(myrule.getDport(), protocolType)
             self.assertEqual(myrule.getProtocolType(), protocolType)
 
-        # Asserts for rule contents
-        myrule = BackgroundTrafficRule('ftp')
+        # Check if content is set to right format
         content = myrule.getContent()
-        contentString = myrule.getContentString()
-        
-        if myrule.getFlowOptions() == 'to client':
-            self.assertEqual(contentString, '220 FTP server ready\r\n')
-        elif myrule.getFlowOptions() == 'to server':
-            self.assertEqual(contentString, '')
         self.assertEqual(len(content), 1)
         self.assertEqual(content[0].getType(), 'content')
         self.assertEqual(content[0].getName(), 'Basic Regex Rule Content')
