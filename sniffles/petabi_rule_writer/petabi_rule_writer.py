@@ -1,39 +1,17 @@
 import getopt
 import sys
-from datetime import date
 import re
 import random
 import codecs
 import sniffles.pcrecomp
 from sniffles.nfa import PCRE_OPT
 
-"""
-   petabi_rule_writer. This is a simple petabi rule writer.
-   It takes a regex file and simple parameters to create petabi rule
-   formatted file. The options on this programme is focused on options
-   that is not present in sniffles (i.e. IP4fragmentisation has to be
-   explicitly written in the rules) hence, this program will explicitly
-   write such features in the rule. Note that this program will create
-   same number of pkt rules as number of regex present in regex file.
-   This program contains following options:
-   - Fragment
-   - Out-of-order
-   - Packet-loss
-   - Split
-   - Tcp-overlap
-   - TTL-expiry
-
-"""
-
 
 def main():
-
-    print("Petabi Rule Generator")
-
+    print("Petabi Rule Writer")
     outfile = "petabi_rule.xml"
     filename = ''
-    time = date.today()
-    ruleName = str(time)
+    ruleName = None
 
     count = '1'
     trafficAck = False
@@ -119,14 +97,12 @@ def main():
             usage()
     try:
         regexList = regexParser(filename)
-        trafficStreamRule = formatTrafficStreamRule(proto, src, dst, sport,
-                                                    dport, trafficAck,
-                                                    out_of_order,
-                                                    out_of_order_prob,
-                                                    packet_loss, tcpOverlap)
-        pktRule = formatPktRule(regexList, count, fragment, flow, split,
-                                ttl, ttlExpiry, pktAck)
-        printRule(trafficStreamRule, pktRule, outfile, ruleName)
+        ruleList = formatRule(regexList, ruleName, proto, src, dst, sport,
+                              dport, out_of_order, out_of_order_prob,
+                              packet_loss, tcpOverlap, count, fragment,
+                              flow, split, ttl, ttlExpiry, pktAck,
+                              trafficAck)
+        printRule(ruleList, outfile)
     except Exception as err:
         print("PetabiRuleGen-main: " + str(err))
 
@@ -156,14 +132,14 @@ def regexParser(filename=None):
 
 
 def check_pcre_compile(re):
-    optiosn = []
+    options = []
     if len(re) and re[0] == '/':
         optp = re.rfind('/')
         if optp > 0:
             options = list(re[optp + 1:])
             re = re[1:optp]
     opts = 0
-    for opt in optiosn:
+    for opt in options:
         if opt in PCRE_OPT:
             opts |= PCRE_OPT[opt]
     try:
@@ -173,14 +149,38 @@ def check_pcre_compile(re):
     return True
 
 
+def formatRule(regexList=None, ruleName=None, proto='tcp', src='any',
+               dst='any', dport='any', sport='any', out_of_order=False,
+               out_of_order_prob=False, packet_loss=False, tcpOverlap=False,
+               count='1', fragment=False, flow='to server', split=False,
+               ttl=None, ttlExpiry=False, pktAck=False, trafficAck=False):
+
+    rule = []
+    ruleNo = 0
+    for regex in regexList:
+        if ruleName is None or ruleNo > 0:
+            ruleNo += 1
+            ruleName = "Rule#" + str(ruleNo)
+        ruleInfo = "  <rule name=\"" + ruleName + "\">\n"
+        trafficStreamRule = formatTrafficStreamRule(proto, src, dst, sport,
+                                                    dport, trafficAck,
+                                                    out_of_order,
+                                                    out_of_order_prob,
+                                                    packet_loss, tcpOverlap)
+        pktRule = formatPktRule(regex, count, fragment, flow, split,
+                                ttl, ttlExpiry, pktAck)
+        ruleInfo += trafficStreamRule + pktRule
+        ruleInfo += "    </traffic_stream>\n" + "  </rule>\n"
+        rule.append(ruleInfo)
+    return rule
+
+
 def formatTrafficStreamRule(proto='tcp', src='any', dst='any', dport='any',
                             sport='any', trafficAck=False,
                             out_of_order=False, out_of_order_prob=False,
                             packet_loss=False, tcpOverlap=False):
     trafficStreamFormat = []
-    header = "    <traffic_stream"
-    trafficStreamFormat.append(header)
-    tail = ">"
+    trafficStreamFormat.append("<traffic_stream")
     protoFormat = "proto=\"" + proto + "\""
     trafficStreamFormat.append(protoFormat)
     srcFormat = "src=\"" + src + "\""
@@ -208,70 +208,61 @@ def formatTrafficStreamRule(proto='tcp', src='any', dst='any', dport='any',
         tcpOverlapFormat = "tcp_overlap=\"true\""
         trafficStreamFormat.append(tcpOverlapFormat)
     trafficStream = ' '.join(trafficStreamFormat)
-    trafficStream = trafficStream + tail + "\n"
+    trafficStream = "    " + trafficStream + ">" + "\n"
     return trafficStream
 
 
-def formatPktRule(regexList=None, count='1', fragment=False,
+def formatPktRule(regex=None, count='1', fragment=False,
                   flow='to server', split=False, ttl=None, ttlExpiry=False,
                   pktAck=False):
-    pktRule = []
+    pktRule = ''
     count = "times=\"" + count + "\""
     flowOpt = flow
-    if regexList:
-        head = "<pkt"
-        tail = "/>"
-        for regex in regexList:
-            pktInfo = []
-            pktInfo.append(head)
-            # Random pick flow option if random is selected
-            if flow == 'random':
-                flowOpt = random.choice(['to server', 'to client'])
-            dirOption = "dir=\"" + flowOpt + "\""
-            pktInfo.append(dirOption)
-            content = "content=" + "\"" + regex + "\""
-            pktInfo.append(content)
-            # set Ack for packet if defined
-            if pktAck:
-                myAck = "ack=\"true\""
-                pktInfo.append(myAck)
-            # set fragment if defined
-            if fragment:
-                myFragment = "fragment=\"" + fragment + "\""
-                pktInfo.append(myFragment)
-            # set ttl time if defined
-            if ttl:
-                myTTL = "ttl=\"" + ttl + "\""
-                pktInfo.append(myTTL)
-            # set ttl expiry attack if defined
-            if ttlExpiry:
-                myTtlExpiry = "ttl_expiry=\"" + ttlExpiry + "\""
-                pktInfo.append(myTtlExpiry)
-            # Set split option if available
-            if split:
-                splitFormat = "split=\"" + split + "\""
-                pktInfo.append(splitFormat)
-            pktInfo.append(count)
-            pktInfo.append(tail)
-            rule = ' '.join(pktInfo)
-            rule = "      " + rule + "\n"
-            pktRule.append(rule)
+    if regex:
+        pktInfo = []
+        pktInfo.append("<pkt")
+        # Random pick flow option if random is selected
+        if flow == 'random':
+            flowOpt = random.choice(['to server', 'to client'])
+        dirOption = "dir=\"" + flowOpt + "\""
+        pktInfo.append(dirOption)
+        content = "content=" + "\"" + regex + "\""
+        pktInfo.append(content)
+        # set Ack for packet if defined
+        if pktAck:
+            myAck = "ack=\"true\""
+            pktInfo.append(myAck)
+        # set fragment if defined
+        if fragment:
+            myFragment = "fragment=\"" + fragment + "\""
+            pktInfo.append(myFragment)
+        # set ttl time if defined
+        if ttl:
+            myTTL = "ttl=\"" + ttl + "\""
+            pktInfo.append(myTTL)
+        # set ttl expiry attack if defined
+        if ttlExpiry:
+            myTtlExpiry = "ttl_expiry=\"" + ttlExpiry + "\""
+            pktInfo.append(myTtlExpiry)
+        # Set split option if available
+        if split:
+            splitFormat = "split=\"" + split + "\""
+            pktInfo.append(splitFormat)
+        pktInfo.append(count)
+        pktInfo.append("/>")
+        pktRule = ' '.join(pktInfo)
+        pktRule = "      " + pktRule + "\n"
 
     return pktRule
 
 
-def printRule(trafficStreamRule=None, packetRule=None, outfile=None,
-              ruleName=None):
-    if trafficStreamRule and packetRule:
+def printRule(ruleList=None, outfile=None):
+    if ruleList:
         fd = codecs.open(outfile, 'w', encoding='utf-8')
         fd.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
         fd.write("<petabi_rules>\n")
-        fd.write("  <rule name=\"" + ruleName + "\">\n")
-        fd.write(trafficStreamRule)
-        for rule in packetRule:
+        for rule in ruleList:
             fd.write(rule)
-        fd.write("    </traffic_stream>\n")
-        fd.write("  </rule>\n")
         fd.write("</petabi_rules>")
         fd.close()
         print("Petabi Rule Generated!!")
@@ -279,6 +270,22 @@ def printRule(trafficStreamRule=None, packetRule=None, outfile=None,
 
 def usage():
     print("Petabi Rule Generator")
+    print("""
+    petabi_rule_writer. This is a simple petabi rule writer.
+    It takes a regex file and simple parameters to create petabi rule
+    formatted file. The options on this programme is focused on options
+    that is not present in sniffles (i.e. IP4fragmentisation has to be
+    explicitly written in the rules) hence, this program will explicitly
+    write such features in the rule. Note that this program will create
+    same number of pkt rules as number of regex present in regex file.
+    This program contains following options:
+    - Fragment
+    - Out-of-order
+    - Packet-loss
+    - Split
+    - Tcp-overlap
+    - TTL-expiry
+    """)
     print("usage: ./petabi_rule_gen [-c packet counts] [-d direction]")
     print(" [-f file] [-F number of fragments] [-n rule name]")
     print(" [-o output file name] [-P out_of_order probability]")
@@ -297,7 +304,8 @@ def usage():
     print("-f Regex file: reads regex per line in a file")
     print("-F Fragment: set number of fragments for each packet.")
     print("-n Rule name: enter the name of the rule for the documentation")
-    print("   purpose. Default name is set to creation date.")
+    print("   purpose. Default name is set to \"Rule#\" and incrementing")
+    print("   number for each rule.")
     print("-o Output file name: set the file name of output file.")
     print("   Default name is petabi_rule.xml.")
     print("-O Out-of-order: Randomly have packets arrive out-of-order.")
