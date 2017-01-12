@@ -3,6 +3,7 @@ import sys
 import re
 import random
 import codecs
+from collections import OrderedDict
 import sniffles.pcrecomp
 from sniffles.nfa import PCRE_OPT
 
@@ -155,13 +156,13 @@ def formatRule(regexList=None, ruleName=None, proto='tcp', src='any',
                count='1', fragment=False, flow='to server', split=False,
                ttl=None, ttlExpiry=False, pktAck=False, trafficAck=False):
 
-    rule = []
+    rule = OrderedDict()
     ruleNo = 0
+    if ruleName is None:
+        ruleName = "Rule #"
     for regex in regexList:
-        if ruleName is None or ruleNo > 0:
-            ruleNo += 1
-            ruleName = "Rule#" + str(ruleNo)
-        ruleInfo = "  <rule name=\"" + ruleName + "\">\n"
+        ruleNo += 1
+        ruleID = ruleName + str(ruleNo)
         trafficStreamRule = formatTrafficStreamRule(proto, src, dst, sport,
                                                     dport, trafficAck,
                                                     out_of_order,
@@ -169,9 +170,8 @@ def formatRule(regexList=None, ruleName=None, proto='tcp', src='any',
                                                     packet_loss, tcpOverlap)
         pktRule = formatPktRule(regex, count, fragment, flow, split,
                                 ttl, ttlExpiry, pktAck)
-        ruleInfo += trafficStreamRule + pktRule
-        ruleInfo += "    </traffic_stream>\n" + "  </rule>\n"
-        rule.append(ruleInfo)
+        ruleInfo = trafficStreamRule + pktRule
+        rule[ruleID] = ruleInfo
     return rule
 
 
@@ -261,8 +261,10 @@ def printRule(ruleList=None, outfile=None):
         fd = codecs.open(outfile, 'w', encoding='utf-8')
         fd.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
         fd.write("<petabi_rules>\n")
-        for rule in ruleList:
-            fd.write(rule)
+        for key in ruleList:
+            fd.write("  <rule name=\"" + key + "\">\n")
+            fd.write(ruleList[key])
+            fd.write("    </traffic_stream>\n" + "  </rule>\n")
         fd.write("</petabi_rules>")
         fd.close()
         print("Petabi Rule Generated!!")
