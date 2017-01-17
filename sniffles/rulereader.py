@@ -1239,8 +1239,16 @@ class SnortRuleParser(RuleParser):
 
 class PetabiRuleParser(RuleParser):
 
+    def __init__(self, filename=None):
+        self.background_percent = None
+        self.rules = []
+        self.filename = None
+
     def getRules(self):
         return self.rules
+
+    def getBackgroundPercent(self):
+        return self.background_percent
 
     def parseRuleFile(self, filename=None):
         tree = None
@@ -1263,6 +1271,9 @@ class PetabiRuleParser(RuleParser):
 
                 if 'typets' in ts.attrib:
                     typeRuleTS = ts.attrib['typets']
+                    if typeRuleTS == "BackgroundTraffic":
+                        self.background_percent = ts.attrib['percentage']
+                        continue
                     useSubclass = False
                     for subclass in subclasses:
                         subInstance = subclass()
@@ -1428,6 +1439,7 @@ class RuleList:
     """
     def __init__(self):
         self.all_rules = []
+        self.background_percent = None
 
     def __str__(self):
         if self.all_rules:
@@ -1437,6 +1449,9 @@ class RuleList:
             return mystr
         else:
             return "None"
+
+    def getBackgroundPercent(self):
+        return self.background_percent
 
     def getParsedRules(self):
         return self.all_rules
@@ -1458,6 +1473,9 @@ class RuleList:
         # rule files to be in a different format.
         parser = self.findParser(filename)
         parser.parseRuleFile(filename)
+        if isinstance(parser, PetabiRuleParser):
+            if parser.getBackgroundPercent():
+                self.background_percent = int(parser.getBackgroundPercent())
         if parser.getRules():
             if self.all_rules:
                 self.all_rules.extend(parser.getRules())

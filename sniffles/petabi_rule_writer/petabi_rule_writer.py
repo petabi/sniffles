@@ -8,12 +8,30 @@ import sniffles.pcrecomp
 from sniffles.nfa import PCRE_OPT
 
 
+"""petabi_rule_writer. This is a simple petabi rule writer.
+It takes a regex file and simple parameters to create petabi rule
+formatted file. The options on this programme is focused on options
+that is not present in sniffles (i.e. IP4fragmentisation has to be
+explicitly written in the rules) hence, this program will explicitly
+write such features in the rule. Note that this program will create
+same number of rules as number of regex present in regex file.
+This program contains following options:
+- Fragment
+- Out-of-order
+- Packet-loss
+- Split
+- Tcp-overlap
+- TTL-expiry
+"""
+
+
 def main():
     print("Petabi Rule Writer")
     outfile = "petabi_rule.xml"
     filename = ''
     ruleName = None
 
+    background_traffic = None
     count = '1'
     trafficAck = False
     pktAck = False
@@ -32,7 +50,7 @@ def main():
     ttlExpiry = False
     tcpOverlap = False
 
-    cmd_options = "aAc:d:f:F:n:o:OP:p:s:T:t:v?"
+    cmd_options = "aAb:c:d:f:F:n:o:OP:p:s:T:t:v?"
     try:
         options, args = getopt.getopt(sys.argv[1:], cmd_options)
     except getopt.GetoptError as err:
@@ -42,6 +60,12 @@ def main():
             pktAck = True
         elif opt == "-A":
             trafficAck = True
+        elif opt == "-b":
+            if arg is not None:
+                background_traffic = arg
+            if int(background_traffic) < 1 or int(background_traffic) > 100:
+                print(opt, "This value must be between 1 and 100")
+                usage()
         elif opt == "-c":
             if arg is not None:
                 count = arg
@@ -102,12 +126,16 @@ def main():
                               dport, out_of_order, out_of_order_prob,
                               packet_loss, tcpOverlap, count, fragment,
                               flow, split, ttl, ttlExpiry, pktAck,
-                              trafficAck)
+                              trafficAck, background_traffic)
         printRule(ruleList, outfile)
     except Exception as err:
         print("PetabiRuleGen-main: " + str(err))
 
 
+# Parses regex file and checks if each regex can be compiled using pcre
+# compiler.
+# Pre-conditions: regex file containing a regex per line.
+# Output: regex list
 def regexParser(filename=None):
     regex = []
     if filename:
@@ -132,6 +160,9 @@ def regexParser(filename=None):
     return regex
 
 
+# Checks if a regex can be compiled using pcre compiler.
+# A regex is legitimate regex if it gets compiled.
+# Output: True or False
 def check_pcre_compile(re):
     options = []
     if len(re) and re[0] == '/':
@@ -150,14 +181,37 @@ def check_pcre_compile(re):
     return True
 
 
+# Formats background traffic rule to a petabi rule format.
+# There can only be 1 background traffic rule in a whole rule file.
+# Output: foramtted background traffic rule or None
+def formatBackgroundTrafficRule(background_traffic=None):
+    if background_traffic:
+        bgTrafficInfo = []
+        bgTrafficInfo.append("    <traffic_stream")
+        bgTrafficInfo.append("typets=\"BackgroundTraffic\"")
+        bgTrafficInfo.append("percentage=\"" + background_traffic + "\"")
+        bgTrafficInfo.append(">\n")
+        background_rule = ' '.join(bgTrafficInfo)
+        return background_rule
+    return None
+
+
+# Formats whole rule file to a petabi rule format.
+# Combine and forms background rule, traffic rules and pkt rules into
+# petabi rule.
+# Output: Petabi rule formatted rule
 def formatRule(regexList=None, ruleName=None, proto='tcp', src='any',
                dst='any', dport='any', sport='any', out_of_order=False,
                out_of_order_prob=False, packet_loss=False, tcpOverlap=False,
                count='1', fragment=False, flow='to server', split=False,
-               ttl=None, ttlExpiry=False, pktAck=False, trafficAck=False):
+               ttl=None, ttlExpiry=False, pktAck=False, trafficAck=False,
+               background_traffic=None):
 
     rule = OrderedDict()
     ruleNo = 0
+    if background_traffic:
+        bgTraffic = formatBackgroundTrafficRule(background_traffic)
+        rule['Background'] = bgTraffic
     if ruleName is None:
         ruleName = "Rule #"
     for regex in regexList:
@@ -175,6 +229,9 @@ def formatRule(regexList=None, ruleName=None, proto='tcp', src='any',
     return rule
 
 
+# Creates Traffic Stream Rule by inputting stream infos, and formats
+# rule into petabi rule format.
+# Output: Traffic Stream Rule
 def formatTrafficStreamRule(proto='tcp', src='any', dst='any', dport='any',
                             sport='any', trafficAck=False,
                             out_of_order=False, out_of_order_prob=False,
@@ -212,6 +269,9 @@ def formatTrafficStreamRule(proto='tcp', src='any', dst='any', dport='any',
     return trafficStream
 
 
+# Creates petabi rule formatted packet rule by inputting regex list and
+# packet rule infos.
+# Output: petabi rule formatted packet rule.
 def formatPktRule(regex=None, count='1', fragment=False,
                   flow='to server', split=False, ttl=None, ttlExpiry=False,
                   pktAck=False):
@@ -256,6 +316,9 @@ def formatPktRule(regex=None, count='1', fragment=False,
     return pktRule
 
 
+# Creates petabi rule file by inputting Rule list created by formatRule
+# function. Also adds xml header and rule tags.
+# Output: petabi rule file.
 def printRule(ruleList=None, outfile=None):
     if ruleList:
         fd = codecs.open(outfile, 'w', encoding='utf-8')
@@ -271,7 +334,7 @@ def printRule(ruleList=None, outfile=None):
 
 
 def usage():
-    print("Petabi Rule Generator")
+    print("Petabi Rule Writer")
     print("""
     petabi_rule_writer. This is a simple petabi rule writer.
     It takes a regex file and simple parameters to create petabi rule
@@ -279,7 +342,7 @@ def usage():
     that is not present in sniffles (i.e. IP4fragmentisation has to be
     explicitly written in the rules) hence, this program will explicitly
     write such features in the rule. Note that this program will create
-    same number of pkt rules as number of regex present in regex file.
+    same number of rules as number of regex present in regex file.
     This program contains following options:
     - Fragment
     - Out-of-order
@@ -288,8 +351,8 @@ def usage():
     - Tcp-overlap
     - TTL-expiry
     """)
-    print("usage: ./petabi_rule_gen [-c packet counts] [-d direction]")
-    print(" [-f file] [-F number of fragments] [-n rule name]")
+    print("usage: ./petabi_rule_gen [-b percentage][-c packet counts]")
+    print(" [-d direction] [-f file] [-F number of fragments] [-n rule name]")
     print(" [-o output file name] [-P out_of_order probability]")
     print(" [-p packet_loss probability] [-s split number]")
     print(" [-t ttl time]")
@@ -297,6 +360,10 @@ def usage():
     print("-a Packet ACK: send ACK to all packets. Default is false")
     print("-A Traffic Stream ACK: send ACK for all packets in flow.")
     print("   Default is false.")
+    print("-b Background Traffic Rule: Set the probability of creating")
+    print("   background traffic. There will only be one rule for background")
+    print("   traffic. The value must be between 1 and 100 inclusive.")
+    print("   Default is set to none producing.")
     print("-c Number of packets: Set number of packets for each regex.")
     print("   Default is one.")
     print("-d Direction: Set the direction of Traffic Stream. Valid ")
