@@ -183,17 +183,15 @@ def check_pcre_compile(re):
 
 # Formats background traffic rule to a petabi rule format.
 # There can only be 1 background traffic rule in a whole rule file.
-# Output: foramtted background traffic rule or None
-def formatBackgroundTrafficRule(background_traffic=None):
-    if background_traffic:
-        bgTrafficInfo = []
-        bgTrafficInfo.append("    <traffic_stream")
-        bgTrafficInfo.append("typets=\"BackgroundTraffic\"")
-        bgTrafficInfo.append("percentage=\"" + background_traffic + "\"")
-        bgTrafficInfo.append(">\n")
-        background_rule = ' '.join(bgTrafficInfo)
-        return background_rule
-    return None
+# Output: foramtted background traffic rule
+def formatBackgroundTrafficRule(background_traffic):
+    bgTrafficInfo = []
+    bgTrafficInfo.append("    <traffic_stream")
+    bgTrafficInfo.append("typets=\"BackgroundTraffic\"")
+    bgTrafficInfo.append("percentage=\"" + background_traffic + "\"")
+    bgTrafficInfo.append(">\n")
+    background_rule = ' '.join(bgTrafficInfo)
+    return background_rule
 
 
 # Formats whole rule file to a petabi rule format.
@@ -363,7 +361,7 @@ def usage():
     print("-b Background Traffic Rule: Set the probability of creating")
     print("   background traffic. There will only be one rule for background")
     print("   traffic. The value must be between 1 and 100 inclusive.")
-    print("   Default is set to none producing.")
+    print("   Default is set to None (i.e. no background traffic).")
     print("-c Number of packets: Set number of packets for each regex.")
     print("   Default is one.")
     print("-d Direction: Set the direction of Traffic Stream. Valid ")

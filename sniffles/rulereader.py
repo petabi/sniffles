@@ -132,6 +132,7 @@ class RuleParser(object):
     def __init__(self, filename=None):
         self.rules = []
         self.filename = filename
+        self.background_traffic = None
 
     def addRule(self, rule=None):
         if rule:
@@ -139,6 +140,9 @@ class RuleParser(object):
                 self.rules.append(rule)
             else:
                 self.rules = [rule]
+
+    def getBackgroundTraffic(self):
+        return self.background_traffic
 
     def getRules(self):
         return self.rules
@@ -646,6 +650,7 @@ class BackgroundTrafficRule(TrafficStreamRule):
         self.application_protocol = ['http', 'ftp', 'pop', 'smtp', 'imap']
         self.content = []
         self.contentString = ''
+        self.backgroundPercent = None
         # HTTP codes & URL
         # Retrieved from SimilarWeb top 10
         self.httpURL = ['www.facebook.com', 'www.google.com',
@@ -797,6 +802,17 @@ class BackgroundTrafficRule(TrafficStreamRule):
 
     def getContentString(self):
         return self.contentString
+
+    def getBackgroundPercent(self):
+        return self.backgroundPercent
+
+    def setBackgroundPercent(self, percent):
+        self.backgroundPercent = percent
+
+    def testTypeRule(self, value):
+        if value == "BackgroundTraffic":
+            return True
+        return False
 
     def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
         return BackgroundTraffic(self, sconf, secs, usecs)
@@ -1125,10 +1141,6 @@ class SnortRuleContent(RuleContent):
 
 class SnortRuleParser(RuleParser):
 
-    def __init__(self, filename=None):
-        self.filename = None
-        self.rules = []
-
     def parseHeader(self, line=None, ts=None):
         if line and ts:
             header = line.partition("(")[0]
@@ -1239,16 +1251,8 @@ class SnortRuleParser(RuleParser):
 
 class PetabiRuleParser(RuleParser):
 
-    def __init__(self, filename=None):
-        self.background_percent = None
-        self.rules = []
-        self.filename = None
-
     def getRules(self):
         return self.rules
-
-    def getBackgroundPercent(self):
-        return self.background_percent
 
     def parseRuleFile(self, filename=None):
         tree = None
@@ -1271,9 +1275,6 @@ class PetabiRuleParser(RuleParser):
 
                 if 'typets' in ts.attrib:
                     typeRuleTS = ts.attrib['typets']
-                    if typeRuleTS == "BackgroundTraffic":
-                        self.background_percent = ts.attrib['percentage']
-                        continue
                     useSubclass = False
                     for subclass in subclasses:
                         subInstance = subclass()
@@ -1355,6 +1356,13 @@ class PetabiRuleParser(RuleParser):
                 if 'packet_loss' in ts.attrib:
                     if int(ts.attrib['packet_loss']) > 0:
                         mytsrule.setPacketLoss(int(ts.attrib['packet_loss']))
+                if 'percentage' in ts.attrib:
+                    mytsrule.setBackgroundPercent(int(ts.attrib['percentage']))
+                # Add rule infos into background_traffic, and prevent it
+                # from appending to the rule list
+                if isinstance(mytsrule, BackgroundTrafficRule):
+                    self.background_traffic = mytsrule
+                    continue
 
                 for pkt in ts.iter('pkt'):
                     mypkt = RulePkt()
@@ -1439,7 +1447,7 @@ class RuleList:
     """
     def __init__(self):
         self.all_rules = []
-        self.background_percent = None
+        self.background_traffic = None
 
     def __str__(self):
         if self.all_rules:
@@ -1450,8 +1458,8 @@ class RuleList:
         else:
             return "None"
 
-    def getBackgroundPercent(self):
-        return self.background_percent
+    def getBackgroundTraffic(self):
+        return self.background_traffic
 
     def getParsedRules(self):
         return self.all_rules
@@ -1473,9 +1481,7 @@ class RuleList:
         # rule files to be in a different format.
         parser = self.findParser(filename)
         parser.parseRuleFile(filename)
-        if isinstance(parser, PetabiRuleParser):
-            if parser.getBackgroundPercent():
-                self.background_percent = int(parser.getBackgroundPercent())
+        self.background_traffic = parser.getBackgroundTraffic()
         if parser.getRules():
             if self.all_rules:
                 self.all_rules.extend(parser.getRules())

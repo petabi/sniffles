@@ -105,8 +105,9 @@ def start_generation(sconf):
     allrules = myrulelist.getParsedRules()
     # !!Retrieve Background Traffic percentage
     back_traffic_percent = sconf.getBackgroundTraffic()
-    if myrulelist.getBackgroundPercent():
-        back_traffic_percent = myrulelist.getBackgroundPercent()
+    if myrulelist.getBackgroundTraffic():
+        bt_rule = myrulelist.getBackgroundTraffic()
+        back_traffic_percent = bt_rule.getBackgroundPercent()
     current = 0
     end = 0
     current_sec = sconf.getFirstTimestamp()

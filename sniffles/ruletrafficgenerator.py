@@ -1012,6 +1012,11 @@ class BackgroundTraffic(TrafficStream):
             self.next_time_sec += 1
             self.next_time_usec -= 1000000
 
+    def testTypeTS(self, value):
+        if value == "BackgroundTraffic":
+            return True
+        return False
+
     def getDport(self):
         return self.dport
 
