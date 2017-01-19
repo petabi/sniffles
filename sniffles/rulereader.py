@@ -1358,11 +1358,6 @@ class PetabiRuleParser(RuleParser):
                         mytsrule.setPacketLoss(int(ts.attrib['packet_loss']))
                 if 'percentage' in ts.attrib:
                     mytsrule.setBackgroundPercent(int(ts.attrib['percentage']))
-                # Add rule infos into background_traffic, and prevent it
-                # from appending to the rule list
-                if isinstance(mytsrule, BackgroundTrafficRule):
-                    self.background_traffic = mytsrule
-                    continue
 
                 for pkt in ts.iter('pkt'):
                     mypkt = RulePkt()
@@ -1405,7 +1400,15 @@ class PetabiRuleParser(RuleParser):
                         if int(pkt.attrib['ttl_expiry']) > 0:
                             mypkt.setTTLExpiry(int(pkt.attrib['ttl_expiry']))
                     mytsrule.addPktRule(mypkt)
+
+                # Add rule infos into background_traffic
+                if isinstance(mytsrule, BackgroundTrafficRule):
+                    self.background_traffic = mytsrule
+                    continue
                 myprule.addTS(mytsrule)
+            # Skip addition of background rule to the ruleList
+            if myprule.getRuleName() == 'Background':
+                continue
             self.addRule(myprule)
 
     def testForRuleFile(self, filename=None):
