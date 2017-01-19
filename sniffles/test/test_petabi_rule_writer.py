@@ -1,7 +1,9 @@
 import re
 import xml.etree.ElementTree as ET
+import os
 from unittest import *
 from sniffles.petabi_rule_writer.petabi_rule_writer import *
+from sniffles.rulereader import *
 
 """Unit tests for petabi_rule_writer.py
 
@@ -105,6 +107,21 @@ class TestPetabiRuleWriter(TestCase):
         tsFormat = tsRule.split(' ')
         self.assertEqual(tsFormat[0], "<traffic_stream")
 
+    # Checks format of background traffic
+    def test_background_rule_format(self):
+        background_percentage = '50'
+        background_format = formatBackgroundTrafficRule(background_percentage)
+        # Add ending tag for test purpose
+        background_format += "    </traffic_stream>"
+        root = ET.fromstring(background_format)
+
+        # Will be adding further tests when more features are added
+        for attribute in root.attrib:
+            if attribute == 'typets':
+                self.assertEqual(root.attrib[attribute], 'BackgroundTraffic')
+            elif attribute == 'percentage':
+                self.assertEqual(root.attrib[attribute], '50')
+
     # Checks order and number of rule created
     def test_rule_format(self):
         # Check if number or regex matches number of rules
@@ -119,3 +136,67 @@ class TestPetabiRuleWriter(TestCase):
             ruleID = ruleName + str(ruleNum)
             self.assertEqual(key, ruleID)
             ruleNum += 1
+
+    # Checks if output file is compatible with rulereader.py
+    def test_print_rule(self):
+        filename = "sniffles/test/data_files/test_petabi_rule.xml"
+        regexList = ["/abc/", "/def/", "/ghi/"]
+        ruleName = None
+        percentage = '50'
+        proto = 'tcp'
+        src = 'any'
+        dst = 'any'
+        sport = 'any'
+        dport = 'any'
+        ack = True
+        out_of_order = True
+        out_of_order_prob = '50'
+        packet_loss = '50'
+        tcpOverlap = True
+        count = '1'
+        fragment = '2'
+        flow = 'to client'
+        split = '3'
+        ttl = '4'
+        ttlExpiry = '5'
+        pktAck = True
+        tsAck = True
+        bg_traffic_percentage = '50'
+
+        rule = formatRule(regexList, ruleName, proto, src, dst, dport, sport,
+                          out_of_order, out_of_order_prob, packet_loss,
+                          tcpOverlap, count, fragment, flow, split, ttl,
+                          ttlExpiry, pktAck, tsAck, bg_traffic_percentage)
+
+        printRule(rule, filename)
+        parser = PetabiRuleParser()
+        parser.parseRuleFile(filename)
+        os.remove(filename)
+        test_rule = parser.getRules()
+
+        bg_traffic_rule = parser.getBackgroundTraffic()
+        self.assertEqual(int(bg_traffic_percentage),
+                             bg_traffic_rule.getBackgroundPercent())
+
+        for petabi_rule in test_rule:
+
+            ts_rule = petabi_rule.getTS()
+            self.assertEqual(proto, ts_rule[0].getProto())
+            self.assertEqual(src, ts_rule[0].getSrcIp())
+            self.assertEqual(dst, ts_rule[0].getDstIp())
+            self.assertEqual(sport, ts_rule[0].getSport())
+            self.assertEqual(dport, ts_rule[0].getDport())
+            self.assertEqual(out_of_order, ts_rule[0].getOutOfOrder())
+            self.assertEqual(int(out_of_order_prob), ts_rule[0].getOOOProb())
+            self.assertEqual(int(packet_loss), ts_rule[0].getPacketLoss())
+            self.assertEqual(tcpOverlap, ts_rule[0].getTCPOverlap())
+
+            pkt_rule = ts_rule[0].getPkts()
+            pkt_rule = pkt_rule[0]
+            self.assertEqual(int(count), pkt_rule.getTimes())
+            self.assertEqual(int(fragment), pkt_rule.getFragment())
+            self.assertEqual(flow, pkt_rule.getDir())
+            self.assertEqual(int(split), pkt_rule.getSplit())
+            self.assertEqual(int(ttl), pkt_rule.getTTL())
+            self.assertEqual(int(ttlExpiry), pkt_rule.getTTLExpiry())
+            self.assertEqual(pktAck, pkt_rule.ackThis())
