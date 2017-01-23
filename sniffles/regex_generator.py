@@ -35,10 +35,11 @@ def main():
     option_chance = 20
     negation_prob = 15
     min_regex_length = 3             # Default to regex at least 3 chars in len
+    max_regex_length = 0             # Default to zero(max_length not applied)
     re_file = "rand.re"
+    cmd_options = "C:c:D:f:gl:M:m:n:o:R:r:t:?"
     try:
-        options, args = getopt.getopt(sys.argv[1:], "C:c:D:f:gl:o:n:R:r:t:?",
-                                      [])
+        options, args = getopt.getopt(sys.argv[1:], cmd_options, [])
     except getopt.GetoptError as err:
         print("Error: ", err)
         usage()
@@ -62,6 +63,9 @@ def main():
             lambd = int(arg)
             if lambd <= 0:
                 lambd = 10
+        elif opt == "-M":
+            if arg is not None:
+                max_regex_length = int(arg)
         elif opt == "-m":
             min_regex_length = int(arg)
             if min_regex_length < 1:
@@ -91,7 +95,7 @@ def main():
             usage()
     create_regex_list(number, lambd, type_dist, char_dist, class_dist,
                       rep_dist, rep_chance, option_chance, negation_prob,
-                      re_file, min_regex_length, groups)
+                      re_file, min_regex_length, max_regex_length, groups)
     print("Finished creating random regular expressions.")
     sys.exit(0)
 
@@ -106,7 +110,8 @@ def main():
 
 def create_regex_list(number, lambd, type_dist, char_dist, class_dist,
                       rep_dist, rep_chance, option_chance, negation_prob,
-                      re_file, min_regex_length, groups=False):
+                      re_file, min_regex_length, max_regex_length,
+                      groups=False):
     """Manages the creation of the new regular expression list.
     Steps invloved:
       1. Create the regex.
@@ -118,16 +123,17 @@ def create_regex_list(number, lambd, type_dist, char_dist, class_dist,
     mygroups = []
     if groups and number > 1:
         mygroups = getREGroups(number, type_dist, char_dist,
-                               class_dist, rep_dist, rep_chance, negation_prob)
+                               class_dist, rep_dist, rep_chance, negation_prob,
+                               min_regex_length)
 
     count = 0
     while count < number:
         myregex = '/'
         if mygroups:
             myregex += mygroups[random.randint(0, len(mygroups) - 1)]
-        myregex += generate_regex(lambd, 0, type_dist, char_dist, class_dist,
-                                  rep_dist, rep_chance, negation_prob,
-                                  min_regex_length)
+        myregex += generate_regex(lambd, max_regex_length, type_dist,
+                                  char_dist, class_dist, rep_dist, rep_chance,
+                                  negation_prob, min_regex_length)
         myregex += '/'
         pick = random.randint(0, 100)
         if pick < option_chance:
@@ -173,7 +179,7 @@ def generate_regex(lambd, max_len, type_dist, char_dist,
     mylen = int(random.expovariate(1/lambd))
 
     if mylen < min_regex_length:
-      mylen = min_regex_length
+        mylen = min_regex_length
     if max_len > 0 and mylen > max_len:
         mylen = max_len
 
@@ -423,14 +429,14 @@ def get_repetition(rep_dist, rep_start_max=5, rep_end_max=10):
 
 
 def getREGroups(number, type_dist, char_dist, class_dist,
-                rep_dist, rep_chance, negation_prob):
+                rep_dist, rep_chance, negation_prob, min_regex_len):
     new_groups = []
     if number > 1:
         num_groups = random.randint(1, int(number/2))
         for i in range(1, num_groups):
             prefix = generate_regex(random.randint(5, 20), 0,
                                     type_dist, char_dist, class_dist, rep_dist,
-                                    rep_chance, negation_prob)
+                                    rep_chance, negation_prob, 1)
             new_groups.append(prefix)
     return new_groups
 
