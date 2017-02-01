@@ -128,6 +128,7 @@ def main():
                               flow, split, ttl, ttlExpiry, pktAck,
                               trafficAck, background_traffic)
         printRule(ruleList, outfile)
+        print("Petabi Rule Generated!!")
     except Exception as err:
         print("PetabiRuleGen-main: " + str(err))
 
@@ -328,7 +329,6 @@ def printRule(ruleList=None, outfile=None):
             fd.write("    </traffic_stream>\n" + "  </rule>\n")
         fd.write("</petabi_rules>")
         fd.close()
-        print("Petabi Rule Generated!!")
 
 
 def usage():
