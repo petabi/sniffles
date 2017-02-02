@@ -32,6 +32,7 @@ def main():
     ruleName = None
 
     background_traffic = None
+    protocol_dist = []
     count = '1'
     trafficAck = False
     pktAck = False
@@ -50,7 +51,7 @@ def main():
     ttlExpiry = False
     tcpOverlap = False
 
-    cmd_options = "aAb:c:d:f:F:n:o:OP:p:s:T:t:v?"
+    cmd_options = "aAb:c:d:D:f:F:n:o:OP:p:s:T:t:v?"
     try:
         options, args = getopt.getopt(sys.argv[1:], cmd_options)
     except getopt.GetoptError as err:
@@ -69,6 +70,17 @@ def main():
         elif opt == "-c":
             if arg is not None:
                 count = arg
+        elif opt == "-D":
+            if arg is not None:
+                protocol_dist = re.split('[\s,;]*', arg)
+                percent_sum = 0
+                for percentage in protocol_dist:
+                    if percentage == "*":
+                        continue
+                    percent_sum += int(percentage)
+                if percent_sum > 100:
+                    print("Sum of protocol percentages exceed 100")
+                    usage()
         elif opt == "-d":
             if arg is not None:
                 if arg == 'c':
@@ -126,9 +138,8 @@ def main():
                               dport, out_of_order, out_of_order_prob,
                               packet_loss, tcpOverlap, count, fragment,
                               flow, split, ttl, ttlExpiry, pktAck,
-                              trafficAck, background_traffic)
+                              trafficAck, background_traffic, protocol_dist)
         printRule(ruleList, outfile)
-        print("Petabi Rule Generated!!")
     except Exception as err:
         print("PetabiRuleGen-main: " + str(err))
 
@@ -185,14 +196,38 @@ def check_pcre_compile(re):
 # Formats background traffic rule to a petabi rule format.
 # There can only be 1 background traffic rule in a whole rule file.
 # Output: foramtted background traffic rule
-def formatBackgroundTrafficRule(background_traffic):
+def formatBackgroundTrafficRule(background_traffic, protocol_dist=None):
     bgTrafficInfo = []
     bgTrafficInfo.append("    <traffic_stream")
     bgTrafficInfo.append("typets=\"BackgroundTraffic\"")
     bgTrafficInfo.append("percentage=\"" + background_traffic + "\"")
+    if protocol_dist:
+        protocol_dict = protocolPercentage(protocol_dist)
+        for protocol in protocol_dict:
+            distribution = protocol + "=\"" + str(protocol_dict[protocol]) + \
+                           "\""
+            bgTrafficInfo.append(distribution)
     bgTrafficInfo.append(">\n")
     background_rule = ' '.join(bgTrafficInfo)
     return background_rule
+
+
+# Label protocol percentage with given distribution.
+# Wildcard (* symbol) is used to denote even percentage among wildcards.
+# Wildcard protocol will not be shown in the rule, but will be applied
+# in sniffles.
+# Output: Dictionary containing protocol percentage
+def protocolPercentage(protocol_dist):
+    protocol_percent = OrderedDict()
+    total = 0
+    num_wildcard = 0
+    protocol_list = ['http', 'ftp', 'pop', 'smtp', 'imap']
+    i = 0
+    while i < len(protocol_list):
+        if protocol_dist[i] != "*":
+            protocol_percent[protocol_list[i]] = protocol_dist[i]
+        i += 1
+    return protocol_percent
 
 
 # Formats whole rule file to a petabi rule format.
@@ -204,12 +239,13 @@ def formatRule(regexList=None, ruleName=None, proto='tcp', src='any',
                out_of_order_prob=False, packet_loss=False, tcpOverlap=False,
                count='1', fragment=False, flow='to server', split=False,
                ttl=None, ttlExpiry=False, pktAck=False, trafficAck=False,
-               background_traffic=None):
+               background_traffic=None, protocol_dist=None):
 
     rule = OrderedDict()
     ruleNo = 0
     if background_traffic:
-        bgTraffic = formatBackgroundTrafficRule(background_traffic)
+        bgTraffic = formatBackgroundTrafficRule(background_traffic,
+                                                protocol_dist)
         rule['Background'] = bgTraffic
     if ruleName is None:
         ruleName = "Rule #"
@@ -329,6 +365,7 @@ def printRule(ruleList=None, outfile=None):
             fd.write("    </traffic_stream>\n" + "  </rule>\n")
         fd.write("</petabi_rules>")
         fd.close()
+        print("Petabi Rule Generated!!")
 
 
 def usage():
@@ -349,11 +386,11 @@ def usage():
     - Tcp-overlap
     - TTL-expiry
     """)
-    print("usage: ./petabi_rule_gen [-b percentage][-c packet counts]")
-    print(" [-d direction] [-f file] [-F number of fragments] [-n rule name]")
-    print(" [-o output file name] [-P out_of_order probability]")
-    print(" [-p packet_loss probability] [-s split number]")
-    print(" [-t ttl time]")
+    print("usage: ./petabi_rule_gen [-b background trafficpercentage]")
+    print(" [-c packet counts] [-d direction] [-D protocol Distribution]")
+    print(" [-f file] [-F number of fragment] [-n rule name]")
+    print(" [-o output file name] [-P out_of_order_probability]")
+    print(" [-p packet_lost probability] [-s split number] [-t ttl time]")
     print("")
     print("-a Packet ACK: send ACK to all packets. Default is false")
     print("-A Traffic Stream ACK: send ACK for all packets in flow.")
@@ -368,6 +405,14 @@ def usage():
     print("   directions are \"to server\" or \"to client\".")
     print("   Type \"c\" for to client, Type \"r\" for random flow.")
     print("   Default is set to server.")
+    print("-D Protocol Distribution: set distribution for each bakcground")
+    print("   traffic protocols. Input must be comma seperated list in")
+    print("   following order: [http, ftp, pop, smtp, imap]. Also sum of")
+    print("   percentage values must not exceed 100. Star symbol(*) can be")
+    print("   used to ignore protocols that will form remainder. Option must")
+    print("   be used with background traffic rule option(-b).")
+    print("   Example: -D 70, *, 10, *, 10 will mean 70% http, 10% pop and")
+    print("   10% imap. Remaining 10% will be produced from ftp and smtp.")
     print("-f Regex file: reads regex per line in a file")
     print("-F Fragment: set number of fragments for each packet.")
     print("-n Rule name: enter the name of the rule for the documentation")
