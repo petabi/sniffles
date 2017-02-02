@@ -105,6 +105,9 @@ def start_generation(sconf):
     allrules = myrulelist.getParsedRules()
     # !!Retrieve Background Traffic percentage
     back_traffic_percent = sconf.getBackgroundTraffic()
+    if myrulelist.getBackgroundTraffic():
+        bt_rule = myrulelist.getBackgroundTraffic()
+        back_traffic_percent = bt_rule.getBackgroundPercent()
     current = 0
     end = 0
     current_sec = sconf.getFirstTimestamp()
@@ -174,7 +177,7 @@ def start_generation(sconf):
         flow_start_offset = random.randint(
             1, sconf.getConcurrentFlows() + 100000
         )
-        # !!Create background traffic conversation based on 
+        # !!Create background traffic conversation based on
         # Background traffic rule
         if back_traffic_percent > 0:
             pick = random.randint(0, 99)
@@ -182,13 +185,13 @@ def start_generation(sconf):
                 btrule = Rule("Background Traffic")
                 btr_ts = BackgroundTrafficRule()
                 btrule.addTS(btr_ts)
-                conversation = Conversation(btrule, sconf, current_sec, 
+                conversation = Conversation(btrule, sconf, current_sec,
                         current_usec + flow_start_offset)
             else:
-                conversation = Conversation(myrule, sconf, current_sec, 
+                conversation = Conversation(myrule, sconf, current_sec,
                         current_usec + flow_start_offset)
         else:
-            conversation = Conversation(myrule, sconf, current_sec, 
+            conversation = Conversation(myrule, sconf, current_sec,
                     current_usec + flow_start_offset)
 
         sec, usec = conversation.getNextTimeStamp()
