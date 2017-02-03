@@ -651,6 +651,7 @@ class BackgroundTrafficRule(TrafficStreamRule):
         self.content = []
         self.contentString = ''
         self.backgroundPercent = None
+        self.distribution = SortedDict()
         # HTTP codes & URL
         # Retrieved from SimilarWeb top 10
         self.httpURL = ['www.facebook.com', 'www.google.com',
@@ -805,6 +806,12 @@ class BackgroundTrafficRule(TrafficStreamRule):
 
     def getBackgroundPercent(self):
         return self.backgroundPercent
+
+    def setDistribution(self, protocol, dist):
+        self.distribution[protocol] = dist
+
+    def getDistribution(self):
+        return self.distribution
 
     def setBackgroundPercent(self, percent):
         self.backgroundPercent = percent
@@ -1358,6 +1365,21 @@ class PetabiRuleParser(RuleParser):
                         mytsrule.setPacketLoss(int(ts.attrib['packet_loss']))
                 if 'percentage' in ts.attrib:
                     mytsrule.setBackgroundPercent(int(ts.attrib['percentage']))
+
+                if 'http' in ts.attrib:
+                    mytsrule.setDistribution('http', int(ts.attrib['http']))
+
+                if 'ftp' in ts.attrib:
+                    mytsrule.setDistribution('ftp', int(ts.attrib['ftp']))
+
+                if 'pop' in ts.attrib:
+                    mytsrule.setDistribution('pop', int(ts.attrib['pop']))
+
+                if 'smtp' in ts.attrib:
+                    mytsrule.setDistribution('smtp', int(ts.attrib['smtp']))
+
+                if 'imap' in ts.attrib:
+                    mytsrule.setDistribution('imap', int(ts.attrib['imap']))
 
                 for pkt in ts.iter('pkt'):
                     mypkt = RulePkt()
