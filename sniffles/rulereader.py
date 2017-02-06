@@ -651,7 +651,7 @@ class BackgroundTrafficRule(TrafficStreamRule):
         self.content = []
         self.contentString = ''
         self.backgroundPercent = None
-        self.distribution = SortedDict()
+        self.distribution = {}
         # HTTP codes & URL
         # Retrieved from SimilarWeb top 10
         self.httpURL = ['www.facebook.com', 'www.google.com',
