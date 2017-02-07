@@ -22,6 +22,7 @@ This program contains following options:
 - Split
 - Tcp-overlap
 - TTL-expiry
+- Protocol Distribution of Background Traffic
 """
 
 
@@ -216,44 +217,26 @@ def formatBackgroundTrafficRule(background_traffic, protocol_dist=None):
 # Wildcard (* symbol) is used to denote even percentage among wildcards.
 # Wildcard protocol will not be shown in the rule, but will be applied
 # in sniffles. When all protocols are given a percentage and their sum
-# does not add up to 100, they are treated as ratio.
+# does not add up to 100, Error will be shown and exit programme.
 # Output: Dictionary containing protocol percentage
 def protocolPercentage(protocol_dist):
     protocol_percent = OrderedDict()
-    total = 0
-    num_wildcard = 0
     protocol_list = ['http', 'ftp', 'pop', 'smtp', 'imap']
     i = 0
+    protocol_sum = 0
+    protocol_num = 0
     while i < len(protocol_list):
         if protocol_dist[i] != "*":
             protocol_percent[protocol_list[i]] = int(protocol_dist[i])
+            protocol_sum += int(protocol_dist[i])
+            protocol_num += 1
         i += 1
 
-    # Change ratio to percentage for protocol if they don't add up to 100
-    if len(protocol_list) == len(protocol_percent):
-        protocol_sum = sumPercentage(protocol_percent)
-        while protocol_sum != 100:
-            for protocol in protocol_percent:
-                new_percent = protocol_percent[protocol] / protocol_sum * 100
-                protocol_percent[protocol] = int(new_percent)
-            protocol_sum = sumPercentage(protocol_percent)
-            if protocol_sum < 100:
-                rand_protocol = random.choice(protocol_list)
-                protocol_percent[rand_protocol] += 1
-            elif protocol_sum > 100:
-                rand_protocol = random.choice(protocol_list)
-                protocol_percent[rand_protocol] -= 1
-
+    if protocol_num == 5 and protocol_sum != 100:
+        print("Distribution values must add up to 100 when all 5 protocols "
+              "are designated")
+        usage()
     return protocol_percent
-
-
-# Simple adder for percentage value in dictionary
-def sumPercentage(protocol_percent):
-    protocol_sum = 0
-    for protocol in protocol_percent:
-        protocol_sum += protocol_percent[protocol]
-
-    return protocol_sum
 
 
 # Formats whole rule file to a petabi rule format.
@@ -434,9 +417,11 @@ def usage():
     print("-D Protocol Distribution: set distribution for each bakcground")
     print("   traffic protocols. Input must be comma seperated list in")
     print("   following order: [http, ftp, pop, smtp, imap]. Also sum of")
-    print("   percentage values must not exceed 100. Star symbol(*) can be")
-    print("   used to ignore protocols that will form remainder. Option must")
-    print("   be used with background traffic rule option(-b).")
+    print("   percentage values must not exceed 100. Also if all protocols")
+    print("   are designated with percentage then they must add up to 100.")
+    print("   Star symbol(*) can be used to ignore protocols that will form")
+    print("   remainder.")
+    print("   Option must be used with background traffic rule option(-b).")
     print("   Example: -D 70, *, 10, *, 10 will mean 70% http, 10% pop and")
     print("   10% imap. Remaining 10% will be produced from ftp and smtp.")
     print("-f Regex file: reads regex per line in a file")
