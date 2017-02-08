@@ -641,17 +641,15 @@ class TrafficStreamRule(object):
 
 # Create Background Traffic rules
 class BackgroundTrafficRule(TrafficStreamRule):
-    def __init__(self, protocol=None):
+    def __init__(self):
         super().__init__()
-        # Local Variables
-        imapTag = str(random.randint(1, 100))
-        cr_lf = '\r\n'
         # List of Application Protocols
         self.application_protocol = ['http', 'ftp', 'pop', 'smtp', 'imap']
-        self.content = []
-        self.contentString = ''
         self.backgroundPercent = None
         self.distribution = {}
+        self.probability_list = []
+        self.absent_protocol = []
+        self.proto = 'tcp'
         # HTTP codes & URL
         # Retrieved from SimilarWeb top 10
         self.httpURL = ['www.facebook.com', 'www.google.com',
@@ -702,14 +700,17 @@ class BackgroundTrafficRule(TrafficStreamRule):
                                  'CHECK', 'CLOSE', 'COPY', 'CREATE', 'DELTE',
                                  'LOGIN', 'LOGOUT', 'NOOP', 'SEARCH',
                                  'SELECT', 'STARTTLS', 'STORE']
+
+    def createContent(self, protocol):
+        self.content = []
+        self.ruleContent = []
+        self.contentString = ''
+        self.background_traffic = protocol
+        # Local Variables
+        imapTag = str(random.randint(1, 100))
+        cr_lf = '\r\n'
         # Randomize the flow
         self.flow = random.choice(VALID_DIRECTIONS)
-        self.proto = 'tcp'
-        self.ruleContent = []
-        if protocol is None:
-            self.background_traffic = random.choice(self.application_protocol)
-        else:
-            self.background_traffic = protocol
         # Set a rule to send response code when server->client
         if self.flow == 'to client':
             self.sport = self.background_traffic
@@ -760,9 +761,41 @@ class BackgroundTrafficRule(TrafficStreamRule):
                 self.contentString += ''.join([self.request, cr_lf])
 
         self.content.extend(list(self.contentString))
-        self.ruleContent.append(RuleContent('content', self.content))
+        self.ruleContent = [RuleContent('content', self.content)]
 
-    def getRequestCodes(self, protocol=None):
+    # Update content
+    def updateContent(self, protocol=None, prob_list=None, absent_proto=None):
+        if protocol is None:
+            if prob_list:
+                protocol = random.choice(prob_list)
+                if protocol == 'remainder':
+                    protocol = random.choice(absent_proto)
+            else:
+                protocol = random.choice(self.application_protocol)
+
+        self.createContent(protocol)
+
+    # Pre-calculate probability list from distribution
+    # Also create list of undesignated protocol if wild card is used
+    # in petabi rule.
+    def updateProbability(self):
+        for protocol in self.application_protocol:
+            if protocol in self.distribution:
+                self.probability_list += (self.distribution[protocol] *
+                                          [protocol])
+            else:
+                self.absent_protocol.append(protocol)
+        if len(self.probability_list) < 100:
+            multiplier = 100 - len(self.probability_list)
+            self.probability_list += multiplier * ['remainder']
+
+    def getProbabilityDist(self):
+        return self.probability_list
+
+    def getAbsentProtocol(self):
+        return self.absent_protocol
+
+    def getRequestCodes(self, protocol):
         if protocol == 'http':
             return self.httpRequestCodes
         elif protocol == 'ftp':
@@ -774,7 +807,7 @@ class BackgroundTrafficRule(TrafficStreamRule):
         elif protocol == 'smtp':
             return self.smtpRequestCodes
 
-    def getResponseCodes(self, protocol=None):
+    def getResponseCodes(self, protocol):
         if protocol == 'http':
             return self.httpResponseCodes
         elif protocol == 'ftp':
@@ -1425,6 +1458,8 @@ class PetabiRuleParser(RuleParser):
 
                 # Add rule infos into background_traffic
                 if isinstance(mytsrule, BackgroundTrafficRule):
+                    if mytsrule.getDistribution():
+                        mytsrule.updateProbability()
                     self.background_traffic = mytsrule
                     continue
                 myprule.addTS(mytsrule)
@@ -1512,6 +1547,7 @@ class RuleList:
                 self.all_rules.extend(parser.getRules())
             else:
                 self.all_rules = parser.getRules()
+
 
     def readRuleFiles(self, dirname=None):
         if dirname is None:

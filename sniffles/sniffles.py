@@ -105,18 +105,14 @@ def start_generation(sconf):
     allrules = myrulelist.getParsedRules()
     # Retrieve Background Traffic percentage
     back_traffic_percent = sconf.getBackgroundTraffic()
-    back_traffic_distribution = None
+    back_dist_list = None
+    back_absent_proto = None
+    # Get Background Traffic Rule if given
     if myrulelist.getBackgroundTraffic():
         bt_rule = myrulelist.getBackgroundTraffic()
-        back_traffic_distribution = bt_rule.getDistribution()
         back_traffic_percent = bt_rule.getBackgroundPercent()
-        # Retrieve protocols that does not have distribution value
-        missing_protocol = []
-        for app_protocol in bt_rule.getProtocolList():
-            if app_protocol in back_traffic_distribution:
-                continue
-            else:
-                missing_protocol.append(app_protocol)
+        back_dist_list = bt_rule.getProbabilityDist()
+        back_absent_proto = bt_rule.getAbsentProtocol()
     current = 0
     end = 0
     current_sec = sconf.getFirstTimestamp()
@@ -192,22 +188,10 @@ def start_generation(sconf):
             pick = random.randint(0, 99)
             if pick < back_traffic_percent:
                 btrule = Rule("Background Traffic")
-                # Pick protocol if distribution is known
-                if back_traffic_distribution:
-                    protocol_pick = random.randint(0, 99)
-                    protocol = None
-                    pick_sum = 0
-                    for proto in back_traffic_distribution:
-                        pick_sum += back_traffic_distribution[proto]
-                        if (protocol_pick < pick_sum):
-                            protocol = proto
-                            break
-                    if protocol is None:
-                        protocol = random.choice(missing_protocol)
-                    btr_ts = BackgroundTrafficRule(protocol)
-                else:
-                    btr_ts = BackgroundTrafficRule()
-                btrule.addTS(btr_ts)
+                # Update the content with saved information
+                bt_rule = BackgroundTrafficRule()
+                bt_rule.updateContent(None, back_dist_list, back_absent_proto)
+                btrule.addTS(bt_rule)
                 conversation = Conversation(btrule, sconf, current_sec,
                                             current_usec + flow_start_offset)
             else:
