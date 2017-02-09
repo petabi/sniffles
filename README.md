@@ -436,7 +436,8 @@ In detail, the tags work as follows:
           settings below.
             - Options:
                 - typets: Specify which type of traffic stream we will use to
-                  generate packet. Currently, we have Standard and ScanAttack.
+                  generate packet. Currently, we have Standard, ScanAttack and
+                  BackgroundTraffic.
                 - scantype: 1==Syn scan (default) 2 == Connection scan.
                   It is used with ScanAttack.
                 - target: Specify the target ip address for Scan Attack.
@@ -509,6 +510,20 @@ In detail, the tags work as follows:
                 - ack: Have every data packet in this flow be followed by
                   an ACK from the server.  Valid values are true or false.
                   Default is false.
+                - percentage: This only applies for BackgroundTraffic and there should
+                  be only one rule of BackgroundTraffic in a rule file or directory.
+                  The percentage indicates percentage of background traffic stream
+                  to be created in total traffic stream.
+                - http: Percentage distribution of http application protocols in
+                  background traffic stream.
+                - ftp: Percentage distribution of ftp application protocols in
+                  background traffic stream.
+                - pop: Percentage distribution of pop application protocols in
+                  background traffic stream.
+                - smtp: Percentage distribution of smtp application protocols in
+                  background traffic stream.
+                - imap: Percentage distribution of imap application protocols in
+                  background traffic stream.
             - `<pkt > </pkt>`:  This directive designates either an individual
               packet or a series of packets.  The times feature can be used to have
               one <pkt> </pkt> directive generate several packets.  Otherwise, it is
@@ -564,6 +579,7 @@ Authors:
 - Victor C. Valgenti
 - Min Sik Kim
 - Tu Le
+- Moosuk Pyun
 
 New Features:
 -------------
