@@ -73,7 +73,7 @@ def main():
                 count = arg
         elif opt == "-D":
             if arg is not None:
-                protocol_dist = re.split('[\s,;]*', arg)
+                protocol_dist = re.split('[\s,;]+', arg)
                 percent_sum = 0
                 for percentage in protocol_dist:
                     if percentage == "*":

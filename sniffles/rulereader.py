@@ -1548,7 +1548,6 @@ class RuleList:
             else:
                 self.all_rules = parser.getRules()
 
-
     def readRuleFiles(self, dirname=None):
         if dirname is None:
             print("Defaulting to current directory")
