@@ -115,6 +115,16 @@ class TestPetabiRuleWriter(TestCase):
         background_format += "    </traffic_stream>"
         root = ET.fromstring(background_format)
 
+        # Check if protocol distribution add up to 100
+        # When they are given as ratio
+        protocol_dist = ['1','1','2','2','1']
+        protocol_percent = protocolPercentage(protocol_dist)
+        percentSum = 0
+        for protocol in protocol_percent:
+            percentSum += protocol_percent[protocol]
+
+        self.assertEqual(percentSum, 100)
+
         # Will be adding further tests when more features are added
         for attribute in root.attrib:
             if attribute == 'typets':
@@ -162,11 +172,13 @@ class TestPetabiRuleWriter(TestCase):
         pktAck = True
         tsAck = True
         bg_traffic_percentage = '50'
+        protocol_dist = ['10', '10', '10', '*', '10']
 
         rule = formatRule(regexList, ruleName, proto, src, dst, dport, sport,
                           out_of_order, out_of_order_prob, packet_loss,
                           tcpOverlap, count, fragment, flow, split, ttl,
-                          ttlExpiry, pktAck, tsAck, bg_traffic_percentage)
+                          ttlExpiry, pktAck, tsAck, bg_traffic_percentage,
+                          protocol_dist)
 
         printRule(rule, filename)
         parser = PetabiRuleParser()
@@ -175,8 +187,12 @@ class TestPetabiRuleWriter(TestCase):
         test_rule = parser.getRules()
 
         bg_traffic_rule = parser.getBackgroundTraffic()
+        protocol_dist_dictionary = bg_traffic_rule.getDistribution()
         self.assertEqual(int(bg_traffic_percentage),
                              bg_traffic_rule.getBackgroundPercent())
+        self.assertEqual(len(protocol_dist) - 1,
+                         len(protocol_dist_dictionary))
+        self.assertEqual(protocol_dist_dictionary['http'], 10)
 
         for petabi_rule in test_rule:
 
