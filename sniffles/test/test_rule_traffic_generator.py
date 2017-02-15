@@ -586,7 +586,8 @@ class TestRuleTrafficGenerator(TestCase):
         protocol_list = rule.getProtocolList()
 
         for protocol in protocol_list:
-            rule = BackgroundTrafficRule(protocol)
+            rule = BackgroundTrafficRule()
+            rule.updateContent(protocol)
             backgroundTraffic = BackgroundTraffic(rule, None)
 
             # Get port value depending on flow

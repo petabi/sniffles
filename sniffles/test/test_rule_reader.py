@@ -12,7 +12,8 @@ class TestRuleReader(TestCase):
         # Asserts for rule settings
         self.assertEqual(myrule.getProto(), 'tcp')
         for protocolType in protocols:
-            myrule = BackgroundTrafficRule(protocolType)
+            myrule = BackgroundTrafficRule()
+            myrule.updateContent(protocolType)
             flow = myrule.getFlowOptions()
             if flow == 'to client':
                 # Check if response content is set to right setting
@@ -161,7 +162,7 @@ class TestRuleReader(TestCase):
         # test if snort rule recognize http_cookie
         myrule = mysrp.getRules()[0]
         myts = myrule.getTS()[0]
-        self.assertEqual('Snort', myrule.getRuleName())
+        self.assertEqual('Snort-0', myrule.getRuleName())
         mycontent = myts.getPkts()[0].getContent()[0]
         self.assertEqual(mycontent.getName(), "Snort Rule Content")
         self.assertTrue(mycontent.getHttpCookie())
@@ -169,7 +170,7 @@ class TestRuleReader(TestCase):
         # test if snort rule recognize http_raw_cookie
         myrule = mysrp.getRules()[1]
         myts = myrule.getTS()[0]
-        self.assertEqual('Snort', myrule.getRuleName())
+        self.assertEqual('Snort-1', myrule.getRuleName())
         mycontent = myts.getPkts()[0].getContent()[0]
         self.assertEqual(mycontent.getName(), "Snort Rule Content")
         self.assertTrue(mycontent.getHttpRawCookie())
@@ -177,7 +178,7 @@ class TestRuleReader(TestCase):
         # test if snort rule recognize http_method and http_cookie
         myrule = mysrp.getRules()[2]
         myts = myrule.getTS()[0]
-        self.assertEqual('Snort', myrule.getRuleName())
+        self.assertEqual('Snort-2', myrule.getRuleName())
         mycontent = myts.getPkts()[0].getContent()[0]
         self.assertEqual(mycontent.getName(), "Snort Rule Content")
         self.assertTrue(mycontent.getHttpMethod())
@@ -191,7 +192,7 @@ class TestRuleReader(TestCase):
         # test if snort rule recognize http_uri
         myrule = mysrp.getRules()[3]
         myts = myrule.getTS()[0]
-        self.assertEqual('Snort', myrule.getRuleName())
+        self.assertEqual('Snort-3', myrule.getRuleName())
         mycontent = myts.getPkts()[0].getContent()[0]
         self.assertEqual(mycontent.getName(), "Snort Rule Content")
         self.assertTrue(mycontent.getHttpMethod())
@@ -204,7 +205,7 @@ class TestRuleReader(TestCase):
         # test if snort rule recognize http_stat_code
         myrule = mysrp.getRules()[4]
         myts = myrule.getTS()[0]
-        self.assertEqual('Snort', myrule.getRuleName())
+        self.assertEqual('Snort-4', myrule.getRuleName())
         mycontent = myts.getPkts()[0].getContent()[0]
         self.assertEqual(mycontent.getName(), "Snort Rule Content")
         self.assertTrue(mycontent.getHttpStatCode())
@@ -213,7 +214,7 @@ class TestRuleReader(TestCase):
         # test if snort rule recognize http_stat_code and http_stat_msg
         myrule = mysrp.getRules()[5]
         myts = myrule.getTS()[0]
-        self.assertEqual('Snort', myrule.getRuleName())
+        self.assertEqual('Snort-5', myrule.getRuleName())
         mycontent = myts.getPkts()[0].getContent()
 
         self.assertEqual(mycontent[0].getName(), "Snort Rule Content")
@@ -240,7 +241,7 @@ class TestRuleReader(TestCase):
         mysrp = SnortRuleParser()
         mysrp.parseRule(textrule)
         myrule = mysrp.getRules()[0]
-        self.assertEqual('Snort', myrule.getRuleName())
+        self.assertEqual('Snort-0', myrule.getRuleName())
         myts = myrule.getTS()[0]
         self.assertEqual(4, myts.getIPV())
         self.assertEqual('tcp', myts.getProto())
@@ -276,7 +277,7 @@ class TestRuleReader(TestCase):
         myrep = RuleParser()
         myrep.parseRule(textrule)
         myrule = myrep.getRules()[0]
-        self.assertEqual(myrule.getRuleName(), 'basic')
+        self.assertEqual(myrule.getRuleName(), 'Rule-0')
         myts = myrule.getTS()[0]
         self.assertEqual(4, myts.getIPV())
         self.assertEqual('any', myts.getProto())
@@ -367,12 +368,12 @@ class TestRuleReader(TestCase):
         myconrules.append(myprule)
         self.assertEqual(len(myconrules), 3)
         myrule = myconrules.pop(0)
-        self.assertEqual(myrule.getRuleName(), "Snort")
+        self.assertEqual(myrule.getRuleName(), "Snort-0")
         myts = myrule.getTS()[0]
         self.assertEqual(
             myts.getPkts()[0].getContent()[0].getContentString(), '/abcdef/')
         myrule = myconrules.pop(0)
-        self.assertEqual(myrule.getRuleName(), "basic")
+        self.assertEqual(myrule.getRuleName(), "Rule-0")
         myts = myrule.getTS()[0]
         self.assertEqual(
             myts.getPkts()[0].getContent()[0].getContentString(), '/zyxwv/i')
@@ -391,13 +392,13 @@ class TestRuleReader(TestCase):
         rules = myrulelist.getParsedRules()
         self.assertEqual(len(rules), 9)
         conrule1 = rules[0]
-        self.assertEqual(conrule1.getRuleName(), "Snort")
+        self.assertEqual(conrule1.getRuleName(), "Snort-0")
         content0 = conrule1.getTS()[0].getPkts()[0].getContent()[0]
         self.assertEqual(content0.getType(), "content")
         self.assertEqual(content0.getContentString(),
                          "Cookie|3A| =|0D 0A 0D 0A|")
         conrule1 = rules[8]
-        self.assertEqual(conrule1.getRuleName(), "Snort")
+        self.assertEqual(conrule1.getRuleName(), "Snort-8")
         self.assertEqual(conrule1.getTS()[0].getDport(), '8080')
 
     def test_read_multiple_files(self):
@@ -406,13 +407,13 @@ class TestRuleReader(TestCase):
         rules = myrulelist.getParsedRules()
         self.assertEqual(len(rules), 19)
         conrule1 = rules[0]
-        self.assertEqual(conrule1.getRuleName(), "Snort")
+        self.assertEqual(conrule1.getRuleName(), "Snort-0")
         content0 = conrule1.getTS()[0].getPkts()[0].getContent()[0]
         self.assertEqual(content0.getType(), "content")
         self.assertEqual(content0.getContentString(),
                          "work.Method.denyExecution")
         conrule1 = rules[18]
-        self.assertEqual(conrule1.getRuleName(), "Snort")
+        self.assertEqual(conrule1.getRuleName(), "Snort-0")
         content0 = conrule1.getTS()[0].getPkts()[0].getContent()[0]
         self.assertEqual(content0.getType(), "content")
         self.assertEqual(content0.getContentString(),
@@ -427,7 +428,7 @@ class TestRuleReader(TestCase):
         rules = myrulelist.getParsedRules()
         self.assertEqual(len(rules), 1)
         conrule = rules[0]
-        self.assertEqual(conrule.getRuleName(), 'Petabi')
+        self.assertEqual(conrule.getRuleName(), 'testall')
         tsrules = conrule.getTS()
         self.assertEqual(len(tsrules), 6)
         self.assertEqual(tsrules[0].getProto(), 'tcp')
