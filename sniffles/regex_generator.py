@@ -463,7 +463,8 @@ def usage():
     usage_stmt = """regex_generator--Random Regular Expression Generator.
     usage: regex_generator.py [-C char distribution] [-c number regex]
     [-D class distribution] [-f output re file]
-    [-l lambda for length generation] [-n negation probability]
+    [-l lambda for length generation] [-M maximum regex length]
+	[-m minimum regex length] [-n negation probability]
     [-o options chance] [-R repetition chance] [-r repetition distribution]
     [-t re structural type distribution] [-?] [-g]
 
@@ -499,6 +500,8 @@ def usage():
     distribution of regular expression lengths.  The default value is 65
     (derived from the average regex length taken from several regular
     expression sets used in computer security).
+	-M \t Maximum Regex Length: make regular expressions at most this
+    structural length or shorter. By default, maximum length is not limited.
     -m \t Minimum Regex Length: make regular expressions at least this
     this length or longer.  Defaults to 3, and will automatically use a
     value of 1 if the input is zero or less.

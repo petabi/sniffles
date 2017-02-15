@@ -347,7 +347,7 @@ To generate a pcap with 20 random streams with a home network of
   `sniffles -c 20 -h 192.168.1,192.168.2`
 
 To generate a pcap with 20 random streams with a home network of
-192.168.x.x for IPv4 and 2001:8888:8888 for IPv6 with 50% of traffic
+192.168.1.x for IPv4 and 2001:8888:8888 for IPv6 with 50% of traffic
 IPv6:
 
   `sniffles -c 20 -h 192.168.1 -H 2001:8888:8888 -i 50`
@@ -655,7 +655,8 @@ regexgen--Random Regular Expression Generator.
 
     usage: regexgen [-C char distribution] [-c number regex]
     [-D class distribution] [-f output re file]
-    [-l lambda for length generation] [-n negation probability]
+    [-l lambda for length generation] [-M maximum regex length]
+    [-m minimum regex length] [-n negation probability]
     [-o options chance] [-R repetition chance] [-r repetition distribution]
     [-t re structural type distribution] [-?] [-g]
 
@@ -688,6 +689,11 @@ regexgen--Random Regular Expression Generator.
     option is false.  This option takes no parameters.
 -    -l Lambda for length:  This is the mean length for an exponentional
     distribution of regular expression lengths.  The default value is 10.
+-    -M Maximum Regex Length: make regular expressions at most this
+    structural length or shorter. By default, maximum length is not limited.
+-    -m Minimum Regex Length: make regular expressions at least this length
+    or longer. Defaults to 3, and will automatically use a value of 1
+    if the input is zero or less.
 -    -n Negation probability: The probability that a character class will
     be a negation class ([^xyz]) rather than a normal character class ([xyz]).
     Default probability is 50%.
