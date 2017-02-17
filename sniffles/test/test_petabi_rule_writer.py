@@ -110,27 +110,33 @@ class TestPetabiRuleWriter(TestCase):
     # Checks format of background traffic
     def test_background_rule_format(self):
         background_percentage = '50'
-        background_format = formatBackgroundTrafficRule(background_percentage)
+        protocol_dist = ['20', '20', '20', '20', '20']
+        background_format = formatBackgroundTrafficRule(background_percentage,
+                                                        protocol_dist)
         # Add ending tag for test purpose
         background_format += "    </traffic_stream>"
         root = ET.fromstring(background_format)
 
-        # Check if protocol distribution add up to 100
-        # When they are given as ratio
-        protocol_dist = ['1','1','2','2','1']
-        protocol_percent = protocolPercentage(protocol_dist)
-        percentSum = 0
-        for protocol in protocol_percent:
-            percentSum += protocol_percent[protocol]
-
-        self.assertEqual(percentSum, 100)
-
-        # Will be adding further tests when more features are added
         for attribute in root.attrib:
             if attribute == 'typets':
                 self.assertEqual(root.attrib[attribute], 'BackgroundTraffic')
             elif attribute == 'percentage':
                 self.assertEqual(root.attrib[attribute], '50')
+
+            elif attribute == 'http':
+                self.assertEqual(root.attrib[attribute], '20')
+
+            elif attribute == 'ftp':
+                self.assertEqual(root.attrib[attribute], '20')
+
+            elif attribute == 'imap':
+                self.assertEqual(root.attrib[attribute], '20')
+
+            elif attribute == 'pop':
+                self.assertEqual(root.attrib[attribute], '20')
+
+            elif attribute == 'smtp':
+                self.assertEqual(root.attrib[attribute], '20')
 
     # Checks order and number of rule created
     def test_rule_format(self):
