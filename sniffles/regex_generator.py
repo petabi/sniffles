@@ -46,10 +46,10 @@ def main():
     for opt, arg in options:
         if opt == "-C":
             if arg is not None:
-                char_dist = re.split('[\s,;]*', arg)
+                char_dist = re.split('[\s,;]+', arg)
         elif opt == "-D":
             if arg is not None:
-                class_dist = re.split('[\s,;]*', arg)
+                class_dist = re.split('[\s,;]+', arg)
         elif opt == "-c":
             number = int(arg)
             if number <= 0:
@@ -84,10 +84,10 @@ def main():
                 rep_chance = 0
         elif opt == "-r":
             if arg is not None:
-                rep_dist = re.split('[\s,;]*', arg)
+                rep_dist = re.split('[\s,;]+', arg)
         elif opt == "-t":
             if arg is not None:
-                type_dist = re.split('[\s,;]*', arg)
+                type_dist = re.split('[\s,;]+', arg)
         elif opt == "-?":
             usage()
         else:
