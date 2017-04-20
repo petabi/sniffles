@@ -698,7 +698,7 @@ class TrafficStream(object):
             # Nothing left.
         # Increment time stamp for next packet
         self.incrementTime(int(round(random.expovariate(1/self.latency)))+1)
-        if self.rule:
+        if pkt is not None and self.rule:
             pkt.set_ts_rule(self.rule)
         return pkt
 
