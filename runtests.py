@@ -18,6 +18,7 @@ if __name__ == '__main__':
     from sniffles.test.test_ruleformat import *
     from sniffles.test.test_regex_generator import *
     from sniffles.test.test_rand_rule_gen import *
+    from sniffles.test.test_petabi_rule_writer import *
     suites = [
         unittest.TestLoader().loadTestsFromTestCase(TestExamples),
         unittest.TestLoader().loadTestsFromTestCase(TestFeature),
@@ -59,7 +60,8 @@ if __name__ == '__main__':
         unittest.TestLoader().loadTestsFromTestCase(TestRuleReader),
         unittest.TestLoader().loadTestsFromTestCase(TestRuleTrafficGenerator),
         unittest.TestLoader().loadTestsFromTestCase(TestTTLExpiryAttack),
-        unittest.TestLoader().loadTestsFromTestCase(TestXMLRuleReader)
+        unittest.TestLoader().loadTestsFromTestCase(TestXMLRuleReader),
+        unittest.TestLoader().loadTestsFromTestCase(TestPetabiRuleWriter)
     ]
     tests = unittest.TestSuite(suites)
     unittest.TextTestRunner().run(tests)

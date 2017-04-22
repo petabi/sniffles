@@ -35,20 +35,21 @@ def main():
     option_chance = 20
     negation_prob = 15
     min_regex_length = 3             # Default to regex at least 3 chars in len
+    max_regex_length = 0             # Default to zero(max_length not applied)
     re_file = "rand.re"
+    cmd_options = "C:c:D:f:gl:M:m:n:o:R:r:t:?"
     try:
-        options, args = getopt.getopt(sys.argv[1:], "C:c:D:f:gl:o:n:R:r:t:?",
-                                      [])
+        options, args = getopt.getopt(sys.argv[1:], cmd_options, [])
     except getopt.GetoptError as err:
         print("Error: ", err)
         usage()
     for opt, arg in options:
         if opt == "-C":
             if arg is not None:
-                char_dist = re.split('[\s,;]*', arg)
+                char_dist = re.split('[\s,;]+', arg)
         elif opt == "-D":
             if arg is not None:
-                class_dist = re.split('[\s,;]*', arg)
+                class_dist = re.split('[\s,;]+', arg)
         elif opt == "-c":
             number = int(arg)
             if number <= 0:
@@ -62,6 +63,9 @@ def main():
             lambd = int(arg)
             if lambd <= 0:
                 lambd = 10
+        elif opt == "-M":
+            if arg is not None:
+                max_regex_length = int(arg)
         elif opt == "-m":
             min_regex_length = int(arg)
             if min_regex_length < 1:
@@ -80,10 +84,10 @@ def main():
                 rep_chance = 0
         elif opt == "-r":
             if arg is not None:
-                rep_dist = re.split('[\s,;]*', arg)
+                rep_dist = re.split('[\s,;]+', arg)
         elif opt == "-t":
             if arg is not None:
-                type_dist = re.split('[\s,;]*', arg)
+                type_dist = re.split('[\s,;]+', arg)
         elif opt == "-?":
             usage()
         else:
@@ -91,7 +95,7 @@ def main():
             usage()
     create_regex_list(number, lambd, type_dist, char_dist, class_dist,
                       rep_dist, rep_chance, option_chance, negation_prob,
-                      re_file, min_regex_length, groups)
+                      re_file, min_regex_length, max_regex_length, groups)
     print("Finished creating random regular expressions.")
     sys.exit(0)
 
@@ -106,7 +110,8 @@ def main():
 
 def create_regex_list(number, lambd, type_dist, char_dist, class_dist,
                       rep_dist, rep_chance, option_chance, negation_prob,
-                      re_file, min_regex_length, groups=False):
+                      re_file, min_regex_length, max_regex_length,
+                      groups=False):
     """Manages the creation of the new regular expression list.
     Steps invloved:
       1. Create the regex.
@@ -118,16 +123,17 @@ def create_regex_list(number, lambd, type_dist, char_dist, class_dist,
     mygroups = []
     if groups and number > 1:
         mygroups = getREGroups(number, type_dist, char_dist,
-                               class_dist, rep_dist, rep_chance, negation_prob)
+                               class_dist, rep_dist, rep_chance, negation_prob,
+                               min_regex_length)
 
     count = 0
     while count < number:
         myregex = '/'
         if mygroups:
             myregex += mygroups[random.randint(0, len(mygroups) - 1)]
-        myregex += generate_regex(lambd, 0, type_dist, char_dist, class_dist,
-                                  rep_dist, rep_chance, negation_prob,
-                                  min_regex_length)
+        myregex += generate_regex(lambd, max_regex_length, type_dist,
+                                  char_dist, class_dist, rep_dist, rep_chance,
+                                  negation_prob, min_regex_length)
         myregex += '/'
         pick = random.randint(0, 100)
         if pick < option_chance:
@@ -139,7 +145,7 @@ def create_regex_list(number, lambd, type_dist, char_dist, class_dist,
                 myregex += o
         # check if this compiles or not
         if not check_pcre_compile(myregex):
-            print("pcre compile failed ... continuing")
+            # pcre compile failed. give another try until it passes
             continue
         myregex += "\n"
         myrelist.append(myregex)
@@ -173,7 +179,7 @@ def generate_regex(lambd, max_len, type_dist, char_dist,
     mylen = int(random.expovariate(1/lambd))
 
     if mylen < min_regex_length:
-      mylen = min_regex_length
+        mylen = min_regex_length
     if max_len > 0 and mylen > max_len:
         mylen = max_len
 
@@ -423,14 +429,14 @@ def get_repetition(rep_dist, rep_start_max=5, rep_end_max=10):
 
 
 def getREGroups(number, type_dist, char_dist, class_dist,
-                rep_dist, rep_chance, negation_prob):
+                rep_dist, rep_chance, negation_prob, min_regex_len):
     new_groups = []
     if number > 1:
         num_groups = random.randint(1, int(number/2))
         for i in range(1, num_groups):
             prefix = generate_regex(random.randint(5, 20), 0,
                                     type_dist, char_dist, class_dist, rep_dist,
-                                    rep_chance, negation_prob)
+                                    rep_chance, negation_prob, 1)
             new_groups.append(prefix)
     return new_groups
 
@@ -457,7 +463,8 @@ def usage():
     usage_stmt = """regex_generator--Random Regular Expression Generator.
     usage: regex_generator.py [-C char distribution] [-c number regex]
     [-D class distribution] [-f output re file]
-    [-l lambda for length generation] [-n negation probability]
+    [-l lambda for length generation] [-M maximum regex length]
+	[-m minimum regex length] [-n negation probability]
     [-o options chance] [-R repetition chance] [-r repetition distribution]
     [-t re structural type distribution] [-?] [-g]
 
@@ -493,6 +500,8 @@ def usage():
     distribution of regular expression lengths.  The default value is 65
     (derived from the average regex length taken from several regular
     expression sets used in computer security).
+	-M \t Maximum Regex Length: make regular expressions at most this
+    structural length or shorter. By default, maximum length is not limited.
     -m \t Minimum Regex Length: make regular expressions at least this
     this length or longer.  Defaults to 3, and will automatically use a
     value of 1 if the input is zero or less.

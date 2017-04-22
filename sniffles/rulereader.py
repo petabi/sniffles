@@ -132,7 +132,7 @@ class RuleParser(object):
     def __init__(self, filename=None):
         self.rules = []
         self.filename = filename
-        self.rule_no = 0
+        self.background_traffic = None
 
     def addRule(self, rule=None):
         if rule:
@@ -140,6 +140,9 @@ class RuleParser(object):
                 self.rules.append(rule)
             else:
                 self.rules = [rule]
+
+    def getBackgroundTraffic(self):
+        return self.background_traffic
 
     def getRules(self):
         return self.rules
@@ -158,7 +161,7 @@ class RuleParser(object):
         mypkt.addContent(mycon)
         ts.addPktRule(mypkt)
         basic_rule.addTS(ts)
-        basic_rule.setRuleName("Rule-" + str(self.rule_no))
+        basic_rule.setRuleName("Rule-" + str(len(self.rules)))
         self.addRule(basic_rule)
 
     def parseRuleFile(self, filename=None):
@@ -174,7 +177,6 @@ class RuleParser(object):
             line = line.strip()
             if len(line) > 0 and line[0] != '#':
                 self.parseRule(line)
-                self.rule_no += 1
             line = self.fd.readline()
         self.fd.close()
 
@@ -637,6 +639,225 @@ class TrafficStreamRule(object):
         return TrafficStream(self, sconf, secs, usecs)
 
 
+# Create Background Traffic rules
+class BackgroundTrafficRule(TrafficStreamRule):
+    def __init__(self):
+        super().__init__()
+        # List of Application Protocols
+        self.application_protocol = ['http', 'ftp', 'pop', 'smtp', 'imap']
+        self.backgroundPercent = None
+        self.distribution = {}
+        self.probability_list = []
+        self.absent_protocol = []
+        self.proto = 'tcp'
+        # HTTP codes & URL
+        # Retrieved from SimilarWeb top 10
+        self.httpURL = ['www.facebook.com', 'www.google.com',
+                        'www.youtube.com', 'www.vk.com', 'www.amazon.com',
+                        'www.instagram.com', 'www.wikipedia.org',
+                        'www.twitter.com', 'www.live.com', 'www.yahoo.com']
+        self.httpRequestCodes = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE',
+                                 'CONNECT']
+        self.httpResponseCodes = ['100 Continue', '101 Switching Protocols',
+                                  '200 OK', '201 Created', '202 Accepted',
+                                  '204 No Content', '301 Moved Permanently',
+                                  '302 Found', '400 Bad Request',
+                                  '403 Forbidden', '404 Not Found',
+                                  '405 Method Not Allowed',
+                                  '406 Not Acceptable',
+                                  '408 Request Timedout',
+                                  '500 Internal Server Error',
+                                  '501 Not Implemented', '502 Bad Gateway',
+                                  '503 Service Unavailable',
+                                  '504 Gateway Timeout']
+        # FTP codes
+        self.ftpResponseCodes = ['125', '150', '200', '211', '212', '213',
+                                 '214', '220', '221', '225', '226', '230',
+                                 '250', '331', '332', '350', '421', '425',
+                                 '426', '450', '451', '452', '500', '501',
+                                 '503', '504', '530', '532', '550', '551',
+                                 '552', '553']
+        self.ftpRequestCodes = ['ABOR', 'ACCT', 'ALLO', 'APPE', 'CDUP',
+                                'DELE', 'HELP', 'LIST', 'MODE', 'NOOP',
+                                'PASS', 'PASV', 'PORT', 'QUIT', 'REIN',
+                                'REST', 'RETR', 'SMNT', 'STAT', 'STOR',
+                                'STRU', 'TYPE', 'USER']
+        # POP3 codes
+        self.popResponseCodes = ['+OK', '-ERR']
+        self.popRequestCodes = ['DELE', 'LIST', 'NOOP', 'PASS', 'QUIT',
+                                'RETR', 'RSET', 'STAT', 'USER']
+        # SMTP codes
+        self.smtpResponseCodes = ['211', '214', '220', '221', '250', '251',
+                                  '354', '421', '450', '451', '452', '500',
+                                  '501', '502', '503', '504', '550', '552',
+                                  '553', '554']
+        self.smtpRequestCodes = ['DATA', 'EHLO', 'EXPN', 'HELO', 'HELP',
+                                 'MAIL', 'NOOP', 'QUIT', 'RCPT', 'RSET',
+                                 'SAML', 'SEND', 'SOML', 'TURN', 'VRFY']
+        # IMAP codes
+        self.imapResponseCodes = ['OK', 'BAD', 'NO']
+        self.imapRequestCodes = ['APPEND', 'AUTHENTICATE', 'CAPABILITY',
+                                 'CHECK', 'CLOSE', 'COPY', 'CREATE', 'DELTE',
+                                 'LOGIN', 'LOGOUT', 'NOOP', 'SEARCH',
+                                 'SELECT', 'STARTTLS', 'STORE']
+
+    def createContent(self, protocol):
+        self.content = []
+        self.ruleContent = []
+        self.contentString = ''
+        self.background_traffic = protocol
+        # Local Variables
+        imapTag = str(random.randint(1, 100))
+        cr_lf = '\r\n'
+        # Randomize the flow
+        self.flow = random.choice(VALID_DIRECTIONS)
+        # Set a rule to send response code when server->client
+        if self.flow == 'to client':
+            self.sport = self.background_traffic
+            self.dport = 'any'
+            if self.background_traffic == 'http':
+                self.response = random.choice(self.httpResponseCodes)
+                self.contentString += 'HTTP/1.1 ' + self.response + \
+                                      cr_lf + cr_lf
+            elif self.background_traffic == 'ftp':
+                self.response = random.choice(self.ftpResponseCodes)
+                self.contentString += ''.join([self.response, cr_lf])
+            elif self.background_traffic == 'pop':
+                self.response = random.choice(self.popResponseCodes)
+                self.contentString += ''.join([self.response, cr_lf])
+            elif self.background_traffic == 'imap':
+                self.sport = '143'
+                self.response = random.choice(self.imapResponseCodes)
+                self.contentString += ' '.join([imapTag, self.response]) \
+                                      + cr_lf
+            elif self.background_traffic == 'smtp':
+                self.sport = random.choice(['25', '465'])
+                self.response = random.choice(self.smtpResponseCodes)
+                self.contentString += ''.join([self.response, cr_lf])
+        # Set a rule to send request code when client -> server
+        elif self.flow == 'to server':
+            self.sport = 'any'
+            self.dport = self.background_traffic
+            if self.background_traffic == 'http':
+                self.request = random.choice(self.httpRequestCodes)
+                self.url = random.choice(self.httpURL)
+                self.contentString += self.request
+                self.contentString += ' / HTTP/1.1' + cr_lf
+                self.contentString += 'Host: ' + self.url + cr_lf + cr_lf
+            elif self.background_traffic == 'ftp':
+                self.request = random.choice(self.ftpRequestCodes)
+                self.contentString += ''.join([self.request, cr_lf])
+            elif self.background_traffic == 'pop':
+                self.request = random.choice(self.popRequestCodes)
+                self.contentString += ''.join([self.request, cr_lf])
+            elif self.background_traffic == 'imap':
+                self.dport = '143'
+                self.request = random.choice(self.imapRequestCodes)
+                self.contentString += ' '.join([imapTag, self.request]) \
+                                      + cr_lf
+            elif self.background_traffic == 'smtp':
+                self.dport = random.choice(['25', '465'])
+                self.request = random.choice(self.smtpRequestCodes)
+                self.contentString += ''.join([self.request, cr_lf])
+
+        self.content.extend(list(self.contentString))
+        self.ruleContent = [RuleContent('content', self.content)]
+
+    # Update content
+    def updateContent(self, protocol=None, prob_list=None, absent_proto=None):
+        if protocol is None:
+            if prob_list:
+                protocol = random.choice(prob_list)
+                if protocol == 'remainder':
+                    protocol = random.choice(absent_proto)
+            else:
+                protocol = random.choice(self.application_protocol)
+
+        self.createContent(protocol)
+
+    # Pre-calculate probability list from distribution
+    # Also create list of undesignated protocol if wild card is used
+    # in petabi rule.
+    def updateProbability(self):
+        for protocol in self.application_protocol:
+            if protocol in self.distribution:
+                self.probability_list += (self.distribution[protocol] *
+                                          [protocol])
+            else:
+                self.absent_protocol.append(protocol)
+        if len(self.probability_list) < 100:
+            multiplier = 100 - len(self.probability_list)
+            self.probability_list += multiplier * ['remainder']
+
+    def getProbabilityDist(self):
+        return self.probability_list
+
+    def getAbsentProtocol(self):
+        return self.absent_protocol
+
+    def getRequestCodes(self, protocol):
+        if protocol == 'http':
+            return self.httpRequestCodes
+        elif protocol == 'ftp':
+            return self.ftpRequestCodes
+        elif protocol == 'pop':
+            return self.popRequestCodes
+        elif protocol == 'imap':
+            return self.imapRequestCodes
+        elif protocol == 'smtp':
+            return self.smtpRequestCodes
+
+    def getResponseCodes(self, protocol):
+        if protocol == 'http':
+            return self.httpResponseCodes
+        elif protocol == 'ftp':
+            return self.ftpResponseCodes
+        elif protocol == 'pop':
+            return self.popResponseCodes
+        elif protocol == 'imap':
+            return self.imapResponseCodes
+        elif protocol == 'smtp':
+            return self.smtpResponseCodes
+
+    def getResponse(self):
+        return self.response
+
+    def getRequest(self):
+        return self.request
+
+    def getProtocolList(self):
+        return self.application_protocol
+
+    def getProtocolType(self):
+        return self.background_traffic
+
+    def getContent(self):
+        return self.ruleContent
+
+    def getContentString(self):
+        return self.contentString
+
+    def getBackgroundPercent(self):
+        return self.backgroundPercent
+
+    def setDistribution(self, protocol, dist):
+        self.distribution[protocol] = dist
+
+    def getDistribution(self):
+        return self.distribution
+
+    def setBackgroundPercent(self, percent):
+        self.backgroundPercent = percent
+
+    def testTypeRule(self, value):
+        if value == "BackgroundTraffic":
+            return True
+        return False
+
+    def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
+        return BackgroundTraffic(self, sconf, secs, usecs)
+
+
 class ScanAttackRule(TrafficStreamRule):
 
     def __init__(self, scan_type=SYN_SCAN, target=None,
@@ -960,10 +1181,6 @@ class SnortRuleContent(RuleContent):
 
 class SnortRuleParser(RuleParser):
 
-    def __init__(self, filename=None):
-        self.filename = None
-        self.rules = []
-
     def parseHeader(self, line=None, ts=None):
         if line and ts:
             header = line.partition("(")[0]
@@ -1030,6 +1247,7 @@ class SnortRuleParser(RuleParser):
             self.parseHeader(rule, snort_ts)
             self.parseOptions(rule, snort_ts)
             snort_rule.addTS(snort_ts)
+            snort_rule.setRuleName("Snort-" + str(len(self.rules)))
             self.addRule(snort_rule)
 
     def parseRuleFile(self, filename=None):
@@ -1089,6 +1307,8 @@ class PetabiRuleParser(RuleParser):
 
         for xmlrule in root.iter('rule'):
             myprule = Rule('Petabi')
+            if 'name' in xmlrule.attrib:
+                myprule.setRuleName(xmlrule.attrib['name'])
             for ts in xmlrule.iter('traffic_stream'):
 
                 mytsrule = None
@@ -1176,6 +1396,23 @@ class PetabiRuleParser(RuleParser):
                 if 'packet_loss' in ts.attrib:
                     if int(ts.attrib['packet_loss']) > 0:
                         mytsrule.setPacketLoss(int(ts.attrib['packet_loss']))
+                if 'percentage' in ts.attrib:
+                    mytsrule.setBackgroundPercent(int(ts.attrib['percentage']))
+
+                if 'http' in ts.attrib:
+                    mytsrule.setDistribution('http', int(ts.attrib['http']))
+
+                if 'ftp' in ts.attrib:
+                    mytsrule.setDistribution('ftp', int(ts.attrib['ftp']))
+
+                if 'pop' in ts.attrib:
+                    mytsrule.setDistribution('pop', int(ts.attrib['pop']))
+
+                if 'smtp' in ts.attrib:
+                    mytsrule.setDistribution('smtp', int(ts.attrib['smtp']))
+
+                if 'imap' in ts.attrib:
+                    mytsrule.setDistribution('imap', int(ts.attrib['imap']))
 
                 for pkt in ts.iter('pkt'):
                     mypkt = RulePkt()
@@ -1218,7 +1455,17 @@ class PetabiRuleParser(RuleParser):
                         if int(pkt.attrib['ttl_expiry']) > 0:
                             mypkt.setTTLExpiry(int(pkt.attrib['ttl_expiry']))
                     mytsrule.addPktRule(mypkt)
+
+                # Add rule infos into background_traffic
+                if isinstance(mytsrule, BackgroundTrafficRule):
+                    if mytsrule.getDistribution():
+                        mytsrule.updateProbability()
+                    self.background_traffic = mytsrule
+                    continue
                 myprule.addTS(mytsrule)
+            # Skip addition of background rule to the ruleList
+            if myprule.getRuleName() == 'Background':
+                continue
             self.addRule(myprule)
 
     def testForRuleFile(self, filename=None):
@@ -1260,6 +1507,7 @@ class RuleList:
     """
     def __init__(self):
         self.all_rules = []
+        self.background_traffic = None
 
     def __str__(self):
         if self.all_rules:
@@ -1269,6 +1517,9 @@ class RuleList:
             return mystr
         else:
             return "None"
+
+    def getBackgroundTraffic(self):
+        return self.background_traffic
 
     def getParsedRules(self):
         return self.all_rules
@@ -1290,6 +1541,7 @@ class RuleList:
         # rule files to be in a different format.
         parser = self.findParser(filename)
         parser.parseRuleFile(filename)
+        self.background_traffic = parser.getBackgroundTraffic()
         if parser.getRules():
             if self.all_rules:
                 self.all_rules.extend(parser.getRules())

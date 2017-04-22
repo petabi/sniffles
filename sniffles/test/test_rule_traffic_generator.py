@@ -580,6 +580,37 @@ class TestRuleTrafficGenerator(TestCase):
         self.assertEqual(mypkt.get_content_length(), 5)
         self.assertEqual(mypkt.get_content().get_data()[0:4], b'1234')
 
+    def test_background_traffic(self):
+
+        rule = BackgroundTrafficRule()
+        protocol_list = rule.getProtocolList()
+
+        for protocol in protocol_list:
+            rule = BackgroundTrafficRule()
+            rule.updateContent(protocol)
+            backgroundTraffic = BackgroundTraffic(rule, None)
+
+            # Get port value depending on flow
+            flow = rule.getFlowOptions()
+            if flow == 'to client':
+                port = backgroundTraffic.getSport()
+                port_value = port.get_port_value()
+            elif flow == 'to server':
+                port = backgroundTraffic.getDport()
+                port_value = port.get_port_value()
+
+            # Check if the port is chosen from correct list
+            if protocol == 'http':
+                self.assertIn(port_value, HTTP_PORTS)
+            elif protocol == 'ftp':
+                self.assertIn(port_value, FTP_PORTS)
+            elif protocol == 'pop':
+                self.assertIn(port_value, POP_PORTS)
+            elif protocol == 'imap':
+                self.assertEqual(port_value, 143)
+            elif protocol == 'smtp':
+                self.assertIn(port_value, [25, 465])
+
     def test_scan(self):
 
         rule = ScanAttackRule(SYN_SCAN, '192.168.1.2', ['1', '2', '3', '4'],

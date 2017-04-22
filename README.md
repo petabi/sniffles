@@ -125,6 +125,10 @@ Command Line Options:
   - -b Bidirectional data: Data will be generated in both directions
      of a TCP stream. ACKs will be turned on.  This feature is off
      by default.
+  - -B Background Traffic Percentage: Set this value between 1 and
+     100 to produce Background Traffic. This traffic will consist of
+     even selections of following generic application protocols:
+     FTP, HTTP, IMAP, POP and SMTP. By default it is set to 0.
 
   - -c Count: Number of streams to create.  Each stream will contain a
      minimum of 1 packet.  Packet will be between two end-points as
@@ -325,6 +329,12 @@ data:
 
   `sniffles -c 10`
 
+To generate a pcap with 10 streams where 50% of streams will be the 
+background traffic and the rest of the streams will contain packets 
+matching a rule:
+
+  `sniffles -c 10 -B 50 myrules.rules`
+
 To generate a pcap with 10 streams, each stream with 5 packets, with
 ACKs and handshake and teardown as well as a fixed length of 50 for
 the data in each data-bearing packet:
@@ -337,7 +347,7 @@ To generate a pcap with 20 random streams with a home network of
   `sniffles -c 20 -h 192.168.1,192.168.2`
 
 To generate a pcap with 20 random streams with a home network of
-192.168.x.x for IPv4 and 2001:8888:8888 for IPv6 with 50% of traffic
+192.168.1.x for IPv4 and 2001:8888:8888 for IPv6 with 50% of traffic
 IPv6:
 
   `sniffles -c 20 -h 192.168.1 -H 2001:8888:8888 -i 50`
@@ -426,7 +436,8 @@ In detail, the tags work as follows:
           settings below.
             - Options:
                 - typets: Specify which type of traffic stream we will use to
-                  generate packet. Currently, we have Standard and ScanAttack.
+                  generate packet. Currently, we have Standard, ScanAttack and
+                  BackgroundTraffic.
                 - scantype: 1==Syn scan (default) 2 == Connection scan.
                   It is used with ScanAttack.
                 - target: Specify the target ip address for Scan Attack.
@@ -499,6 +510,20 @@ In detail, the tags work as follows:
                 - ack: Have every data packet in this flow be followed by
                   an ACK from the server.  Valid values are true or false.
                   Default is false.
+                - percentage: This only applies for BackgroundTraffic and there should
+                  be only one rule of BackgroundTraffic in a rule file or directory.
+                  The percentage indicates percentage of background traffic stream
+                  to be created in total traffic stream.
+                - http: Percentage distribution of http application protocols in
+                  background traffic stream.
+                - ftp: Percentage distribution of ftp application protocols in
+                  background traffic stream.
+                - pop: Percentage distribution of pop application protocols in
+                  background traffic stream.
+                - smtp: Percentage distribution of smtp application protocols in
+                  background traffic stream.
+                - imap: Percentage distribution of imap application protocols in
+                  background traffic stream.
             - `<pkt > </pkt>`:  This directive designates either an individual
               packet or a series of packets.  The times feature can be used to have
               one <pkt> </pkt> directive generate several packets.  Otherwise, it is
@@ -554,6 +579,7 @@ Authors:
 - Victor C. Valgenti
 - Min Sik Kim
 - Tu Le
+- Moosuk Pyun
 
 New Features:
 -------------
@@ -629,7 +655,8 @@ regexgen--Random Regular Expression Generator.
 
     usage: regexgen [-C char distribution] [-c number regex]
     [-D class distribution] [-f output re file]
-    [-l lambda for length generation] [-n negation probability]
+    [-l lambda for length generation] [-M maximum regex length]
+    [-m minimum regex length] [-n negation probability]
     [-o options chance] [-R repetition chance] [-r repetition distribution]
     [-t re structural type distribution] [-?] [-g]
 
@@ -662,6 +689,11 @@ regexgen--Random Regular Expression Generator.
     option is false.  This option takes no parameters.
 -    -l Lambda for length:  This is the mean length for an exponentional
     distribution of regular expression lengths.  The default value is 10.
+-    -M Maximum Regex Length: make regular expressions at most this
+    structural length or shorter. By default, maximum length is not limited.
+-    -m Minimum Regex Length: make regular expressions at least this length
+    or longer. Defaults to 3, and will automatically use a value of 1
+    if the input is zero or less.
 -    -n Negation probability: The probability that a character class will
     be a negation class ([^xyz]) rather than a normal character class ([xyz]).
     Default probability is 50%.

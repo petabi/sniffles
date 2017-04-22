@@ -136,7 +136,7 @@ class Conversation(object):
         mystr += "Waiting TS:"
         for ts in self.ts:
             mystr += str(ts)
-        return myts
+        return mystr
 
     # Returns the timestamp and the packet of the next packet to
     # send among the streams for this particular conversation.
@@ -698,7 +698,7 @@ class TrafficStream(object):
             # Nothing left.
         # Increment time stamp for next packet
         self.incrementTime(int(round(random.expovariate(1/self.latency)))+1)
-        if self.rule:
+        if pkt is not None and self.rule:
             pkt.set_ts_rule(self.rule)
         return pkt
 
@@ -984,6 +984,44 @@ class TrafficStream(object):
             else:
                 self.current_seq_b_to_a += data_len
                 self.current_ack_a_to_b = self.current_seq_b_to_a
+
+
+class BackgroundTraffic(TrafficStream):
+    def __init__(self, rule=None, sconf=None, start_sec=-1, start_usec=0):
+        super().__init__(None, sconf)
+        self.proto = rule.getProto()
+        self.rule = rule
+        self.rand = False
+        self.full_match = True
+        self.sport = Port(rule.getSport())
+        self.dport = Port(rule.getDport())
+        self.current_seq_a_to_b = random.randint(0, 4000000000)
+        self.current_ack_a_to_b = 0
+        self.current_seq_b_to_a = random.randint(0, 4000000000)
+        self.current_ack_b_to_a = 0
+
+        if start_sec > 0:
+            self.next_time_sec = start_sec
+        else:
+            if sconf:
+                self.next_time_sec = sconf.getFirstTimestamp()
+            else:
+                self.next_time_sec = int(calendar.timegm(time.gmtime()))
+        self.next_time_usec = start_usec
+        while self.next_time_usec >= 1000000:
+            self.next_time_sec += 1
+            self.next_time_usec -= 1000000
+
+    def isBackgroundTS(self, value):
+        if value == "BackgroundTraffic":
+            return True
+        return False
+
+    def getDport(self):
+        return self.dport
+
+    def getSport(self):
+        return self.sport
 
 
 class ScanAttack(TrafficStream):
