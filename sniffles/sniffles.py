@@ -85,6 +85,7 @@ def start_generation(sconf):
     global TOTAL_GENERATED_STREAMS
     global TOTAL_GENERATED_PACKETS
     global FINAL
+
     myrulelist = RuleList()
     if sconf.getRuleFile() and sconf.getRuleDir():
         print("You must specify either a single rule file, "
@@ -189,8 +190,20 @@ def start_generation(sconf):
             if pick < back_traffic_percent:
                 btrule = Rule("Background Traffic")
                 # Update the content with saved information
+                # Fix me. This code is inefficient for loop.
                 bt_rule = BackgroundTrafficRule()
+                # if each of the background traffic rate is given
+                if sconf.getBackgroundTrafficDistribution() != 0:
+                    bt_rule.setDistribution('http', sconf.getBackgroundTrafficHttp())
+                    bt_rule.setDistribution('ftp', sconf.getBackgroundTrafficFtp())
+                    bt_rule.setDistribution('pop', sconf.getBackgroundTrafficPop())
+                    bt_rule.setDistribution('smtp', sconf.getBackgroundTrafficSmtp())
+                    bt_rule.setDistribution('imap', sconf.getBackgroundTrafficImap())
+                    bt_rule.updateProbability()
+                    back_dist_list = bt_rule.getProbabilityDist()
                 bt_rule.updateContent(None, back_dist_list, back_absent_proto)
+                # Add the application protocol to the rule name
+                btrule.setRuleName("Background Traffic-" + bt_rule.getProtocolType())
                 btrule.addTS(bt_rule)
                 conversation = Conversation(btrule, sconf, current_sec,
                                             current_usec + flow_start_offset)

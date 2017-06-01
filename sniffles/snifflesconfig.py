@@ -41,6 +41,12 @@ class SnifflesConfig(object):
     def __init__(self, cmd=None):
         self.bi = False
         self.background_traffic = 0
+        self.background_traffic_distribution = 0
+        self.background_traffic_http = 0
+        self.background_traffic_ftp = 0
+        self.background_traffic_pop = 0
+        self.background_traffic_smtp = 0
+        self.background_traffic_imap = 0
         self.concurrent_flows = 1000
         self.config_file = None
         self.mix_mode = False
@@ -188,6 +194,19 @@ class SnifflesConfig(object):
 
     def getBackgroundTraffic(self):
         return self.background_traffic
+
+    def getBackgroundTrafficDistribution(self):
+        return self.background_traffic_distribution
+    def getBackgroundTrafficHttp(self):
+        return self.background_traffic_http
+    def getBackgroundTrafficFtp(self):
+        return self.background_traffic_ftp
+    def getBackgroundTrafficPop(self):
+        return self.background_traffic_pop
+    def getBackgroundTrafficSmtp(self):
+        return self.background_traffic_smtp
+    def getBackgroundTrafficImap(self):
+        return self.background_traffic_imap
 
     def getConcurrentFlows(self):
         return self.concurrent_flows
@@ -459,7 +478,17 @@ class SnifflesConfig(object):
             self.tcp_ack = True
         # Set percentage of background traffics to be added
         elif opt == "-B":
-            self.background_traffic = int(arg)
+            # Fix me. It's a temporary expedient for parsing
+            args = re.split('[\s,;]+', arg)
+            self.background_traffic = int(args[0])
+            if len(args) > 1:
+                self.background_traffic_distribution = 1
+                self.background_traffic_http = int(args[1])
+                self.background_traffic_ftp = int(args[2])
+                self.background_traffic_pop = int(args[3])
+                self.background_traffic_smtp = int(args[4])
+                self.background_traffic_imap = int(args[5])
+
             if self.background_traffic < 0 or self.background_traffic > 100:
                 print("Must set percentage between 0 and 100")
                 self.usage()
