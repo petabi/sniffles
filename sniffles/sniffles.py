@@ -106,8 +106,22 @@ def start_generation(sconf):
     allrules = myrulelist.getParsedRules()
     # Retrieve Background Traffic percentage
     back_traffic_percent = sconf.getBackgroundTraffic()
-    back_dist_list = None
-    back_absent_proto = None
+    if sconf.getBackgroundTrafficRule() is not None:
+        bt_rule = BackgroundTrafficRule()
+        background_traffic_rule = sconf.getBackgroundTrafficRule()
+        for i in range(0, int(len(background_traffic_rule)/2)):
+            bt_rule.setDistribution(background_traffic_rule[2*i], int(background_traffic_rule[2*i+1]))
+        bt_rule.updateProbability()
+        back_dist_list = bt_rule.getProbabilityDist()
+        # Leave only the protocol specified in the list.
+        # Becuase the sum of each percent is Background Traffic percentage.
+        while 'remainder' in back_dist_list:
+            back_dist_list.remove('remainder')
+        back_absent_proto = None
+    else :
+        back_dist_list = None
+        back_absent_proto = None
+
     # Get Background Traffic Rule if given
     if myrulelist.getBackgroundTraffic():
         bt_rule = myrulelist.getBackgroundTraffic()
@@ -190,17 +204,7 @@ def start_generation(sconf):
             if pick < back_traffic_percent:
                 btrule = Rule("Background Traffic")
                 # Update the content with saved information
-                # Fix me. This code is inefficient for loop.
                 bt_rule = BackgroundTrafficRule()
-                # if each of the background traffic rate is given
-                if sconf.getBackgroundTrafficDistribution() != 0:
-                    bt_rule.setDistribution('http', sconf.getBackgroundTrafficHttp())
-                    bt_rule.setDistribution('ftp', sconf.getBackgroundTrafficFtp())
-                    bt_rule.setDistribution('pop', sconf.getBackgroundTrafficPop())
-                    bt_rule.setDistribution('smtp', sconf.getBackgroundTrafficSmtp())
-                    bt_rule.setDistribution('imap', sconf.getBackgroundTrafficImap())
-                    bt_rule.updateProbability()
-                    back_dist_list = bt_rule.getProbabilityDist()
                 bt_rule.updateContent(None, back_dist_list, back_absent_proto)
                 # Add the application protocol to the rule name
                 btrule.setRuleName("Background Traffic-" + bt_rule.getProtocolType())
