@@ -41,6 +41,7 @@ class SnifflesConfig(object):
     def __init__(self, cmd=None):
         self.bi = False
         self.background_traffic = 0
+        self.background_traffic_rule = []
         self.concurrent_flows = 1000
         self.config_file = None
         self.mix_mode = False
@@ -390,6 +391,12 @@ class SnifflesConfig(object):
     def getWriteRegEx(self):
         return self.write_reg_ex
 
+    def getBackgroundTrafficRule(self):
+        return self.background_traffic_rule
+
+    def setBackgroundTrafficRule(self, value):
+        self.background_traffic_rule = value
+
     def setWriteRegExe(self, value):
         self.write_reg_ex = value
 
@@ -459,7 +466,20 @@ class SnifflesConfig(object):
             self.tcp_ack = True
         # Set percentage of background traffics to be added
         elif opt == "-B":
-            self.background_traffic = int(arg)
+            args = re.split('[:]+', arg)
+            if len(args) == 1:
+                self.background_traffic = int(args[0])
+            else:
+               args = re.split('[,]+', arg)
+               for i in range(0, len(args)):
+                   args_dist = re.split('[:]+', args[i])
+                   if len(args_dist) == 1:
+                       self.usage()
+                   else:
+                       self.background_traffic += int(args_dist[1])
+                       self.background_traffic_rule.append(args_dist[0])
+                       self.background_traffic_rule.append(args_dist[1])
+
             if self.background_traffic < 0 or self.background_traffic > 100:
                 print("Must set percentage between 0 and 100")
                 self.usage()
@@ -647,8 +667,9 @@ class SnifflesConfig(object):
 
     def usage(self):
         print("Sniffles--Traffic Generator for testing IDS")
-        print("usage: ./sniffles [-d dir | -f file] [-B percentage] [-c count]")
+        print("usage: ./sniffles [-d dir | -f file]  [-c count]")
         print(" [-C # concurrent flows] [-D traffic duration] [-F config]")
+        print(" [-B percentage | protocol:percentage,protocol:percentage,..]")
         print(" [-h \"comma-sep list\"] [-H \"comma-sep list\"]")
         print(" [-i ipv6 chance] [-I scan intensity]")
         print(" [-l pkt_length] [-L time lapse] [-M mac_addr_def file]")
@@ -665,6 +686,10 @@ class SnifflesConfig(object):
         print("   consist of even selections of following generic application")
         print("   protocols: FTP, HTTP, IMAP, POP and SMTP. By default, ")
         print("   it is set to 0.")
+        print("-B [Background Traffic Protocol:Percentage]: Set at least one")
+        print("   protocol with value between 1 and 100 to generate each")
+        print("   Background Traffic.")
+        print("   For example: \"http:20,ftp:30,smtp:10\".")
         print("-c Count: Number of streams to create.  Each stream will")
         print("   contain a minimum of 1 packet.  Packet will be between")
         print("   two end-points as defined by the rule or randomly chosen.")
