@@ -126,14 +126,15 @@ Command Line Options:
      of a TCP stream. ACKs will be turned on.  This feature is off
      by default.
 
-  - -B Background Traffic Percentage: Set this value between 1 and
-     100 to produce Background Traffic. This traffic will consist of
-     even selections of following generic application protocols:
-     FTP, HTTP, IMAP, POP and SMTP. By default it is set to 0.
-
   - -B [Background Traffic Protocol:Percentage]: Set at least one
-     protocol with value between 1 and 100 to generate each Background
-     Traffic. For example: "http:20,ftp:30,smtp:10".
+     protocol with value between 1 and 100 to produce Background
+     Traffic. This value represents the percentage of the total
+     amount of traffic.
+     Protocols available: FTP, HTTP, IMAP, POP and SMTP.
+     For example: "http:20,ftp:30,smtp:10".
+     Enter only one number as the argument value to generate randomly
+     traffic.
+     For example: "80".
 
   - -c Count: Number of streams to create.  Each stream will contain a
      minimum of 1 packet.  Packet will be between two end-points as

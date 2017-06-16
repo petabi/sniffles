@@ -107,14 +107,9 @@ def start_generation(sconf):
     # Retrieve Background Traffic percentage
     back_traffic_percent = sconf.getBackgroundTraffic()
     if sconf.getBackgroundTrafficRule() is not None:
-        bt_rule = BackgroundTrafficRule()
-        background_traffic_rule = sconf.getBackgroundTrafficRule()
-        for i in range(0, int(len(background_traffic_rule)/2)):
-            bt_rule.setDistribution(background_traffic_rule[2*i], int(background_traffic_rule[2*i+1]))
-        bt_rule.updateProbability()
+        bt_rule = sconf.getBackgroundTrafficRule()
         back_dist_list = bt_rule.getProbabilityDist()
-        # Leave only the protocol specified in the list.
-        # Becuase the sum of each percent is Background Traffic percentage.
+        # Leave only the protocol specified in the list to affects the overall amount of traffic.
         while 'remainder' in back_dist_list:
             back_dist_list.remove('remainder')
         back_absent_proto = None
