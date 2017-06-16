@@ -85,6 +85,7 @@ def start_generation(sconf):
     global TOTAL_GENERATED_STREAMS
     global TOTAL_GENERATED_PACKETS
     global FINAL
+
     myrulelist = RuleList()
     if sconf.getRuleFile() and sconf.getRuleDir():
         print("You must specify either a single rule file, "
@@ -105,8 +106,17 @@ def start_generation(sconf):
     allrules = myrulelist.getParsedRules()
     # Retrieve Background Traffic percentage
     back_traffic_percent = sconf.getBackgroundTraffic()
-    back_dist_list = None
-    back_absent_proto = None
+    if sconf.getBackgroundTrafficRule() is not None:
+        bt_rule = sconf.getBackgroundTrafficRule()
+        back_dist_list = bt_rule.getProbabilityDist()
+        # Leave only the protocol specified in the list to affects the overall amount of traffic.
+        while 'remainder' in back_dist_list:
+            back_dist_list.remove('remainder')
+        back_absent_proto = None
+    else :
+        back_dist_list = None
+        back_absent_proto = None
+
     # Get Background Traffic Rule if given
     if myrulelist.getBackgroundTraffic():
         bt_rule = myrulelist.getBackgroundTraffic()
@@ -191,6 +201,8 @@ def start_generation(sconf):
                 # Update the content with saved information
                 bt_rule = BackgroundTrafficRule()
                 bt_rule.updateContent(None, back_dist_list, back_absent_proto)
+                # Add the application protocol to the rule name
+                btrule.setRuleName("Background Traffic-" + bt_rule.getProtocolType())
                 btrule.addTS(bt_rule)
                 conversation = Conversation(btrule, sconf, current_sec,
                                             current_usec + flow_start_offset)
