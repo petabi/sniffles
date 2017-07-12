@@ -406,21 +406,6 @@ class TestRuleReader(TestCase):
         myrulelist.readRuleFiles('sniffles/test/data_files/rules/')
         rules = myrulelist.getParsedRules()
         self.assertEqual(len(rules), 19)
-        conrule1 = rules[0]
-        self.assertEqual(conrule1.getRuleName(), "Snort-0")
-        content0 = conrule1.getTS()[0].getPkts()[0].getContent()[0]
-        self.assertEqual(content0.getType(), "content")
-        self.assertEqual(content0.getContentString(),
-                         "work.Method.denyExecution")
-        conrule1 = rules[18]
-        self.assertEqual(conrule1.getRuleName(), "Snort-0")
-        content0 = conrule1.getTS()[0].getPkts()[0].getContent()[0]
-        self.assertEqual(content0.getType(), "content")
-        self.assertEqual(content0.getContentString(),
-                         "Cookie|3A| =|0D 0A 0D 0A|")
-        content1 = conrule1.getTS()[0].getPkts()[0].getContent()[1]
-        self.assertEqual(content1.getType(), "pcre")
-        self.assertEqual(content1.getContentString(), "/abc(def|hij|klm)/")
 
     def test_read_petabi_rule_file(self):
         myrulelist = RuleList()
