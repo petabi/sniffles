@@ -325,13 +325,16 @@ def get_class(class_distribution, negation_prob, char_dist):
         if ord(start) >= 122:
             start = chr(121)
             end = 122
-        elif ord(start) >= 90:
+        elif ord(start) == 90:
             start = chr(89)
             end = 90
         else:
             if (ord(start) - 64) > 0 and (ord(start) - 64) < 26:
                 end = random.randint(ord(start)+1, ord(start) +
                                      (26 - (ord(start) - 64)))
+            elif (ord(start) - 96) > 0:
+                end = random.randint(ord(start)+1, ord(start) +
+                                     (26 - (ord(start) - 96)))
             else:
                 end = ord(start)+1
         next_char = start + '-' + chr(end)
