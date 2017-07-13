@@ -325,7 +325,7 @@ def get_class(class_distribution, negation_prob, char_dist):
         if ord(start) >= 122:
             start = chr(121)
             end = 122
-        elif ord(start) >= 90:
+        elif ord(start) == 90:
             start = chr(89)
             end = 90
         else:
