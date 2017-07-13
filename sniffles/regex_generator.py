@@ -322,21 +322,16 @@ def get_class(class_distribution, negation_prob, char_dist):
     elif index == 1:
         start = get_letter()
         end = 0
-        if ord(start) >= 122:
-            start = chr(121)
-            end = 122
-        elif ord(start) == 90:
-            start = chr(89)
-            end = 90
+        if 'A' <= start < 'Z':
+            end = random.randint(ord(start) + 1, ord('Z'))
+        elif start == 'Z':
+            start = 'Y'
+            end = ord('Z')
+        elif 'a' <= start < 'z':
+            end = random.randint(ord(start) + 1, ord('z'))
         else:
-            if (ord(start) - 64) > 0 and (ord(start) - 64) < 26:
-                end = random.randint(ord(start)+1, ord(start) +
-                                     (26 - (ord(start) - 64)))
-            elif (ord(start) - 96) > 0:
-                end = random.randint(ord(start)+1, ord(start) +
-                                     (26 - (ord(start) - 96)))
-            else:
-                end = ord(start)+1
+            start = 'y'
+            end = ord('z')
         next_char = start + '-' + chr(end)
         class_set.append(next_char)
     else:
