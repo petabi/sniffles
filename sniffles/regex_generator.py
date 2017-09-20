@@ -130,7 +130,7 @@ def create_regex_list(number, lambd, type_dist, char_dist, class_dist,
     while count < number:
         myregex = '/'
         if mygroups:
-            myregex += mygroups[random.randint(0, len(mygroups) - 1)]
+            myregex += random.choice(mygroups)
         myregex += generate_regex(lambd, max_regex_length, type_dist,
                                   char_dist, class_dist, rep_dist, rep_chance,
                                   negation_prob, min_regex_length)
