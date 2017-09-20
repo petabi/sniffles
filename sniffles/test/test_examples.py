@@ -1,8 +1,8 @@
-from unittest import *
+import unittest
 from sniffles.ruletrafficgenerator import *
 from sniffles.snifflesconfig import *
 
-class TestExamples(TestCase):
+class TestExamples(unittest.TestCase):
 
     def test_udp_stream(self):
         myrpkt = RulePkt("to server", "/my udp1/", 0, 3)

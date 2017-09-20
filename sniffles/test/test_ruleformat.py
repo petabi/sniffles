@@ -1,9 +1,9 @@
-from unittest import *
+import unittest
 from sniffles.rule_formats import *
 import random
 
 
-class TestRuleFormat(TestCase):
+class TestRuleFormat(unittest.TestCase):
 
     def test_snort_rule_formats(self):
         test = SnortRuleFormat("alert=log;proto=TCP;sip=20.0.0.1;"

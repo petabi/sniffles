@@ -1,10 +1,10 @@
-from unittest import *
+import unittest
 from sniffles.rand_rule_gen import *
 from sniffles.feature import *
 import random
 
 
-class TestRandRuleGen(TestCase):
+class TestRandRuleGen(unittest.TestCase):
 
     def test_generate_rule(self):
         # testing generic feature

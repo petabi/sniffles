@@ -1,9 +1,9 @@
-from unittest import *
+import unittest
 from sniffles.feature import *
 import random
 
 
-class TestFeature(TestCase):
+class TestFeature(unittest.TestCase):
     def test_ambigous_notation_class(self):
         ambigous = AmbiguousNotation("[5,3,8]")
         self.assertEqual(ambigous.toString(), "[5,3,8]")

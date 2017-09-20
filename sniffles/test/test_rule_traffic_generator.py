@@ -1,10 +1,10 @@
-from unittest import *
+import unittest
 from sniffles.ruletrafficgenerator import *
 from sniffles.vendor_mac_list import VENDOR_MAC_OUI
 from sniffles.snifflesconfig import *
 
 
-class TestRuleTrafficGenerator(TestCase):
+class TestRuleTrafficGenerator(unittest.TestCase):
     def test_tcp_overlap(self):
         myurl = RuleList()
         myurl.readRuleFile('sniffles/test/data_files/test_tcp_overlap.xml')

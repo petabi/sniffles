@@ -1,9 +1,9 @@
-from unittest import *
+import unittest
 from sniffles.regex_generator import *
 import random
 
 
-class TestRegexGenerator(TestCase):
+class TestRegexGenerator(unittest.TestCase):
 
     def test_get_index(self):
         test = get_index(1, None)

@@ -1,8 +1,8 @@
-from unittest import *
+import unittest
 from sniffles.ruletrafficgenerator import *
 
 
-class TestTTLExpiryAttack(TestCase):
+class TestTTLExpiryAttack(unittest.TestCase):
 
     def ttl_expiry_scenario1(self):
         print("hello world")
