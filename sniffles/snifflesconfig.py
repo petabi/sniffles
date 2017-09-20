@@ -89,7 +89,7 @@ class SnifflesConfig(object):
         if self.bi:
             mystr += "  Bi-directional content generation is turned on.\n"
         mystr += "  Background Traffic percentage set to: " + \
-                      str(self.background_traffic) + "%.\n"
+            str(self.background_traffic) + "%.\n"
         if self.config_file:
             mystr += "  Using a configuration file: " + self.config_file + \
                      ".\n"
@@ -131,7 +131,8 @@ class SnifflesConfig(object):
             mystr += "  TCP acknowledgements will be sent.\n"
 
         if self.mix_mode:
-            mystr += "  Will use mix mode (with " + str(self.mix_count) + " streams matched).\n"
+            mystr += "  Will use mix mode (with " + \
+                str(self.mix_count) + " streams matched).\n"
 
         if self.scan:
             mystr += "  Will insert Scan attacks into the pcap.\n"
@@ -470,16 +471,17 @@ class SnifflesConfig(object):
             if len(args) == 1:
                 self.background_traffic = int(args[0])
             else:
-               args = re.split('[,]+', arg)
-               self.background_traffic_rule = BackgroundTrafficRule();
-               for i in range(0, len(args)):
-                   args_dist = re.split('[:]+', args[i])
-                   if len(args_dist) == 1 or args_dist[1] is None:
-                       self.usage()
-                   else:
-                       self.background_traffic += int(args_dist[1])
-                       self.background_traffic_rule.setDistribution(args_dist[0], int(args_dist[1]))
-               self.background_traffic_rule.updateProbability()
+                args = re.split('[,]+', arg)
+                self.background_traffic_rule = BackgroundTrafficRule()
+                for i in range(0, len(args)):
+                    args_dist = re.split('[:]+', args[i])
+                    if len(args_dist) == 1 or args_dist[1] is None:
+                        self.usage()
+                    else:
+                        self.background_traffic += int(args_dist[1])
+                        self.background_traffic_rule.setDistribution(
+                            args_dist[0], int(args_dist[1]))
+                self.background_traffic_rule.updateProbability()
             if self.background_traffic < 0 or self.background_traffic > 100:
                 print("Must set percentage between 0 and 100")
                 self.usage()
@@ -595,7 +597,6 @@ class SnifflesConfig(object):
         # a scan attack.
         elif opt == "-P":
             self.target_ports = arg.split(',')
-
 
         # This setting tells sniffles what protocol to use
         # when it's not obvious which protocol to use

@@ -37,7 +37,7 @@ class NFAState(object):
 
     def add_txs(self, bitmap, state):
         for i in range(NSYMBOLS):
-            if (bitmap[i//8] & (1 << (i & 7))) > 0:
+            if (bitmap[i // 8] & (1 << (i & 7))) > 0:
                 self.add_tx(i, state)
 
     def compile_with_nfa_stats_error(self):
@@ -198,8 +198,8 @@ class NFA:
                     self.max_depth = current_depth
                 for sym in range(NSYMBOLS + 1):
                     for s in current_state.tx[sym]:
-                        if not (s, current_depth+1) in states:
-                            states.append((s, current_depth+1))
+                        if not (s, current_depth + 1) in states:
+                            states.append((s, current_depth + 1))
         return True
 
     def epsilon_closure(self, state):

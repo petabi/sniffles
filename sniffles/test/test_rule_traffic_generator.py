@@ -109,7 +109,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
                                'sniffles/test/data_files/mac_definition_file1.txt')
 
         self.assertTrue(''.join(['%02x' % i
-                                for i in myehdr.get_s_mac()[0:3]])
+                                 for i in myehdr.get_s_mac()[0:3]])
                         in testVENDOR_MAC_OUI)
 
         self.assertEqual(''.join(['%02x' % i
@@ -128,7 +128,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
                          '0080')
 
         self.assertTrue(''.join(['%02x' % i
-                                for i in myehdr.get_d_mac()[0:3]])
+                                 for i in myehdr.get_d_mac()[0:3]])
                         in testVENDOR_MAC_OUI)
 
         # if we dont clear the global, it will be the same
@@ -138,11 +138,11 @@ class TestRuleTrafficGenerator(unittest.TestCase):
                                'examples/mac_definition_file.txt')
 
         self.assertEqual(''.join(['%02x' % i
-                                 for i in myehdr.get_s_mac()[0:2]]),
+                                  for i in myehdr.get_s_mac()[0:2]]),
                          '0080')
 
         self.assertTrue(''.join(['%02x' % i
-                                for i in myehdr.get_d_mac()[0:3]])
+                                 for i in myehdr.get_d_mac()[0:3]])
                         in testVENDOR_MAC_OUI)
         myehdr.clear_globals()
 
@@ -153,11 +153,11 @@ class TestRuleTrafficGenerator(unittest.TestCase):
                                '?')
 
         self.assertTrue(''.join(['%02x' % i
-                                for i in myehdr.get_s_mac()[0:3]])
+                                 for i in myehdr.get_s_mac()[0:3]])
                         in testVENDOR_MAC_OUI)
 
         self.assertTrue(''.join(['%02x' % i
-                                for i in myehdr.get_d_mac()[0:3]])
+                                 for i in myehdr.get_d_mac()[0:3]])
                         in testVENDOR_MAC_OUI)
         myehdr.clear_globals()
 
@@ -686,8 +686,8 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         myack = mypkt.transport_hdr.get_seq_num()
         mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
-        self.assertEqual(mypkt.transport_hdr.get_seq_num(), myseq+1)
-        self.assertEqual(mypkt.transport_hdr.get_ack_num(), myack+1)
+        self.assertEqual(mypkt.transport_hdr.get_seq_num(), myseq + 1)
+        self.assertEqual(mypkt.transport_hdr.get_ack_num(), myack + 1)
         self.assertEqual(mypkt.get_size(), 254)
         mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_ack_num(), (myseq + 201))
@@ -727,7 +727,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         self.assertEqual(mypkt.transport_hdr.get_flags(), (SYN + ACK))
         mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
-        self.assertEqual(mypkt.transport_hdr.get_seq_num(), myseq+1)
+        self.assertEqual(mypkt.transport_hdr.get_seq_num(), myseq + 1)
         mypkt = myts.getNextPacket()
         self.assertNotEqual(mypkt.network_hdr.get_frag_id(), 0)
         self.assertIn(mypkt.network_hdr.get_frag_offset(), [8192, 8213, 42])
@@ -780,8 +780,8 @@ class TestRuleTrafficGenerator(unittest.TestCase):
             if mypkt.get_content() is None or \
                mypkt.get_content().get_size() == 0:
                 self.assertIn(mypkt.transport_hdr.get_ack_num(), [myseq + 1,
-                              myseq + 101, myseq + 201, myseq + 301,
-                              myseq + 401, myseq + 501])
+                                                                  myseq + 101, myseq + 201, myseq + 301,
+                                                                  myseq + 401, myseq + 501])
             else:
                 self.assertEqual(mypkt.get_content().get_size(), 100)
 
@@ -811,9 +811,9 @@ class TestRuleTrafficGenerator(unittest.TestCase):
             if mypkt.get_content() is None or \
                mypkt.get_content().get_size() == 0:
                 self.assertIn(mypkt.transport_hdr.get_ack_num(), [myseq + 1,
-                              myseq + 11, myseq + 21, myseq + 31,
-                              myseq + 41, myseq + 51, myseq + 61, myseq + 71,
-                              myseq + 81])
+                                                                  myseq + 11, myseq + 21, myseq + 31,
+                                                                  myseq + 41, myseq + 51, myseq + 61, myseq + 71,
+                                                                  myseq + 81])
             else:
                 self.assertEqual(mypkt.get_content().get_size(), 10)
 
@@ -859,6 +859,6 @@ class TestRuleTrafficGenerator(unittest.TestCase):
             self.assertEqual(mypkt.get_content().get_size(), 1)
             if i < 4:
                 self.assertIn(mypkt.get_content().get_data(), [b'1', b'2',
-                              b'3', b'4', b'5'])
+                                                               b'3', b'4', b'5'])
         mypkt = myts.getNextPacket()
         self.assertEqual(mypkt, None)

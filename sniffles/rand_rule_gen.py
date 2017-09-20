@@ -86,6 +86,8 @@ def getRuleWithFormat(rule=None, fmt=None):
         if rulefmt is None:
             rulefmt = RuleFormat(rule)
     return rulefmt
+
+
 getRuleWithFormat.rule_counter = 1
 
 
@@ -104,6 +106,7 @@ def usage():
     print("-s  Snort rule format: write rules to a snort rule format.")
     print("    No options, defaults to off.")
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

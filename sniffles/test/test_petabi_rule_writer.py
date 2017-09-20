@@ -195,7 +195,7 @@ class TestPetabiRuleWriter(unittest.TestCase):
         bg_traffic_rule = parser.getBackgroundTraffic()
         protocol_dist_dictionary = bg_traffic_rule.getDistribution()
         self.assertEqual(int(bg_traffic_percentage),
-                             bg_traffic_rule.getBackgroundPercent())
+                         bg_traffic_rule.getBackgroundPercent())
         self.assertEqual(len(protocol_dist) - 1,
                          len(protocol_dist_dictionary))
         self.assertEqual(protocol_dist_dictionary['http'], 10)

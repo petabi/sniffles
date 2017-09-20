@@ -99,8 +99,10 @@ class TestRegexGenerator(unittest.TestCase):
 
     def test_min_regex(self):
         for i in range(0, 100):
-            myre = generate_regex(1, 1, [100, 0, 0], [0, 0, 100, 0, 0], None, None, 0, 0, 1)
+            myre = generate_regex(1, 1, [100, 0, 0], [
+                                  0, 0, 100, 0, 0], None, None, 0, 0, 1)
             self.assertTrue(len(myre) == 1)
-            myre = generate_regex(1, 10, [100, 0, 0], [0, 0, 100, 0, 0], None, None, 0, 0, 2)
+            myre = generate_regex(1, 10, [100, 0, 0], [
+                                  0, 0, 100, 0, 0], None, None, 0, 0, 2)
             self.assertTrue(len(myre) >= 2)
             self.assertTrue(len(myre) <= 10)

@@ -2,6 +2,7 @@ import unittest
 from sniffles.ruletrafficgenerator import *
 from sniffles.snifflesconfig import *
 
+
 class TestExamples(unittest.TestCase):
 
     def test_udp_stream(self):
@@ -165,7 +166,7 @@ class TestExamples(unittest.TestCase):
             mypkt = myts.getNextPacket()
             self.assertNotEqual(mypkt.network_hdr.get_frag_id(), 0)
             self.assertIn(mypkt.network_hdr.get_frag_offset(), [8192, 8197,
-                          8202, 8207, 15])
+                                                                8202, 8207, 15])
 
         mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
@@ -201,7 +202,7 @@ class TestExamples(unittest.TestCase):
             mypkt = myts.getNextPacket()
             self.assertNotEqual(mypkt.network_hdr.get_frag_id(), 0)
             self.assertIn(mypkt.network_hdr.get_frag_offset(), [8192, 8197,
-                          8202, 8207, 15])
+                                                                8202, 8207, 15])
             if mypkt.network_hdr.get_frag_id() != myfragid:
                 myfragid = mypkt.network_hdr.get_frag_id()
                 mylastid = -1

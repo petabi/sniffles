@@ -207,7 +207,7 @@ def formatBackgroundTrafficRule(background_traffic, protocol_dist=None):
         protocol_dict = protocolPercentage(protocol_dist)
         for protocol in protocol_dict:
             distribution = protocol + "=\"" + str(protocol_dict[protocol]) + \
-                           "\""
+                "\""
             bgTrafficInfo.append(distribution)
     bgTrafficInfo.append(">\n")
     background_rule = ' '.join(bgTrafficInfo)

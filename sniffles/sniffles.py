@@ -113,7 +113,7 @@ def start_generation(sconf):
         while 'remainder' in back_dist_list:
             back_dist_list.remove('remainder')
         back_absent_proto = None
-    else :
+    else:
         back_dist_list = None
         back_absent_proto = None
 
@@ -144,7 +144,7 @@ def start_generation(sconf):
             if sconf.getRandomizeOffset():
                 base_offset += int(
                     random.normalvariate(sconf.getScanOffset(),
-                                         sconf.getScanOffset()/4))
+                                         sconf.getScanOffset() / 4))
             else:
                 base_offset += int(sconf.getScanOffset())
             rule = Rule("Scan Attack")
@@ -158,7 +158,7 @@ def start_generation(sconf):
             rule.addTS(r_ts)
             conversation = Conversation(rule, sconf, current_sec)
             sec, usec = conversation.getNextTimeStamp()
-            timekey = sec + (usec/1000000)
+            timekey = sec + (usec / 1000000)
             if timekey in traffic_queue:
                 traffic_queue[timekey].append(conversation)
             else:
@@ -176,7 +176,8 @@ def start_generation(sconf):
     else:
         end = sconf.getTotalStreams()
 
-    fd_result = open(sconf.getResultFile(), 'w') # for recording how packets are generated
+    # for recording how packets are generated
+    fd_result = open(sconf.getResultFile(), 'w')
 
     while current < end:
         myrule = None
@@ -202,7 +203,8 @@ def start_generation(sconf):
                 bt_rule = BackgroundTrafficRule()
                 bt_rule.updateContent(None, back_dist_list, back_absent_proto)
                 # Add the application protocol to the rule name
-                btrule.setRuleName("Background Traffic-" + bt_rule.getProtocolType())
+                btrule.setRuleName("Background Traffic-" +
+                                   bt_rule.getProtocolType())
                 btrule.addTS(bt_rule)
                 conversation = Conversation(btrule, sconf, current_sec,
                                             current_usec + flow_start_offset)
@@ -214,7 +216,7 @@ def start_generation(sconf):
                                         current_usec + flow_start_offset)
 
         sec, usec = conversation.getNextTimeStamp()
-        timekey = timekey = sec + (usec/1000000)
+        timekey = timekey = sec + (usec / 1000000)
         if timekey in traffic_queue:
             traffic_queue[timekey].append(conversation)
         else:
@@ -334,7 +336,7 @@ def write_packets(queue, traffic_writer, sconf, fd_result):
     last_sec = 0
     last_usec = 0
     if len(queue) >= sconf.getConcurrentFlows():
-        half_threshold = int(len(queue)/2)
+        half_threshold = int(len(queue) / 2)
     num_packets = 0
     while queue and len(queue) > half_threshold:
         key, con_list = queue.popitem(last=False)
@@ -363,17 +365,17 @@ def write_packets(queue, traffic_writer, sconf, fd_result):
                         pkt_rule_idx = pkt_ts_rule.getRuleIndex()
                     if pkt_rule:
                         result_line = "Pkt " + \
-                          str(traffic_writer.get_total_pkts()) + \
-                          " : rule = " + pkt_rule.getRuleName() + \
-                          ", ts idx = " + str(pkt_rule_idx)
+                            str(traffic_writer.get_total_pkts()) + \
+                            " : rule = " + pkt_rule.getRuleName() + \
+                            ", ts idx = " + str(pkt_rule_idx)
                         if pkt.get_content_set():
-                            result_line += ", content_set ";
-                            result_line += ("(truncated)" \
-                              if pkt.get_content_truncated() else "")
+                            result_line += ", content_set "
+                            result_line += ("(truncated)"
+                                            if pkt.get_content_truncated() else "")
                             result_line += "\n"
                     else:
                         result_line = "Pkt " + str(traffic_writer.get_total_pkts()) + \
-                                " : (rule none)\n"
+                            " : (rule none)\n"
                     fd_result.write(result_line)
 
                 else:
@@ -386,7 +388,7 @@ def write_packets(queue, traffic_writer, sconf, fd_result):
                     last_sec = next_sec
                 if next_usec > last_usec:
                     last_usec = next_usec
-                timekey = next_sec + (next_usec/1000000)
+                timekey = next_sec + (next_usec / 1000000)
                 if timekey in queue:
                     queue[timekey].append(current_conversation)
                 else:
@@ -409,11 +411,11 @@ def handlerKeyboardInterupt(signum, frame):
     print(
         "Generated Streams: ",
         TOTAL_GENERATED_STREAMS if TOTAL_GENERATED_STREAMS else 0
-        )
+    )
     print(
         "Generated Packets: ",
         TOTAL_GENERATED_PACKETS if TOTAL_GENERATED_PACKETS else 0
-        )
+    )
     tduration = 0
     if GLOBAL_SCONF:
         tduration = FINAL - GLOBAL_SCONF.getFirstTimestamp()
@@ -427,6 +429,7 @@ def handlerKeyboardInterupt(signum, frame):
         duration = end - START
     print("Generation Time: ", duration)
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

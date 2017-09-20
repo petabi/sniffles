@@ -55,6 +55,7 @@ class Rule(object):
               Rule intance.
           setRuleName(name):  self-explanatory
     """
+
     def __init__(self, name=None, ts=None):
         self.name = name
         self.ts = []
@@ -129,6 +130,7 @@ class RuleParser(object):
                 3b.  Use addRule(rule) to add correctly parsed rules
                     to the instance.
     """
+
     def __init__(self, filename=None):
         self.rules = []
         self.filename = filename
@@ -197,6 +199,7 @@ class RuleContent(object):
         is used for setContentString() and getContentString() and is mostly
         a container of convenience.
     """
+
     def __init__(self, type=None, content=None):
         self.name = "Basic Regex Rule Content"
         self.type = type
@@ -275,11 +278,12 @@ class RulePkt(object):
                  implying that content will remain in one packet.  Use of
                  this with IP fragments has not been tested.
     """
+
     def __init__(self, dir="to server", content=None, fragment=0, times=1,
                  length=-1, ack_this=False, ooo=False, split=0, ttl=256,
                  ttl_expiry=0):
-        self.ts_rule = None # ref to parent TrafficStreamRule
-        self.index = 0 # index in ts_rule
+        self.ts_rule = None  # ref to parent TrafficStreamRule
+        self.index = 0  # index in ts_rule
         self.dir = dir
         self.content = None
         if content:
@@ -437,14 +441,15 @@ class TrafficStreamRule(object):
         new features will have no effect until they are implemented
         in the ruletrafficgenerator.
     """
+
     def __init__(self, proto="any", sip="$EXTERNAL_NET", dip="$HOME_NET",
                  sport="any", dport="any", len=-1, ipv=4, synch=False,
                  handshake=False, teardown=False, ooo=False,
                  ooo_prob=50, loss=0, flow="to server", ack=False,
                  latency=None):
 
-        self.rule = None # ref to parent Rule object
-        self.index = 0 # index of itself in the rule
+        self.rule = None  # ref to parent Rule object
+        self.index = 0  # index of itself in the rule
         self.ack = ack
         self.content = []
         self.dport = dport
@@ -1505,6 +1510,7 @@ class RuleList:
                 parser.  When extending parsers you should keep this
                 in mind.
     """
+
     def __init__(self):
         self.all_rules = []
         self.background_traffic = None

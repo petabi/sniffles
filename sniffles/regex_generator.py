@@ -176,7 +176,7 @@ def generate_regex(lambd, max_len, type_dist, char_dist,
     """
     if lambd <= 0:
         lambd = 10
-    mylen = int(random.expovariate(1/lambd))
+    mylen = int(random.expovariate(1 / lambd))
 
     if mylen < min_regex_length:
         mylen = min_regex_length
@@ -195,7 +195,7 @@ def generate_regex(lambd, max_len, type_dist, char_dist,
         elif index == 1:
             myregex += get_class(class_dist, negation_prob, char_dist)
         elif index == 2:
-            max_len = random.randint(1, mylen-i)
+            max_len = random.randint(1, mylen - i)
             i += max_len
             if max_len > 1:
                 i -= 1
@@ -366,7 +366,7 @@ def get_alternation(max_length, type_dist, char_dist,
     each alternate.
     """
     myalternation = '('
-    alternates = int(random.expovariate(1/2))
+    alternates = int(random.expovariate(1 / 2))
     alt_max_length = random.randint(1, max_length)
     if alternates <= 1:
         alternates = 2
@@ -390,7 +390,7 @@ def get_index(total_options, dist):
     if total_options <= 0:
         total_options = 1
     if dist is None:
-        return random.randint(0, total_options-1)
+        return random.randint(0, total_options - 1)
     else:
         index = 0
         sum = 0
@@ -427,7 +427,7 @@ def getREGroups(number, type_dist, char_dist, class_dist,
                 rep_dist, rep_chance, negation_prob, min_regex_len):
     new_groups = []
     if number > 1:
-        num_groups = random.randint(1, int(number/2))
+        num_groups = random.randint(1, int(number / 2))
         for i in range(1, num_groups):
             prefix = generate_regex(random.randint(5, 20), 0,
                                     type_dist, char_dist, class_dist, rep_dist,
@@ -553,6 +553,7 @@ def usage():
     print(usage_stmt)
 
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

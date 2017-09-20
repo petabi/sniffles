@@ -53,7 +53,7 @@ class TrafficWriter:
             self.current_time_usec -= 1000000
 
     def get_timestamp(self):
-        return (self.current_time_sec + (self.current_time_usec/1000000))
+        return (self.current_time_sec + (self.current_time_usec / 1000000))
 
     def get_total_pkts(self):
         return self.total_pkts

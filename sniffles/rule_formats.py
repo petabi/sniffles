@@ -10,6 +10,7 @@ class RuleFormat(object):
     def toString(self):
         return self.rule
 
+
 class RegexFormat(RuleFormat):
     def __init__(self, rule=None):
         self.rule = rule
@@ -25,11 +26,12 @@ class RegexFormat(RuleFormat):
             if len(v) > 0:
                 v_list = v.split("=")
                 mymap[v_list[0]] = v_list[1]
-        content=""
+        content = ""
         if "content" in mymap:
             content = mymap["content"]
         myrule = "{}".format(content)
         return myrule
+
 
 class PetabiPacketClassifierFormat(RuleFormat):
 
@@ -68,6 +70,7 @@ class PetabiPacketClassifierFormat(RuleFormat):
         myrule = "{} {} {} {} {} {}".format(
             dip, sip, dport, sport, proto, action)
         return myrule
+
 
 class SnortRuleFormat(RuleFormat):
 

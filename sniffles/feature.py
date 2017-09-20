@@ -73,7 +73,7 @@ class RangeNotation(AmbiguousNotation):
         return self.toString()
 
     def toString(self):
-        mylower = random.randint(self.lower_bound, self.upper_bound-1)
+        mylower = random.randint(self.lower_bound, self.upper_bound - 1)
         myupper = random.randint(mylower + 1, self.upper_bound)
         mystring = self.prefix + str(mylower) + self.separator + \
             str(myupper) + self.suffix
@@ -176,7 +176,7 @@ class Feature(object):
             if pick <= self.complexity_prob:
                 complex = True
         if complex:
-            pick = random.randint(0, len(self.ambiguity_list)-1)
+            pick = random.randint(0, len(self.ambiguity_list) - 1)
             mystring += str(self.ambiguity_list[pick])
         else:
             mystring += str(random.randint(self.lower_bound, self.upper_bound))
@@ -321,7 +321,7 @@ class IPFeature(Feature):
             myprefixbytes = int(mynetmask / 8)
             myremainder = mynetmask % 8
 
-            mask = ((2**myremainder)-1) << (8 - myremainder)
+            mask = ((2**myremainder) - 1) << (8 - myremainder)
 
             index = 0
 

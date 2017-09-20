@@ -90,8 +90,9 @@ def get_all_subclasses(myCls):
 
     return all_subclasses
 
+
 def get_random_protocol():
-    proto_distribution = {'icmp':5, 'udp':15, 'tcp':80}
+    proto_distribution = {'icmp': 5, 'udp': 15, 'tcp': 80}
     pick = random.randint(1, 100)
     for proto in SUPPORTED_PROTOCOLS.keys():
         if proto not in proto_distribution:
@@ -100,6 +101,7 @@ def get_random_protocol():
         if pick <= 0:
             return proto
     return 'tcp'
+
 
 class Conversation(object):
     """
@@ -152,7 +154,7 @@ class Conversation(object):
             pkt = ts.getNextPacket()
             next_sec, next_usec = ts.getNextTimeStamp()
             if ts.hasPackets():
-                self.ts_active[(next_sec + (next_usec/1000000))] = ts
+                self.ts_active[(next_sec + (next_usec / 1000000))] = ts
         self.updateStreams()
         return sec, usec, pkt
 
@@ -193,10 +195,10 @@ class Conversation(object):
                 while self.ts:
                     myts = self.ts.pop(0)
                     sec, usec = myts.getNextTimeStamp()
-                    timekey = sec + usec/1000000
+                    timekey = sec + usec / 1000000
                     while timekey in self.ts_active:
                         usec += 1
-                        timekey = sec + usec/1000000
+                        timekey = sec + usec / 1000000
                     self.ts_active[timekey] = myts
                     if myts.getSynch():
                         break
@@ -524,7 +526,7 @@ class TrafficStream(object):
                 (myoffset,
                  frag_content.get_fragment(myindex, myend),
                  False)
-                )
+            )
 
             # if this is not the last fragment and ttlexpiry is nonzero
             if i != (myfrags - 1) and ttlexpiry != 0:
@@ -536,7 +538,7 @@ class TrafficStream(object):
                 )
 
             myindex += (frag_size * 8)
-            myoffset = int(myindex/8)
+            myoffset = int(myindex / 8)
 
     def createNormalPacket(self, dir="to server", ack_only=False, myrule=None,
                            seq=None, ack=None):
@@ -670,11 +672,11 @@ class TrafficStream(object):
             pkt = self.buildPkt("to server", SYN)
             self.updateSequence("to server", 1)
         elif self.header == 2:
-            pkt = self.buildPkt("to client", SYN+ACK)
+            pkt = self.buildPkt("to client", SYN + ACK)
             self.updateSequence("to client", 1)
         elif self.header == 1:
             if self.myp is None or (self.myp and
-               self.myp[0].getDir() == "to server"):
+                                    self.myp[0].getDir() == "to server"):
                 pkt = self.getNextContentPacket()
             else:
                 pkt = self.buildPkt("to server", ACK)
@@ -697,7 +699,8 @@ class TrafficStream(object):
             pass
             # Nothing left.
         # Increment time stamp for next packet
-        self.incrementTime(int(round(random.expovariate(1/self.latency)))+1)
+        self.incrementTime(
+            int(round(random.expovariate(1 / self.latency))) + 1)
         if pkt is not None and self.rule:
             pkt.set_ts_rule(self.rule)
         return pkt
@@ -923,7 +926,7 @@ class TrafficStream(object):
                 if i == mysplit - 1:
                     splitp = cs.get_fragment(index, cs.get_size())
                 else:
-                    splitp = cs.get_fragment(index, index+split_len)
+                    splitp = cs.get_fragment(index, index + split_len)
                 self.split.append(((base_seq + temp_seq), splitp))
                 temp_seq += splitp.get_size()
                 index += splitp.get_size()
@@ -1110,7 +1113,7 @@ class ScanAttack(TrafficStream):
             self.next_time_sec = start_sec
         if self.offset > 0:
             self.next_time_sec += self.offset
-        self.latency = int(1000000/self.intensity)
+        self.latency = int(1000000 / self.intensity)
 
     def __str__(self):
         mystr = "Scan Attack Traffic Stream\n"
@@ -1144,7 +1147,7 @@ class ScanAttack(TrafficStream):
         pkt = None
         if self.num_packets > 0:
             if self.next_is_ack:
-                pkt = self.buildPkt("to client", SYN+ACK)
+                pkt = self.buildPkt("to client", SYN + ACK)
                 self.updateSequence("to client", 1)
                 self.next_is_ack = False
                 if self.scan_type is SYN_SCAN:
@@ -1179,7 +1182,7 @@ class ScanAttack(TrafficStream):
         elif len(target_ports) == 1:
             next_port = target_ports.pop(0)
             next_port_int = int(next_port)
-            next_port_int = (next_port_int+1) % 65536
+            next_port_int = (next_port_int + 1) % 65536
             target_ports.append(str(next_port_int))
         else:
             print("nothing")
@@ -1219,12 +1222,13 @@ class Packet(object):
         for a given packet.  Once built, use get_packet() to pullout the
         generated packet.
     """
+
     def __init__(self, proto='tcp', sip=None, dip=None,
                  ipv=4, sport=None, dport=None, flags=None, seq=0,
                  ack=0, mac_gen=ETHERNET_HDR_GEN_RANDOM,
                  dist_file=None, content=None, frag_id=0,
                  offset=0, mf=False, ttl=None):
-        self.ts_rule = None # ref to TrafficStreamRule
+        self.ts_rule = None  # ref to TrafficStreamRule
         self.transport_hdr = None
         self.proto = proto
         if ipv == 6:
@@ -1255,12 +1259,12 @@ class Packet(object):
         for i in range(0, int(len(pkt) / 16) * 16, 16):
             pkt_str += '\t0x%04x' % i + ': '
             for j in range(i, i + 16, 2):
-                pkt_str += ' %02x%02x' % (pkt[j], pkt[j+1])
+                pkt_str += ' %02x%02x' % (pkt[j], pkt[j + 1])
             pkt_str += '\n'
         if len(pkt) % 16 > 0:
             pkt_str += '\t0x%04x' % (int(len(pkt) / 16) * 16) + ': '
             for j in range(int(len(pkt) / 16) * 16, int(len(pkt) / 2) * 2, 2):
-                pkt_str += ' %02x%02x' % (pkt[j], pkt[j+1])
+                pkt_str += ' %02x%02x' % (pkt[j], pkt[j + 1])
             if len(pkt) % 2 > 0:
                 pkt_str += ' %02x' % pkt[-1]
             pkt_str += '\n'
@@ -1363,6 +1367,7 @@ class Content(object):
         content can be manipulated to fit the constraints placed on
         it by the traffic stream.
     """
+
     def __init__(self, data=None, length=0, full_match=False, frag=False,
                  rand=False):
         self.length = length
@@ -1370,7 +1375,7 @@ class Content(object):
         self.frag = frag
         self.rand = rand
         self.data = []
-        self.truncated = False # this should come before set_data
+        self.truncated = False  # this should come before set_data
         if data:
             self.set_data(data)
 
@@ -1388,7 +1393,7 @@ class Content(object):
 
     def get_fragment(self, start=0, end=1):
         if start >= 0 and end <= self.length and start < end:
-            myfrag = Content(self.data[start:end], end-start, False, True)
+            myfrag = Content(self.data[start:end], end - start, False, True)
             return myfrag
         return None
 
@@ -1413,12 +1418,12 @@ class Content(object):
                     remainder = self.length - len(self.data)
                     data_len = len(self.data)
                     while remainder > 0:
-                        if int(data_len/2) > remainder:
+                        if int(data_len / 2) > remainder:
                             temp_data.extend(self.data[0:remainder])
                             remainder = 0
                         else:
-                            temp_data.extend(self.data[0:int(data_len/2)])
-                            remainder = remainder - int(data_len/2)
+                            temp_data.extend(self.data[0:int(data_len / 2)])
+                            remainder = remainder - int(data_len / 2)
                     temp_data.extend(self.data)
                 else:
                     cgen = ContentGenerator(None, self.length - len(self.data),
@@ -1449,6 +1454,7 @@ class ContentGenerator:
         length.  If full_match is not set to true, it will clip content
         generated from a rule so that it should not match the rule.
     """
+
     def __init__(self, rule=None, length=-1, rand=False, full_match=True,
                  full_eval=False):
         self.published = []
@@ -1510,6 +1516,7 @@ class ContentGenerator:
         for a regular expression.  This allows verification
         of zero false negatives.
     """
+
     def follow_all_branches(self, nfa=None, state=None, path=[], visited=[],
                             self_visit=[]):
 
@@ -1777,6 +1784,7 @@ class ContentGenerator:
       compound regular expressions especially if those regex contain
       the ^ anchor.
     """
+
     def generate_from_regex(self, pcre=None):
         generated = []
         if pcre:
@@ -1838,6 +1846,7 @@ class ContentGenerator:
     """
         Assumes Snort content tags.
     """
+
     def generate_from_content_strings(self, content_string=None):
         if content_string:
             generated = []
@@ -1854,7 +1863,7 @@ class ContentGenerator:
                         hex = not hex
                         i += 1
                         continue
-                    num = content_string[i:i+2]
+                    num = content_string[i:i + 2]
                     generated.append(int(num, 16))
                     i += 1
                 else:
@@ -1975,7 +1984,7 @@ class EthernetFrame:
                             else:
                                 i = 0
                                 while i < len(prefix):
-                                    octets.append(int(prefix[i:i+2], 16))
+                                    octets.append(int(prefix[i:i + 2], 16))
                                     i += 2
                             VENDOR_MAC_DIST[origin][base_prob] = octets
                             base_prob += int(percent)
@@ -2111,6 +2120,7 @@ class IP(object):
         Base class for generating IP headers.  Should not be instantiated.
         Provides the shared functionality for IP headers.
     """
+
     def __init__(self, sip=None, dip=None, ttl=None):
         home_or_not = False
         if random.randint(1, 100) > 60:
@@ -2205,6 +2215,7 @@ class IPV4(IP):
         NOTE: currently no effort is made to ensure external addresses do
         not match home addresses.
     """
+
     def __init__(self, sip=None, dip=None, ttl=None):
         super().__init__(sip, dip, ttl)
         self.vhl = 0x45
@@ -2286,6 +2297,7 @@ class IPV6(IP):
         of HOME_IP_PREFIXESv6 if distinction between home and external networks
         is to be maintained.
     """
+
     def __init__(self, sip=None, dip=None, ttl=None):
         super().__init__(sip, dip, ttl)
         self.vtc = 0x6000
@@ -2334,6 +2346,7 @@ class Port:
         If the constructor is called with no value, will randomly choose
         a port using the 'any' category.
     """
+
     def __init__(self, snort_port_val=None):
         if snort_port_val is None:
             snort_port_val = 'any'
@@ -2372,7 +2385,7 @@ class Port:
                 end = int(range[2])
             else:
                 end = 65535
-            chosen = random.randint(0, end-start)
+            chosen = random.randint(0, end - start)
             self.port_value = chosen + start
         elif port_val.lower().find("http") >= 0:
             self.port_value = random.choice(HTTP_PORTS)
@@ -2408,6 +2421,7 @@ class TransportLayer(object):
         Base class for transport layer objects.  Defaults transport layer
         objects to TCP.
     """
+
     def __init__(self, proto=None, sport=None, dport=None):
         if proto is None:
             proto = 'tcp'

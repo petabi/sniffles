@@ -388,7 +388,8 @@ class TestRuleReader(unittest.TestCase):
 
     def test_read_single_file(self):
         myrulelist = RuleList()
-        myrulelist.readRuleFile('sniffles/test/data_files/rules/test_rules2.rules')
+        myrulelist.readRuleFile(
+            'sniffles/test/data_files/rules/test_rules2.rules')
         rules = myrulelist.getParsedRules()
         self.assertEqual(len(rules), 9)
         conrule1 = rules[0]
