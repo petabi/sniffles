@@ -1,8 +1,8 @@
-from unittest import *
+import unittest
 from sniffles.rulereader import *
 
 
-class TestRuleReader(TestCase):
+class TestRuleReader(unittest.TestCase):
 
     def test_background_traffic_rule(self):
 

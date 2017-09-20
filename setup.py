@@ -45,5 +45,7 @@ setup(name='sniffles',
                                                  '-DPARENS_NEST_LIMIT=250',
                                                  '-DNEWLINE=10',
                                                  '-DMAX_NAME_COUNT=10000',
-                                                 '-DMAX_NAME_SIZE=32'])]
+                                                 '-DMAX_NAME_SIZE=32'])],
+      setup_requires=['pytest-runner'],
+      tests_require=['pytest'],
       )

@@ -1,7 +1,7 @@
 import re
 import xml.etree.ElementTree as ET
 import os
-from unittest import *
+import unittest
 from sniffles.petabi_rule_writer.petabi_rule_writer import *
 from sniffles.rulereader import *
 
@@ -17,7 +17,7 @@ can read its attributes).
 
 
 # Class for testing format functions in petabi_rule_writer.py
-class TestPetabiRuleWriter(TestCase):
+class TestPetabiRuleWriter(unittest.TestCase):
 
     # Check if pkt rule is in correct format
     def test_pkt_format(self):

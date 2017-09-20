@@ -1,8 +1,8 @@
-from unittest import *
+import unittest
 from sniffles.nfa import *
 
 
-class TestNFABuild(TestCase):
+class TestNFABuild(unittest.TestCase):
     def test_arg_type(self):
         self.assertRaises(TypeError, pcre2nfa, None)
         a = pcre2nfa('')
@@ -12,7 +12,7 @@ class TestNFABuild(TestCase):
         self.assertFalse(test.match("dabc"))
 
 
-class TestOpAny(TestCase):
+class TestOpAny(unittest.TestCase):
     def test_any(self):
         a = pcre2nfa('.')
         self.assertTrue(a.match("\x01"))
@@ -24,7 +24,7 @@ class TestOpAny(TestCase):
         self.assertTrue(a.match("\n"))
 
 
-class TestOpBra(TestCase):
+class TestOpBra(unittest.TestCase):
     def test_empty(self):
         a = pcre2nfa('')
         self.assertTrue(a.match(''))
@@ -37,7 +37,7 @@ class TestOpBra(TestCase):
         self.assertFalse(a.match('c'))
 
 
-class TestOpBraZero(TestCase):
+class TestOpBraZero(unittest.TestCase):
     def test_brazero(self):
         a = pcre2nfa('x(0|1){0,2}y')
         self.assertTrue(a.match('xy'))
@@ -66,7 +66,7 @@ class TestOpBraZero(TestCase):
         self.assertFalse(a.match('abcbde'))
 
 
-class TestOpCbra(TestCase):
+class TestOpCbra(unittest.TestCase):
     def test_cbra(self):
         a = pcre2nfa('a(b|c)z')
         self.assertTrue(a.match('abz'))
@@ -74,7 +74,7 @@ class TestOpCbra(TestCase):
         self.assertFalse(a.match('adz'))
 
 
-class TestOpChar(TestCase):
+class TestOpChar(unittest.TestCase):
     def test_char(self):
         a = pcre2nfa('a')
         self.assertTrue(a.match('a'))
@@ -98,7 +98,7 @@ class TestOpChar(TestCase):
         self.assertFalse(a.match('helium'))
 
 
-class TestOpCirc(TestCase):
+class TestOpCirc(unittest.TestCase):
     def test_circ(self):
         a = pcre2nfa('^a')
         self.assertTrue(a.match('a'))
@@ -112,7 +112,7 @@ class TestOpCirc(TestCase):
         self.assertFalse(a.match('ababc'))
 
 
-class TestOpClass(TestCase):
+class TestOpClass(unittest.TestCase):
     def test_crminplus(self):
         # OP_CRPOSPLUS in pcre >= 8.34
         a = pcre2nfa('a[0-1]+?a')
@@ -195,14 +195,14 @@ class TestOpClass(TestCase):
         self.assertTrue(a.match('bc'))
 
 
-class TestOpDigit(TestCase):
+class TestOpDigit(unittest.TestCase):
     def test_digit(self):
         a = pcre2nfa('a\da')
         self.assertTrue(a.match('a2a'))
         self.assertFalse(a.match('a09a'))
 
 
-class TestOpExact(TestCase):
+class TestOpExact(unittest.TestCase):
     def test_exact(self):
         a = pcre2nfa('a0{2}a')
         self.assertFalse(a.match('a0a'))
@@ -211,13 +211,13 @@ class TestOpExact(TestCase):
         self.assertFalse(a.match('a00b'))
 
 
-class TestOpKetRMax(TestCase):
+class TestOpKetRMax(unittest.TestCase):
     def test_nonzero_ketrmax(self):
         a = pcre2nfa('/(0*|E)+/s')
         self.assertTrue(a.match(' a?.d!A]_X:E>'))
 
 
-class TestOpNot(TestCase):
+class TestOpNot(unittest.TestCase):
     def test_not(self):
         a = pcre2nfa('a[^0]a')
         self.assertFalse(a.match('a0a'))
@@ -246,7 +246,7 @@ class TestOpNot(TestCase):
             self.assertTrue(a.match('a' + chr(c) + 'b'))
 
 
-class TestOpNotDigit(TestCase):
+class TestOpNotDigit(unittest.TestCase):
     def test_not_digit(self):
         a = pcre2nfa('a\Db')
         self.assertTrue(a.match('acb'))
@@ -255,7 +255,7 @@ class TestOpNotDigit(TestCase):
         self.assertTrue(a.match('a ba:b'))
 
 
-class TestOpNotExact(TestCase):
+class TestOpNotExact(unittest.TestCase):
     def test_notexact(self):
         a = pcre2nfa('a[^x]{2}b')
         self.assertTrue(a.match('accb'))
@@ -263,7 +263,7 @@ class TestOpNotExact(TestCase):
         self.assertFalse(a.match('acccb'))
 
 
-class TestOpNotPlus(TestCase):
+class TestOpNotPlus(unittest.TestCase):
     def test_notplus(self):
         a = pcre2nfa('a[^x]+a')
         self.assertTrue(a.match('aaa'))
@@ -282,7 +282,7 @@ class TestOpNotPlus(TestCase):
         self.assertFalse(a.match('ax'))
 
 
-class TestOpNotStar(TestCase):
+class TestOpNotStar(unittest.TestCase):
     def test_notminstar(self):
         a = pcre2nfa('a[^x]*?b')
         self.assertTrue(a.match('ab'))
@@ -305,7 +305,7 @@ class TestOpNotStar(TestCase):
         self.assertFalse(a.match('axb'))
 
 
-class TestOpNotUpTo(TestCase):
+class TestOpNotUpTo(unittest.TestCase):
     def test_notposupto(self):
         a = pcre2nfa('a[^x]{1,2}x')
         self.assertFalse(a.match('ax'))
@@ -335,7 +335,7 @@ class TestOpNotUpTo(TestCase):
         self.assertFalse(a.match('xYz'))
 
 
-class TestOpNotWhitespace(TestCase):
+class TestOpNotWhitespace(unittest.TestCase):
     def test_notwhitespace(self):
         a = pcre2nfa('\S')
         self.assertFalse(a.match('\x0c'))
@@ -350,7 +350,7 @@ class TestOpNotWhitespace(TestCase):
         self.assertFalse(a.match('a b'))
 
 
-class TestOpNotWordchar(TestCase):
+class TestOpNotWordchar(unittest.TestCase):
     def test_notwordchar(self):
         a = pcre2nfa('\W')
         self.assertTrue(a.match('\x0c'))
@@ -367,7 +367,7 @@ class TestOpNotWordchar(TestCase):
         self.assertTrue(a.match('a b'))
 
 
-class TestOpPlus(TestCase):
+class TestOpPlus(unittest.TestCase):
     def test_plus(self):
         a = pcre2nfa('a0+0')
         self.assertFalse(a.match('a0'))
@@ -393,7 +393,7 @@ class TestOpPlus(TestCase):
         self.assertFalse(a.match('axxxxxb'))
 
 
-class TestOpQuery(TestCase):
+class TestOpQuery(unittest.TestCase):
     def test_query(self):
         a = pcre2nfa('xa?x')
         self.assertTrue(a.match('xx'))
@@ -413,7 +413,7 @@ class TestOpQuery(TestCase):
         self.assertFalse(a.match('aBcd'))
 
 
-class TestOpStar(TestCase):
+class TestOpStar(unittest.TestCase):
     def test_posstar(self):
         a = pcre2nfa('a0*a')
         self.assertTrue(a.match('aa'))
@@ -445,7 +445,7 @@ class TestOpStar(TestCase):
         self.assertFalse(a.match('xx'))
 
 
-class TestOpTypeExact(TestCase):
+class TestOpTypeExact(unittest.TestCase):
     def test_any(self):
         a = pcre2nfa('a.{2}a')
         self.assertTrue(a.match('axxa'))
@@ -496,7 +496,7 @@ class TestOpTypeExact(TestCase):
         self.assertFalse(a.match(':   :'))
 
 
-class TestOpTypePlus(TestCase):
+class TestOpTypePlus(unittest.TestCase):
     def test_any(self):
         a = pcre2nfa('a.+a')
         self.assertTrue(a.match('aaa'))
@@ -552,7 +552,7 @@ class TestOpTypePlus(TestCase):
         self.assertFalse(a.match(':abc:'))
 
 
-class TestOpTypeQuery(TestCase):
+class TestOpTypeQuery(unittest.TestCase):
     def test_digit(self):
         a = pcre2nfa('a\d{2,3}b')
         self.assertTrue(a.match('a12b'))
@@ -562,7 +562,7 @@ class TestOpTypeQuery(TestCase):
         self.assertFalse(a.match('a1234b'))
 
 
-class TestOpTypeStar(TestCase):
+class TestOpTypeStar(unittest.TestCase):
     def test_any(self):
         a = pcre2nfa('a.*a')
         self.assertTrue(a.match('aa'))
@@ -611,7 +611,7 @@ class TestOpTypeStar(TestCase):
         self.assertFalse(a.match('axyzb'))
 
 
-class TestOpTypeUpTo(TestCase):
+class TestOpTypeUpTo(unittest.TestCase):
     def test_any(self):
         a = pcre2nfa('a.{2,4}a')
         self.assertFalse(a.match('aaa'))
@@ -684,7 +684,7 @@ class TestOpTypeUpTo(TestCase):
         self.assertFalse(a.match('abbbbbbc'))
 
 
-class TestOpUpTo(TestCase):
+class TestOpUpTo(unittest.TestCase):
     def test_upto(self):
         a = pcre2nfa('/a{1,2}b/i')
         self.assertTrue(a.match('ab'))
@@ -696,7 +696,7 @@ class TestOpUpTo(TestCase):
         self.assertFalse(a.match('aaaaaa'))
 
 
-class TestOpWhitespace(TestCase):
+class TestOpWhitespace(unittest.TestCase):
     def test_whitespace(self):
         a = pcre2nfa('\s')
         self.assertTrue(a.match('\x0c'))
@@ -706,7 +706,7 @@ class TestOpWhitespace(TestCase):
         self.assertFalse(a.match('a'))
 
 
-class TestOpWordchar(TestCase):
+class TestOpWordchar(unittest.TestCase):
     def test_wordchar(self):
         a = pcre2nfa('\w')
         self.assertFalse(a.match('\x0c'))
@@ -718,7 +718,7 @@ class TestOpWordchar(TestCase):
         self.assertFalse(a.match('\n'))
 
 
-class TestOpNotStarI(TestCase):
+class TestOpNotStarI(unittest.TestCase):
     def test_op_star_not_i(self):
         a = pcre2nfa('/ab[^c]*d/i')
         self.assertTrue(a.match('abd'))
@@ -727,7 +727,7 @@ class TestOpNotStarI(TestCase):
         self.assertFalse(a.match('abcD'))
 
 
-class TestRegexOptions(TestCase):
+class TestRegexOptions(unittest.TestCase):
     def test_case_insensitive(self):
         a = pcre2nfa('/abcde/i')
         self.assertTrue(a.match('ABCDEFGHI'))

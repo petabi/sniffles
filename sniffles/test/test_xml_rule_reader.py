@@ -1,8 +1,8 @@
-from unittest import *
+import unittest
 from sniffles.rulereader import *
 
 
-class TestXMLRuleReader(TestCase):
+class TestXMLRuleReader(unittest.TestCase):
     def test_parse_rule(self):
         myrl = RuleList()
         myrl.readRuleFile('sniffles/test/data_files/test_all.xml')
