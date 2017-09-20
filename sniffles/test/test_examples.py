@@ -101,7 +101,7 @@ class TestExamples(TestCase):
         myConfig.setFullMatch(True)
 
         myts = TrafficStream(mytsrule, myConfig)
-        
+
         mycount = 0
         while myts.hasPackets():
             mypkt = myts.getNextPacket()
@@ -120,7 +120,7 @@ class TestExamples(TestCase):
         myConfig.setFullMatch(True)
 
         myts = TrafficStream(mytsrule, myConfig)
-        
+
         mycount = 0
         mypkt = myts.getNextPacket()
         myseq = mypkt.transport_hdr.get_seq_num()
@@ -154,7 +154,7 @@ class TestExamples(TestCase):
         myConfig.setIPV6Percent(0)
 
         myts = TrafficStream(mytsrule, myConfig)
-        
+
         mycount = 0
         mypkt = myts.getNextPacket()
         myseq = mypkt.transport_hdr.get_seq_num()
@@ -188,7 +188,7 @@ class TestExamples(TestCase):
         myConfig.setFullMatch(True)
 
         myts = TrafficStream(mytsrule, myConfig)
-        
+
         mypkt = myts.getNextPacket()
         myseq = mypkt.transport_hdr.get_seq_num()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
@@ -308,7 +308,7 @@ class TestExamples(TestCase):
         myConfig.setFullMatch(True)
 
         myts = TrafficStream(mytsrule, myConfig)
-        
+
         mycount = 0
         while myts.hasPackets():
             mypkt = myts.getNextPacket()
@@ -362,7 +362,7 @@ class TestExamples(TestCase):
         myConfig.setFullMatch(True)
 
         myts = TrafficStream(mytsrule, myConfig)
-        
+
         mycount = 0
         while myts.hasPackets():
             mypkt = myts.getNextPacket()
