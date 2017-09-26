@@ -1525,11 +1525,10 @@ class ContentGenerator:
             for t in t_map:
                 t_count -= 1
                 possible = t_map[t]
-                tx = E
-                if len(possible) > 1:
-                    tx = possible[random.randint(0, len(possible)-1)]
-                elif len(possible) == 1:
-                    tx = possible[0]
+                if possible:
+                    tx = random.choice(possible)
+                else:
+                    tx = E
                 if len(t_map) > 1:
                     if t == state:
                         if t != nfa.accept and t not in self_visit:

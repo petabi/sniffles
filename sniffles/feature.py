@@ -271,11 +271,9 @@ class ProtocolFeature(Feature):
             if pick <= self.complexity_prob:
                 complex = True
         if complex:
-            myproto = str(self.ambiguity_list[random.randint(0,
-                          len(self.ambiguity_list)-1)])
+            myproto = str(random.choice(self.ambiguity_list))
         else:
-            myproto = self.proto_list[random.randint(0,
-                                      len(self.proto_list)-1)]
+            myproto = random.choice(self.proto_list)
         mystring = self.feature_name + "=" + myproto
         return mystring
 
