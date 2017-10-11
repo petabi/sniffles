@@ -139,8 +139,7 @@ def create_regex_list(number, lambd, type_dist, char_dist, class_dist,
         if pick < option_chance:
             options = ['i', 's', 'm']
             total_opts = random.randint(1, len(options))
-            random.shuffle(options)
-            myoptions = options[0:total_opts]
+            myoptions = random.sample(options, total_opts)
             for o in myoptions:
                 myregex += o
         # check if this compiles or not
@@ -271,16 +270,13 @@ def get_substitution_class():
         mysubstitution = '\S'
     elif pick == 5:
         mysubstitution = '\W'
-    elif pick == 6:
-        mysubstitution = '.'
     else:
         mysubstitution = '.'
     return mysubstitution
 
 
 def get_digit():
-    pick = random.randint(ord('0'), ord('9'))
-    return chr(pick)
+    return random.choice('0123456789')
 
 
 def get_letter():
@@ -289,8 +285,8 @@ def get_letter():
                 'Y', 'Z']
     chr_pick = random.choice(char_tbl)
 
-    upper_lower = random.randint(0, 100)
-    if upper_lower < 50:
+    upper_lower = random.random() < 0.5
+    if upper_lower:
         chr_pick = chr_pick.lower()
     return chr_pick
 
@@ -313,12 +309,9 @@ def get_class(class_distribution, negation_prob, char_dist):
         end = random.randint(1, 5)
         for i in range(0, end):
             next_char = get_char(char_dist)
-            while next_char == '.':
+            while next_char == '.' or next_char in class_set:
                 next_char = get_char(char_dist)
-            if next_char not in class_set:
-                class_set.append(next_char)
-            else:
-                i -= 1
+            class_set.append(next_char)
     elif index == 1:
         start = get_letter()
         end = 0
@@ -338,12 +331,9 @@ def get_class(class_distribution, negation_prob, char_dist):
         end = random.randint(1, 5)
         for i in range(0, end):
             next_char = get_char(char_dist)
-            while next_char == '.':
+            while next_char == '.' or next_char in class_set:
                 next_char = get_char(char_dist)
-            if next_char not in class_set:
-                class_set.append(next_char)
-            else:
-                i -= 1
+            class_set.append(next_char)
 
     for c in class_set:
         if neg and c in ['\W', '\D', '\S']:
