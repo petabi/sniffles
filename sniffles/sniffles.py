@@ -223,7 +223,7 @@ def start_generation(sconf):
             traffic_queue[timekey] = [conversation]
         total_generated_streams += conversation.getNumberOfStreams()
 
-        # Need to track global value in case of interupt
+        # Need to track global value in case of interrupt
         TOTAL_GENERATED_STREAMS = total_generated_streams
         if len(traffic_queue) >= sconf.getConcurrentFlows():
             pkts, current_sec, current_usec = write_packets(
@@ -231,7 +231,7 @@ def start_generation(sconf):
             )
             total_generated_packets += pkts
 
-            # Need to track global values in case of interupt
+            # Need to track global values in case of interrupt
             TOTAL_GENERATED_PACKETS = total_generated_packets
             FINAL = current_sec
 
