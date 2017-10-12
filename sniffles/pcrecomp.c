@@ -7,7 +7,6 @@
 
 static PyObject *pcrecomp_compile(PyObject *, PyObject *);
 
-#if PCRE_MINOR == 37 || PCRE_MINOR == 36 || PCRE_MINOR == 35 || PCRE_MINOR == 34 || PCRE_MINOR == 33
 struct realpcre {
   uint32_t magic_number;
   uint32_t size;               /* Total that was malloced */
@@ -23,41 +22,8 @@ struct realpcre {
   uint16_t name_table_offset;  /* Offset to name table that follows */
   uint16_t name_entry_size;    /* Size of any name items */
   uint16_t name_count;         /* Number of name items */
-};
-#elif PCRE_MINOR == 31
-struct realpcre {
-  uint32_t magic_number;
-  uint32_t size;               /* Total that was malloced */
-  uint32_t options;            /* Public options */
-  uint16_t flags;              /* Private flags */
-  uint16_t max_lookbehind;     /* Longest lookbehind (characters) */
-  uint16_t top_bracket;        /* Highest numbered group */
-  uint16_t top_backref;        /* Highest numbered back reference */
-  uint16_t first_char;         /* Starting character */
-  uint16_t req_char;           /* This character must be seen */
-  uint16_t name_table_offset;  /* Offset to name table that follows */
-  uint16_t name_entry_size;    /* Size of any name items */
-  uint16_t name_count;         /* Number of name items */
   uint16_t ref_count;          /* Reference count */
-  const uint8_t *tables;       /* Pointer to tables or NULL for std */
-  const uint8_t *nullpad;      /* NULL padding */
 };
-#elif PCRE_MINOR == 12
-struct realpcre {
-  uint32_t magic_number;
-  uint32_t size;               /* Total that was malloced */
-  uint32_t options;            /* Public options */
-  uint16_t flags;              /* Private flags */
-  uint16_t dummy1;             /* For future use */
-  uint16_t top_bracket;        /* Highest numbered group */
-  uint16_t top_backref;        /* Highest numbered back reference */
-  uint16_t first_byte;
-  uint16_t req_byte;
-  uint16_t name_table_offset;  /* Offset to name table that follows */
-  uint16_t name_entry_size;    /* Size of any name items */
-  uint16_t name_count;         /* Number of name items */
-};
-#endif
 
 static PyMethodDef PcreCompMethods[] = {
   {"compile", pcrecomp_compile, METH_VARARGS,
