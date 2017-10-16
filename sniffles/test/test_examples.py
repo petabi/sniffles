@@ -93,7 +93,7 @@ class TestExamples(unittest.TestCase):
                          250)
         mytsrule = TrafficStreamRule('udp', '1.2.3.6', '9.8.7.6', '9005',
                                      '105', -1, 4, False, False, False, False,
-                                     0, 95)
+                                     0, 100)
         mytsrule.addPktRule(myrpkt)
 
         myConfig = SnifflesConfig()
@@ -107,7 +107,29 @@ class TestExamples(unittest.TestCase):
         while myts.hasPackets():
             mypkt = myts.getNextPacket()
             mycount += 1
-        self.assertNotEqual(mycount, 6)
+        self.assertNotEqual(mycount, 0)
+
+        myrpkt2 = RulePkt("to server", RuleContent("pcre", "/my udp4/"), 3, 2,
+                         250)
+        mytsrule2 = TrafficStreamRule('udp', '1.2.3.6', '9.8.7.6', '9005',
+                                     '105', -1, 4, False, False, False, False,
+                                     0, 50)
+        mytsrule2.addPktRule(myrpkt)
+
+        myConfig2 = SnifflesConfig()
+        myConfig2.setPktLength(250)
+        myConfig2.setIPV6Percent(0)
+        myConfig2.setFullMatch(True)
+
+        myts2 = TrafficStream(mytsrule, myConfig)
+
+        mycount = 0
+        while myts2.hasPackets():
+            mypkt2 = myts2.getNextPacket()
+            mycount += 1
+        self.assertTrue(mycount >= 0)
+        self.assertTrue(mycount <= 6)
+
 
     def test_tcp_stream(self):
         myrpkt = RulePkt("to server", "/my tcp1/", 0, 3)
