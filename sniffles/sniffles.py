@@ -109,7 +109,8 @@ def start_generation(sconf):
     if sconf.getBackgroundTrafficRule() is not None:
         bt_rule = sconf.getBackgroundTrafficRule()
         back_dist_list = bt_rule.getProbabilityDist()
-        # Leave only the protocol specified in the list to affects the overall amount of traffic.
+        # Leave only the protocol specified in the list to affects the
+        # overall amount of traffic.
         while 'remainder' in back_dist_list:
             back_dist_list.remove('remainder')
         back_absent_proto = None
