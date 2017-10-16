@@ -93,7 +93,7 @@ class TestExamples(unittest.TestCase):
                          250)
         mytsrule = TrafficStreamRule('udp', '1.2.3.6', '9.8.7.6', '9005',
                                      '105', -1, 4, False, False, False, False,
-                                     0, 100)
+                                     0, 99)
         mytsrule.addPktRule(myrpkt)
 
         myConfig = SnifflesConfig()
@@ -106,30 +106,30 @@ class TestExamples(unittest.TestCase):
         mycount = 0
         while myts.hasPackets():
             mypkt = myts.getNextPacket()
-            mycount += 1
-        self.assertNotEqual(mycount, 0)
+            if mypkt is None:
+                mycount += 1
+        self.assertTrue(mycount > 0)  # Should be at least one lost fragement.
 
         myrpkt2 = RulePkt("to server", RuleContent("pcre", "/my udp4/"), 3, 2,
-                         250)
+                          250)
         mytsrule2 = TrafficStreamRule('udp', '1.2.3.6', '9.8.7.6', '9005',
-                                     '105', -1, 4, False, False, False, False,
-                                     0, 50)
-        mytsrule2.addPktRule(myrpkt)
+                                      '105', -1, 4, False, False, False, False,
+                                      0, 0)
+        mytsrule2.addPktRule(myrpkt2)
 
         myConfig2 = SnifflesConfig()
         myConfig2.setPktLength(250)
         myConfig2.setIPV6Percent(0)
         myConfig2.setFullMatch(True)
 
-        myts2 = TrafficStream(mytsrule, myConfig)
+        myts2 = TrafficStream(mytsrule2, myConfig2)
 
         mycount = 0
         while myts2.hasPackets():
-            mypkt2 = myts2.getNextPacket()
-            mycount += 1
-        self.assertTrue(mycount >= 0)
-        self.assertTrue(mycount <= 6)
-
+            mypkt = myts2.getNextPacket()
+            if mypkt is not None:
+                mycount += 1
+        self.assertEqual(mycount, 6)  # should be no lost fragments.
 
     def test_tcp_stream(self):
         myrpkt = RulePkt("to server", "/my tcp1/", 0, 3)
@@ -187,8 +187,8 @@ class TestExamples(unittest.TestCase):
         for i in range(0, 12):
             mypkt = myts.getNextPacket()
             self.assertNotEqual(mypkt.network_hdr.get_frag_id(), 0)
-            self.assertIn(mypkt.network_hdr.get_frag_offset(), [8192, 8197,
-                                                                8202, 8207, 15])
+            self.assertIn(mypkt.network_hdr.get_frag_offset(),
+                          [8192, 8197, 8202, 8207, 15])
 
         mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
@@ -223,8 +223,8 @@ class TestExamples(unittest.TestCase):
         for i in range(0, 12):
             mypkt = myts.getNextPacket()
             self.assertNotEqual(mypkt.network_hdr.get_frag_id(), 0)
-            self.assertIn(mypkt.network_hdr.get_frag_offset(), [8192, 8197,
-                                                                8202, 8207, 15])
+            self.assertIn(mypkt.network_hdr.get_frag_offset(),
+                          [8192, 8197, 8202, 8207, 15])
             if mypkt.network_hdr.get_frag_id() != myfragid:
                 myfragid = mypkt.network_hdr.get_frag_id()
                 mylastid = -1

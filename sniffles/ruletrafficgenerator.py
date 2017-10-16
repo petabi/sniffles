@@ -233,7 +233,6 @@ class TrafficStream(object):
         self.advance_pkt = False
         self.bi = False
         self.content_string = None
-        self.dropped = False
         self.eval_pkts = []
         self.flow_ack = False
         self.footer = 0
@@ -739,6 +738,7 @@ class TrafficStream(object):
     def handleFragPacket(self, p=None):
         pkt = None
 
+        # Build a new set of fragments for the packet
         if not self.fragments or len(self.fragments) <= 0:
             cg = ContentGenerator(p, self.pkt_len, self.rand,
                                   self.full_match, self.full_eval)
@@ -746,48 +746,52 @@ class TrafficStream(object):
             self.frag_con_size = mycontent.get_size()
             self.createFragments(p.getDir(), mycontent, p.getFragment(),
                                  p.getTTLExpiry())
+        mf = True
 
-        # If a fragment is lost just consume the next frag.
+        # If we have packet loss, we will lose just a fragment rather than
+        # the whole packet.
         if self.rule and self.rule.getPacketLoss() > 0:
             pick = random.randint(0, 100)
             if pick < self.rule.getPacketLoss():
                 off, frag, ttlexpi = self.fragments.pop(0)
-                self.dropped = True
-
-        if len(self.fragments) > 0:
-
-            # out of order fragments
-            if (self.stream_ooo or p.getOutOfOrder()) \
-               and len(self.fragments) > 1:
-                off, frag, ttlexpi = self.fragments.pop(
-                    random.randint(0, len(self.fragments) - 1))
-            else:
-                off, frag, ttlexpi = self.fragments.pop(0)
-            mf = True
-
-            # check if this is last fragment and ttl expiry == 0
-            if off == self.last_off and p.getTTLExpiry() == 0:
-                mf = False
-
-            pkt = self.buildFragPkt(p.getDir(), frag, off, mf)
-
-            # If ttl_expiry is set, then change the ttl to match
-            # the value that should expire prior to reaching the
-            # destination.
-            if ttlexpi:
-                pkt.network_hdr.set_ttl(p.getTTLExpiry())
-            if self.fragments is None or len(self.fragments) < 1:
-                if not self.dropped:
-                    self.updateSequence(p.getDir(), self.frag_con_size)
+                if off == self.last_off:
+                    mf = True
+                pkt = self.buildFragPkt(p.getDir(), frag, off, mf)
+                if self.fragments is None or len(self.fragments) == 0:
                     self.advance_pkt = True
-                else:
-                    self.dropped = False
-                    self.frag_con_size = 0
-                if self.flow_ack or p.ackThis():
-                    self.next_is_ack = True
-                    self.advance_packet = True
-                else:
-                    self.p_count -= 1
+                    self.updateSequence(p.getDir(), self.frag_con_size)
+                    if self.flow_ack or p.ackThis():
+                        self.next_is_ack = True
+                    else:
+                        self.p_count -= 1
+                return None, ttlexpi
+
+        # out of order fragments
+        if (self.stream_ooo or p.getOutOfOrder()) \
+           and len(self.fragments) > 1:
+            off, frag, ttlexpi = self.fragments.pop(
+                random.randrange(len(self.fragments)))
+        else:
+            off, frag, ttlexpi = self.fragments.pop(0)
+
+        # check if this is last fragment
+        if off == self.last_off:
+            mf = False
+
+        pkt = self.buildFragPkt(p.getDir(), frag, off, mf)
+
+        # If ttl_expiry is set, then change the ttl to match
+        # the value that should expire prior to reaching the
+        # destination.
+        if ttlexpi:
+            pkt.network_hdr.set_ttl(p.getTTLExpiry())
+        if self.fragments is None or len(self.fragments) == 0:
+            self.updateSequence(p.getDir(), self.frag_con_size)
+            self.advance_pkt = True
+            if self.flow_ack or p.ackThis():
+                self.next_is_ack = True
+            else:
+                self.p_count -= 1
 
         return pkt, ttlexpi
 
