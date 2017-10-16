@@ -39,15 +39,7 @@ class SetNotation(AmbiguousNotation):
 
     def toString(self):
         num_elements = random.randint(1, self.max_list_size)
-        myelements = self.values
-        random.shuffle(myelements)
-        myString = "["
-        for index, elem in enumerate(myelements[0:num_elements]):
-            myString += elem
-            if index != num_elements - 1:
-                myString += ","
-        myString += "]"
-        return myString
+        return '[' + ','.join(random.sample(self.values, num_elements)) + ']'
 
 
 class RangeNotation(AmbiguousNotation):
