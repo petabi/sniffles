@@ -274,6 +274,8 @@ def build_eval_pcap(rules, traffic_writer, sconf):
         string.  Thus, /abcd/ would actually have two branches, one abcd and
         the other .abcd where the . could be any character.
     """
+    global TOTAL_GENERATED_PACKETS
+
     traffic_queue = []
     total_pkts = 0
     if rules is None:
