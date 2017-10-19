@@ -46,15 +46,8 @@ def main():
         print("RandRuleGen-main: " + str(err))
 
 
-def generateRules(feature_list=None, count=1):
-    rule_list = []
-    if feature_list:
-        for i in range(0, count):
-            myrule = ""
-            for f in feature_list:
-                myrule += str(f) + "; "
-            rule_list.append(myrule)
-    return rule_list
+def generateRules(feature_list, count=1):
+    return ['; '.join(map(str, feature_list)) + '; '] * count
 
 
 def printRules(rule_list=None, outfile=None, rule_format=None):
