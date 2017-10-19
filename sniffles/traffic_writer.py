@@ -83,7 +83,6 @@ class TrafficWriter:
 
     def write_packet(self, len=0, pkt=None, secs=-1, usecs=-1):
         if pkt and self.writer_handle:
-            time_lapse = 0
             if secs < 0:
                 secs = self.current_time_sec
             if usecs < 0:

@@ -186,7 +186,6 @@ def generate_regex(lambd, max_len, type_dist, char_dist,
     myregex = ''
     i = 0
     while i < mylen:
-        next = ''
         index = get_index(total_types, type_dist)
         if index == 0:
             myregex += get_char(char_dist)
