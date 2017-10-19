@@ -305,7 +305,7 @@ def get_class(class_distribution, negation_prob, char_dist):
         neg = True
     if index == 0:
         end = random.randint(1, 5)
-        for i in range(0, end):
+        for _ in range(end):
             next_char = get_char(char_dist)
             while next_char == '.' or next_char in class_set:
                 next_char = get_char(char_dist)
@@ -327,7 +327,7 @@ def get_class(class_distribution, negation_prob, char_dist):
         class_set.append(next_char)
     else:
         end = random.randint(1, 5)
-        for i in range(0, end):
+        for _ in range(end):
             next_char = get_char(char_dist)
             while next_char == '.' or next_char in class_set:
                 next_char = get_char(char_dist)
@@ -416,7 +416,7 @@ def getREGroups(number, type_dist, char_dist, class_dist,
     new_groups = []
     if number > 1:
         num_groups = random.randint(1, int(number / 2))
-        for i in range(1, num_groups):
+        for _ in range(1, num_groups):
             prefix = generate_regex(random.randint(5, 20), 0,
                                     type_dist, char_dist, class_dist, rep_dist,
                                     rep_chance, negation_prob, 1)

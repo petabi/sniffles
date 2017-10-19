@@ -338,7 +338,7 @@ class IPFeature(Feature):
 
             if self.version == 6:
                 remain = 8 - len(myip)
-                for i in range(0, remain):
+                for _ in range(remain):
                     myip.append(0)
             else:
                 while last_bytes > 0:
@@ -355,7 +355,7 @@ class IPFeature(Feature):
 
         else:
             if self.version == 4:
-                for i in range(0, 4):
+                for _ in range(4):
                     myip.append(random.randint(0, 255))
 
             elif self.version == 6:
