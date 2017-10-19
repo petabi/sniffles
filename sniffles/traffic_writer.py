@@ -86,7 +86,7 @@ class TrafficWriter:
             if secs < 0:
                 secs = self.current_time_sec
             if usecs < 0:
-                usecs = self.current_time_usecs
+                usecs = self.current_time_usec
             self.set_timestamp(secs, usecs)
             pcap_hdr = struct.pack("IIII", self.current_time_sec,
                                    self.current_time_usec, len, len)
