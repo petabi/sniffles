@@ -1,4 +1,3 @@
-import getopt
 import datetime
 import random
 import sys

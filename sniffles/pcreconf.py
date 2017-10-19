@@ -1,5 +1,3 @@
-from sniffles.pcrecomp import *
-
 IMM2_SIZE = 2
 LINK_SIZE = 2
 

@@ -1,8 +1,5 @@
 import getopt
 import sys
-import datetime
-import re
-import random
 import codecs
 from sniffles.feature import *
 from sniffles.rule_formats import *

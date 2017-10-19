@@ -1,11 +1,6 @@
 import codecs
-import copy
-import getopt
 import sys
-import datetime
-import re
 import random
-import math
 from sniffles.regex_generator import *
 
 

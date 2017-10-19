@@ -1,6 +1,5 @@
 import getopt
 import sys
-import datetime
 import re
 import random
 import sniffles.pcrecomp
