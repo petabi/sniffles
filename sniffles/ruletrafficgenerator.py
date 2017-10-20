@@ -1,6 +1,7 @@
 import calendar
 import copy
 import datetime
+import math
 import random
 import re
 import socket
@@ -505,16 +506,10 @@ class TrafficStream(object):
         whole_pkt = self.buildPkt(dir, ACK, content)
         data = whole_pkt.get_packet()
         frag_content = Content(data[34:], len(data[34:]), False, True)
-        possible_frags = frag_content.get_size() / 8
-        if not possible_frags.is_integer():
-            possible_frags = int(possible_frags) + 1
-        else:
-            possible_frags = int(possible_frags)
+        possible_frags = math.ceil(frag_content.get_size() / 8)
         if myfrags > possible_frags:
             myfrags = possible_frags
         frag_size = int(possible_frags / myfrags)
-        if frag_size <= 0:
-            frag_size = 1
         for i in range(0, myfrags):
             myend = myindex + (frag_size * 8)
             if i == (myfrags - 1):
