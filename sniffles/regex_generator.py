@@ -1,9 +1,11 @@
 import getopt
-import sys
-import re
 import random
+import re
+import sys
+
 import sniffles.pcrecomp
 from sniffles.nfa import PCRE_CASELESS, PCRE_DOTALL, PCRE_MULTILINE, PCRE_OPT
+
 
 """
   regex_generator.  This is a simple regular expression generator.

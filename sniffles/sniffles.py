@@ -1,13 +1,16 @@
+import copy
 import datetime
 import random
-import sys
 import signal
-import copy
+import sys
+
 from sortedcontainers import SortedDict
+
 from sniffles.rulereader import *
 from sniffles.ruletrafficgenerator import *
-from sniffles.traffic_writer import *
 from sniffles.snifflesconfig import *
+from sniffles.traffic_writer import *
+
 TOTAL_GENERATED_PACKETS = 0
 TOTAL_GENERATED_STREAMS = 0
 GLOBAL_SCONF = None

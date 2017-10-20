@@ -1,6 +1,7 @@
 import codecs
-import sys
 import random
+import sys
+
 from sniffles.regex_generator import *
 
 

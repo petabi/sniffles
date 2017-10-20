@@ -1,6 +1,7 @@
+import codecs
 import getopt
 import sys
-import codecs
+
 from sniffles.feature import *
 from sniffles.rule_formats import *
 

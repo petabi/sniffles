@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from setuptools import find_packages, setup, Extension
+from setuptools import Extension, find_packages, setup
 
 setup(name='sniffles',
       version='3.3.1',
