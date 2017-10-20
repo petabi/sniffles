@@ -1,11 +1,10 @@
-import re
-import sys
 import codecs
 import random
+import re
+import sys
+import xml.etree.ElementTree as ET
 from os import listdir
 from os.path import isfile, join
-import xml.etree.ElementTree as ET
-from sniffles.ruletrafficgenerator import *
 
 # Variables used for Snort rules
 CONTENT_MODIFIERS = ['distance', 'offset', 'nocase', 'fast_pattern',
