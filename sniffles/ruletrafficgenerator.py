@@ -1,19 +1,20 @@
-import re
-import random
-import struct
-import socket
-import sys
+import calendar
 import copy
 import datetime
-import calendar
+import random
+import re
+import socket
+import struct
+import sys
 import time
+from collections import OrderedDict
 from os import listdir
 from os.path import isfile, join
-from collections import *
-from sniffles.rulereader import *
-from sniffles.nfa import *
-from sniffles.vendor_mac_list import VENDOR_MAC_OUI
+
 from sortedcontainers import SortedDict
+
+from sniffles.nfa import NSYMBOLS, E, pcre2nfa
+from sniffles.vendor_mac_list import VENDOR_MAC_OUI
 
 ETHERNET_HDR_GEN_RANDOM = 0
 ETHERNET_HDR_GEN_DISTRIBUTION = 1
