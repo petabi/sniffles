@@ -965,10 +965,8 @@ class TrafficStream(object):
             return False
 
     def incrementTime(self, usec):
-        self.next_time_usec += usec
-        while self.next_time_usec >= 1000000:
-            self.next_time_sec += 1
-            self.next_time_usec -= 1000000
+        sec, self.next_time_usec = divmod(self.next_time_usec + usec, 1000000)
+        self.next_time_sec += sec
 
     def isFinished(self):
         if not self.hasPackets():
