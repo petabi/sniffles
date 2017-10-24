@@ -1,4 +1,4 @@
-import getopt
+import argparse
 import sys
 import re
 import random
@@ -26,124 +26,120 @@ This program contains following options:
 """
 
 
-def main():
-    print("Petabi Rule Writer")
-    outfile = "petabi_rule.xml"
-    filename = ''
-    ruleName = None
+def probability(string):
+    value = int(string)
+    if value < 1 or value > 100:
+        msg = "%r is not a valid percentage" % string
+        raise argparse.ArgumentTypeError(msg)
+    return value
 
-    background_traffic = None
+
+def main():
     protocol_dist = []
-    count = '1'
-    trafficAck = False
-    pktAck = False
-    fragment = False
-    split = False
     proto = 'tcp'
     src = 'any'
     dst = 'any'
     sport = 'any'
     dport = 'any'
-    flow = 'to server'
-    out_of_order = False
-    out_of_order_prob = False
-    packet_loss = False
-    ttl = None
-    ttlExpiry = False
-    tcpOverlap = False
 
-    cmd_options = "aAb:c:d:D:f:F:n:o:OP:p:s:T:t:v?"
-    try:
-        options, args = getopt.getopt(sys.argv[1:], cmd_options)
-    except getopt.GetoptError as err:
-        print("Error:", err)
-    for opt, arg in options:
-        if opt == "-a":
-            pktAck = True
-        elif opt == "-A":
-            trafficAck = True
-        elif opt == "-b":
-            if arg is not None:
-                background_traffic = arg
-            if int(background_traffic) < 1 or int(background_traffic) > 100:
-                print(opt, "This value must be between 1 and 100")
-                usage()
-        elif opt == "-c":
-            if arg is not None:
-                count = arg
-        elif opt == "-D":
-            if arg is not None:
-                protocol_dist = re.split('[\s,;]+', arg)
-                percent_sum = 0
-                for percentage in protocol_dist:
-                    if percentage == "*":
-                        continue
-                    percent_sum += int(percentage)
-                if percent_sum > 100:
-                    print("Sum of protocol percentages exceed 100")
-                    usage()
-        elif opt == "-d":
-            if arg is not None:
-                if arg == 'c':
-                    flow = 'to client'
-                elif arg == 'r':
-                    flow = 'random'
-                else:
-                    print("Unknown Flow Direction:", arg)
-                    usage()
-        elif opt == "-f":
-            if arg is not None:
-                filename = arg
-        elif opt == "-F":
-            if arg is not None:
-                fragment = arg
-        elif opt == "-n":
-            if arg is not None:
-                ruleName = arg
-        elif opt == "-o":
-            if arg is not None:
-                outfile = arg
-        elif opt == "-O":
-            out_of_order = True
-        elif opt == "-P":
-            if arg is not None:
-                out_of_order_prob = arg
-                if int(out_of_order_prob) < 1 or int(out_of_order_prob) > 99:
-                    print(opt, "This value must be between 1 and 99")
-                    usage()
-        elif opt == "-p":
-            if arg is not None:
-                packet_loss = arg
-                if int(packet_loss) < 1 or int(packet_loss) > 99:
-                    print(opt, "This value must be between 1 and 99")
-                    usage()
-        elif opt == "-s":
-            if arg is not None:
-                split = arg
-        elif opt == "-T":
-            if arg is not None:
-                ttlExpiry = arg
-        elif opt == "-t":
-            if arg is not None:
-                ttl = arg
-        elif opt == "-v":
-            tcpOverlap = True
-        elif opt == "-?":
-            usage()
-        else:
-            print("Unrecognized Option:", opt)
-            usage()
-    try:
-        regexList = regexParser(filename)
-        ruleList = formatRule(regexList, ruleName, proto, src, dst, sport,
-                              dport, out_of_order, out_of_order_prob,
-                              packet_loss, tcpOverlap, count, fragment,
-                              flow, split, ttl, ttlExpiry, pktAck,
-                              trafficAck, background_traffic, protocol_dist)
-        printRule(ruleList, outfile)
-        print("Petabi Rule Generated!!")
-    except Exception as err:
-        print("PetabiRuleGen-main: " + str(err))
+    parser = argparse.ArgumentParser(description='Petabi Rule Writer')
+    parser.add_argument('-A', '--flow_ack', type=bool, default=False,
+                        help='''
+                        send ACK for all packets in flow (default: False)''')
+    parser.add_argument('-a', '--packet_ack', type=bool, default=False,
+                        help='send ACK to all packets (default: False)')
+    parser.add_argument('-b', '--background', type=probability,
+                        help='''
+                        background traffic rule. Set the probability of
+                        creating background traffic. There will only be one
+                        rule for background traffic. The value must be between
+                        1 and 99 inclusive.''')
+    parser.add_argument('-c', '--count', type=int, default=1,
+                        help='number of packets for each regex (default: 1)')
+    parser.add_argument('-D', '--protocol_distribution',
+                        help='''
+                        protocol distribution. Set distribution for each
+                        bakcground traffic protocols. Input must be comma
+                        seperated list in following order: [http, ftp, pop,
+                        smtp, imap]. Also sum of percentage values must not
+                        exceed 100. Also if all protocols are designated with
+                        percentage then they must add up to 100. Star symbol(*)
+                        can be used to ignore protocols that will form
+                        remainder. Option must be used with background traffic
+                        rule option (-b).
+                        Example: -D 70, *, 10, *, 10 will mean 70%% http, 10%%
+                        pop and 10%% imap. Remaining 10%% will be produced from
+                        ftp and smtp.''')
+    parser.add_argument('-d', '--direction', default='to server',
+                        help='''the direction of traffic stream. Valid
+                        directions are "to server", "to client", or "random".
+                        Default is set to "to server".''')
+    parser.add_argument('-F', '--fragment', default=False,
+                        help='set number of fragments for each packet.')
+    parser.add_argument('-f', '--regex_file',
+                        help='Regex file. Reads regex per line in a file.')
+    parser.add_argument('-n', '--rule_name',
+                        help='''the name of the rule for the documentation
+                        purpose. Default name is set to "Rule#" and incrementing
+                        number for each rule.''')
+    parser.add_argument('-O', '--out_of_order', default=False,
+                        help='''Randomly have packets arrive out-of-order.
+                        Note, this only works with packets that use the "times"
+                        option. Further, this option should also be used with
+                        ack so that proper duplicate acks will appear in the
+                        traffic trace. Default is False.''')
+    parser.add_argument('-o', '--output', default='petabi_rule.xml',
+                        help='''Set the file name of output file. Default name
+                        is petabi_rule.xml.''')
+    parser.add_argument('-P', '--out_of_order_prob', type=int, default=50,
+                        help='''Set the probabilty that packets
+                        will arive out-of-order. The value must be between 1
+                        and 99. Default is set to 50.''')
+    parser.add_argument('-p', '--packet_loss', type=probability,
+                        help='''the probability random packets be droped. This
+                        only works with the "times" option. Further, this
+                        option should also be used with the ack option set to
+                        true so that duplicate acks will appear in the traffic
+                        trace. The value must be between 1 to 99. The packet
+                        drop only happens on data-bearing packets, not on the
+                        acks.''')
+    parser.add_argument('-s', '--split', default=False,
+                        help='''the number of split. Split the content among
+                        the designated number of packets. By default, all
+                        content is sent in a single packet.''')
+    parser.add_argument('-T', '--ttl_expiry', type=int, default=0,
+                        help='''simulate the ttl expiry attack by breaking
+                        packets into multiple packet with one malicious packet
+                        between two good packet. By default, the value is 0 (No
+                        malicious packet). If the value is nonzero, it will
+                        insert malicious packet with this ttl equals ttl_expiry
+                        value. If the ttl value is set, good packe will be set
+                        with new ttl value.''')
+    parser.add_argument('-t', '--ttl', default=None,
+                        help='the time for time to live value for packet')
+    parser.add_argument('-v', '--overlap', default=False,
+                        help='''sets tcp overlap. when set, one extra
+                        content of packet will be shifted to next packet and
+                        the tcp sequence number will be reduced by one to
+                        simulate the tcp overlapping. (default: False)''')
+    args = parser.parse_args()
+    if args.protocol_distribution:
+        protocol_dist = re.split(r'[\s,;]+', args.protocol_distribution)
+        percent_sum = 0
+        for percentage in protocol_dist:
+            if percentage == "*":
+                continue
+            percent_sum += int(percentage)
+        if percent_sum > 100:
+            print("Sum of protocol percentages exceed 100")
+            sys.exit(1)
+    regexList = regexParser(args.regex_file)
+    ruleList = formatRule(regexList, args.rule_name, proto, src, dst, sport,
+                          dport, args.out_of_order, args.out_of_order_prob,
+                          args.packet_loss, args.overlap, args.count, args.fragment,
+                          args.direction, args.split, args.ttl, args.ttl_expiry, args.packet_ack,
+                          args.flow_ack, args.background, protocol_dist)
+    printRule(ruleList, args.output)
 
 
 # Parses regex file and checks if each regex can be compiled using pcre
@@ -202,7 +198,7 @@ def formatBackgroundTrafficRule(background_traffic, protocol_dist=None):
     bgTrafficInfo = []
     bgTrafficInfo.append("    <traffic_stream")
     bgTrafficInfo.append("typets=\"BackgroundTraffic\"")
-    bgTrafficInfo.append("percentage=\"" + background_traffic + "\"")
+    bgTrafficInfo.append('percentage="{}"'.format(background_traffic))
     if protocol_dist:
         protocol_dict = protocolPercentage(protocol_dist)
         for protocol in protocol_dict:
@@ -236,7 +232,7 @@ def protocolPercentage(protocol_dist):
     if protocol_num == 5 and protocol_sum != 100:
         print("Distribution values must add up to 100 when all 5 protocols "
               "are designated")
-        usage()
+        sys.exit(1)
     return protocol_percent
 
 
@@ -375,92 +371,6 @@ def printRule(ruleList=None, outfile=None):
             fd.write("    </traffic_stream>\n" + "  </rule>\n")
         fd.write("</petabi_rules>")
         fd.close()
-
-
-def usage():
-    print("Petabi Rule Writer")
-    print("""
-    petabi_rule_writer. This is a simple petabi rule writer.
-    It takes a regex file and simple parameters to create petabi rule
-    formatted file. The options on this programme is focused on options
-    that is not present in sniffles (i.e. IP4fragmentisation has to be
-    explicitly written in the rules) hence, this program will explicitly
-    write such features in the rule. Note that this program will create
-    same number of rules as number of regex present in regex file.
-    This program contains following options:
-    - Fragment
-    - Out-of-order
-    - Packet-loss
-    - Split
-    - Tcp-overlap
-    - TTL-expiry
-    """)
-    print("usage: ./petabi_rule_gen [-b background trafficpercentage]")
-    print(" [-c packet counts] [-d direction] [-D protocol Distribution]")
-    print(" [-f file] [-F number of fragment] [-n rule name]")
-    print(" [-o output file name] [-P out_of_order_probability]")
-    print(" [-p packet_lost probability] [-s split number] [-t ttl time]")
-    print("")
-    print("-a Packet ACK: send ACK to all packets. Default is false")
-    print("-A Traffic Stream ACK: send ACK for all packets in flow.")
-    print("   Default is false.")
-    print("-b Background Traffic Rule: Set the probability of creating")
-    print("   background traffic. There will only be one rule for background")
-    print("   traffic. The value must be between 1 and 100 inclusive.")
-    print("   Default is set to None (i.e. no background traffic).")
-    print("-c Number of packets: Set number of packets for each regex.")
-    print("   Default is one.")
-    print("-d Direction: Set the direction of Traffic Stream. Valid ")
-    print("   directions are \"to server\" or \"to client\".")
-    print("   Type \"c\" for to client, Type \"r\" for random flow.")
-    print("   Default is set to server.")
-    print("-D Protocol Distribution: set distribution for each bakcground")
-    print("   traffic protocols. Input must be comma seperated list in")
-    print("   following order: [http, ftp, pop, smtp, imap]. Also sum of")
-    print("   percentage values must not exceed 100. Also if all protocols")
-    print("   are designated with percentage then they must add up to 100.")
-    print("   Star symbol(*) can be used to ignore protocols that will form")
-    print("   remainder.")
-    print("   Option must be used with background traffic rule option(-b).")
-    print("   Example: -D 70, *, 10, *, 10 will mean 70% http, 10% pop and")
-    print("   10% imap. Remaining 10% will be produced from ftp and smtp.")
-    print("-f Regex file: reads regex per line in a file")
-    print("-F Fragment: set number of fragments for each packet.")
-    print("-n Rule name: enter the name of the rule for the documentation")
-    print("   purpose. Default name is set to \"Rule#\" and incrementing")
-    print("   number for each rule.")
-    print("-o Output file name: set the file name of output file.")
-    print("   Default name is petabi_rule.xml.")
-    print("-O Out-of-order: Randomly have packets arrive out-of-order.")
-    print("   Note, this only works with packets that use the \'times\'")
-    print("   option. Further, this option should also be used with ack")
-    print("   so that proper duplicate acks will appear in the traffic")
-    print("   trace. Default is False.")
-    print("-P Out-of-order probability: Set the probabilty that packets")
-    print("   will arive out-of-order. The value must be between 1 and 99")
-    print("   Default is set to 50.")
-    print("-p Packet Loss: the probability random packets be droped. This")
-    print("   only works with the \'times\' option. Further, this option")
-    print("   should also be used with the ack option set to true so that")
-    print("   duplicate acks will appear in the traffic trace. The value")
-    print("   must be between 1 to 99. The packet drop only happens on ")
-    print("   data-bearing packets, not on the acks.")
-    print("-s Split: the number of split. Split the content among the")
-    print("   designated number of packets. By default, all content is")
-    print("   sent in a single packet.")
-    print("-t TTL: set the time for time to live value for packet.")
-    print("-T TTL_expiry: simulate the ttl expiry attack by breaking")
-    print("   packets into multiple packet with one malicious packet")
-    print("   between two good packet. By default, the value is 0(No ")
-    print("   malicious packet). If the value is nonzero, it will insert")
-    print("   malicious packet with this ttl equals ttl_expiry value.")
-    print("   if the ttl value is set, good packe will be set with new ttl")
-    print("   value.")
-    print("-v Tcp Overlap: sets tcp overlap, when set, one extra")
-    print("   content of packet will be shifted to next packet and the tcp")
-    print("   sequence number will be reduced by one to simulate the tcp")
-    print("   overlapping. By default, it is set to false.")
-    sys.exit(0)
 
 
 if __name__ == "__main__":
