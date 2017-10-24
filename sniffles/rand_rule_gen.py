@@ -1,6 +1,5 @@
+import argparse
 import codecs
-import getopt
-import sys
 
 from sniffles.feature import *
 from sniffles.rule_formats import *
@@ -11,38 +10,24 @@ def main():
     outfile = "rules.txt"
     count = 1
     rfmt = None
-    print("Random Rule Generator")
+    parser = argparse.ArgumentParser(description='Random Rule Generator')
+    parser.add_argument('-c', '--count', type=int, default=1,
+                        help='the number of rules to generate (default: 1)')
+    parser.add_argument('-f', '--feature_file',
+                        help='the file containing the feature set description')
+    parser.add_argument('-o', '--output_file', default='rules.txt',
+                        help='the output file to which rules are written '
+                        '(default: rules.txt)')
+    parser.add_argument('-r', '--rule_format',
+                        choices=['petabipktclass', 'regex', 'snort'],
+                        default='regex',
+                        help='rule format')
+    args = parser.parse_args()
     try:
-        options, args = getopt.getopt(sys.argv[1:], "c:f:o:prs?",
-                                      [])
-    except getopt.GetoptError as err:
-        print("Error: ", err)
-        usage()
-    for opt, arg in options:
-        if opt == "-c":
-            if arg is not None and int(arg) > 0:
-                count = int(arg)
-        elif opt == "-f":
-            if arg is not None:
-                featurefile = arg
-        elif opt == "-o":
-            if arg is not None:
-                outfile = arg
-        elif opt == "-p":
-            rfmt = "petabipktclass"
-        elif opt == "-r":
-            rfmt = "regex"
-        elif opt == "-s":
-            rfmt = "snort"
-        elif opt == "-?":
-            usage()
-        else:
-            print("Unrecognized Option: ", opt)
-    try:
-        myfp = FeatureParser(featurefile)
+        myfp = FeatureParser(args.feature_file)
         myfeatures = myfp.getFeatures()
-        myrules = generateRules(myfeatures, count)
-        printRules(myrules, outfile, rfmt)
+        myrules = generateRules(myfeatures, args.count)
+        printRules(myrules, args.output_file, args.rule_format)
     except Exception as err:
         print("RandRuleGen-main: " + str(err))
 
@@ -80,23 +65,6 @@ def getRuleWithFormat(rule=None, fmt=None):
 
 
 getRuleWithFormat.rule_counter = 1
-
-
-def usage():
-    print("Random Rule Generator")
-    print("usage: rand_rule_gen -c <number of rules -f <feature set>")
-    print("       -o <outfile> -[s]")
-    print("")
-    print("-c  Number of rules: The number of rules to generate.")
-    print("    Default is one.")
-    print("-f  Feature set: The file containing the feature set description.")
-    print("    Please see the documentation for further explanation of")
-    print("    feature sets and how to describe them.")
-    print("-o  outfile: output file to which rules are written.")
-    print("    Default is rules.txt")
-    print("-s  Snort rule format: write rules to a snort rule format.")
-    print("    No options, defaults to off.")
-    sys.exit(0)
 
 
 if __name__ == "__main__":
