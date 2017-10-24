@@ -6,10 +6,6 @@ from sniffles.rule_formats import *
 
 
 def main():
-    featurefile = 'features.txt'
-    outfile = "rules.txt"
-    count = 1
-    rfmt = None
     parser = argparse.ArgumentParser(description='Random Rule Generator')
     parser.add_argument('-c', '--count', type=int, default=1,
                         help='the number of rules to generate (default: 1)')
