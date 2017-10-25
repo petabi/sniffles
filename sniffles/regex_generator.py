@@ -1,4 +1,4 @@
-import getopt
+import argparse
 import random
 import re
 import sys
@@ -25,78 +25,140 @@ from sniffles.nfa import PCRE_CASELESS, PCRE_DOTALL, PCRE_MULTILINE, PCRE_OPT
 # Main Processing
 ##############################################################################
 def main():
-    number = 1
-    lambd = 65                         # Based on average rule size
     type_dist = [85, 10, 5]            # Mostly chars, rest classes and alt
     char_dist = [15, 10, 30, 30, 15]   # Emphasis on digits and alpha
     class_dist = [50, 50]
-    groups = False
     rep_dist = [15, 30, 30, 25]        # Emphasis on * and +
-    rep_chance = 5
-    option_chance = 20
-    negation_prob = 15
-    min_regex_length = 3             # Default to regex at least 3 chars in len
-    max_regex_length = 0             # Default to zero(max_length not applied)
-    re_file = "rand.re"
-    cmd_options = "C:c:D:f:gl:M:m:n:o:R:r:t:?"
-    try:
-        options, args = getopt.getopt(sys.argv[1:], cmd_options, [])
-    except getopt.GetoptError as err:
-        print("Error: ", err)
-        usage()
-    for opt, arg in options:
-        if opt == "-C":
-            if arg is not None:
-                char_dist = re.split('[\s,;]+', arg)
-        elif opt == "-D":
-            if arg is not None:
-                class_dist = re.split('[\s,;]+', arg)
-        elif opt == "-c":
-            number = int(arg)
-            if number <= 0:
-                number = 1
-        elif opt == "-f":
-            if arg is not None:
-                re_file = arg
-        elif opt == "-g":
-            groups = True
-        elif opt == "-l":
-            lambd = int(arg)
-            if lambd <= 0:
-                lambd = 10
-        elif opt == "-M":
-            if arg is not None:
-                max_regex_length = int(arg)
-        elif opt == "-m":
-            min_regex_length = int(arg)
-            if min_regex_length < 1:
-                min_regex_length = 1
-        elif opt == "-n":
-            negation_prob = int(arg)
-            if negation_prob < 0:
-                negation_prob = 0
-        elif opt == "-o":
-            option_chance = int(arg)
-            if option_chance < 0:
-                option_chance = 0
-        elif opt == "-R":
-            rep_chance = int(arg)
-            if rep_chance < 0:
-                rep_chance = 0
-        elif opt == "-r":
-            if arg is not None:
-                rep_dist = re.split('[\s,;]+', arg)
-        elif opt == "-t":
-            if arg is not None:
-                type_dist = re.split('[\s,;]+', arg)
-        elif opt == "-?":
-            usage()
-        else:
-            print("Unrecognized Option: ", opt)
-            usage()
-    create_regex_list(number, lambd, type_dist, char_dist, class_dist,
-                      rep_dist, rep_chance, option_chance, negation_prob,
-                      re_file, min_regex_length, max_regex_length, groups)
+
+    parser = argparse.ArgumentParser(description='''
+    Random Regular Expression Generator
+    will create random regular expressions.  It is possible
+    to tune the structures within the regular expressions to a prbability
+    distribution, but currently not the content.  This is desirable in
+    order to explore the maximum diversity in possible regular expressions
+    (though not necessarily realistic regular expressions).
+    The distributions are handled by creating a list of probabilities for
+    the various possibilities, or slots, for a particular distribution.
+    These are added as command line arguments using a simple string
+    list like: "10,30,40,20".  The list should have as many values
+    as it has slots.  The total of all values in the list should be
+    100 and there should not be any fractions.  The value at each slot
+    is the probability that that slot will be chosen.  For example,
+    the base RE structural type distribution has three slots.  The
+    first slot is the probability that the next structure type is
+    a character (where a character can be a letter, digit, binary, ASCII,
+    or substitution class (like \\w).  The second slot is for character
+    classes like [ab@%], [^123], or [a-z].  The final slot is the probability
+    of alternation occuring like (ab|cd).  With these three slots you can tune
+    how often you would like the structures to appear in your regular
+    expressions.  For example, python3.4 -c 10 -t "80,10,10" would create
+    10 regular expressions where 80% of the structures used would be
+    characters, 10 percent would be character classes, and 10% alternation.
+    ''')
+    parser.add_argument('-C', '--chardist', help='''
+    Character Distribution: This sets the possibility of seeing
+    particular constructs or characters.  See a brief explanation of
+    distibutions below for examples on how to use this.  The default
+    distribution puts some emphasis on alphabet and number characters.
+    This distribution has five slots: ASCII Characters, Binary characters
+    in \\x00 (hex) format, Alphabetical letters (upper or lower case),
+    Digits, and substitution classes (like \\w).
+    An example input to this would be "10,20,10,40,20"
+    which would mean 10%% chance any generated chae would come from ASCII,
+    20%% binary, 10%% letters, etc.  One Caveat is that ASCII chars that
+    might cause problems with regular expressions (like `[' or '{')
+    are converted to hex representation (\\x3b for example).
+    ''')
+    parser.add_argument('-c', '--regexnum', type=int, default=1, help='''
+    number of regular expression to generate.  Default is one.
+    ''')
+    parser.add_argument('-D', '--classdist', help='''
+    Class Distribution: There are only two slots in the class
+    distribution.  The first slot is the probability that the class is
+    comprised of some number of randomly generated character.  The
+    second slot is the probability that the class is comprised of
+    ranges (like a-z).
+    ''')
+    parser.add_argument('-f', '--output', default='rand.re', help='''
+    output file name.  This sets the name of the file where the
+    regular expressions are stored.  The default is a file named rand.re
+    in the current working directory.
+    ''')
+    parser.add_argument('-g', '--group', action='store_true', help='''
+    All regular expressions will have a common prefix with
+    at least one or more other regular expressions (as long as there are
+    more than one regex.)  A common prefix is just a regular expression
+    that is the same for some set of regular expressions.  The total
+    number of possible common prefixes is from 1 to 1/2 the size of the
+    total regular expressions to generate.  The default value for this
+    is false.  This option takes no parameters.
+    ''')
+    parser.add_argument('-l', '--length', type=int, default=65, help='''
+    lambda for length:  This is the mean length for an exponentional
+    distribution of regular expression lengths.  The default value is 65
+    (derived from the average regex length taken from several regular
+    expression sets used in computer security).
+    ''')
+    parser.add_argument('-M', '--maxlen', type=int, default=0, help='''
+	Maximum Regex Length: make regular expressions at most this
+    structural length or shorter. By default, maximum length is not limited.
+    ''')
+    parser.add_argument('-m', '--minlen', type=int, default=3, help='''
+    Minimum Regex Length: make regular expressions at least this
+    this length or longer.  Defaults to 3, and will automatically use a
+    value of 1 if the input is zero or less.
+    ''')
+    parser.add_argument('-n', '--negation_prob', type=int, default=15, help='''
+    negation probability: The probability that a character class will
+    be a negation class ([^xyz]) rather than a normal character class ([xyz]).
+    Default probability is 15%% (arbitrarily set).
+    ''')
+    parser.add_argument('-o', '--option_chance', type=int, default=20, help='''
+    option chance:  This is the chance for an option to be appended
+    to the regular expression.  Current options are 'i', 'm', and 's'.
+    If options are appended to a regular expression one or more are
+    appended.  The default chance is 20%%.
+    ''')
+    parser.add_argument('-R', '--repetition_chance', type=int, default=5,
+                        help='''
+    repetition chance: The chance of repetition occuring after
+    any structural component has been added to the regular expression.
+    The default value is 5%% which is roughly the amount of repetition
+    seen in the regular expression files we have examined.
+    ''')
+    parser.add_argument('-r', '--repdist', help='''
+    repetion distribution: The distribution of repetition structures.
+    The slots are: Zero to one (?), Zero to many (*), one to many (+), and
+    counting ({x,y}).  The default distribution favors * and +.
+    ''')
+    parser.add_argument('-t', '--typedist', help='''
+    Re structural type distribution: The distribution for the
+    primary structural components of the regular expression.  These
+    are comprised of three slots, or categories: characters, classes,
+    and alternation.  Note, alternation will simply generate a smaller
+    regular expression up to the size of the remaining length left to
+    the re.  In other words, alternation will result in several smaller
+    regular expressions being joined into the overall regular expression.
+    The alternation uses the exact same methodology in creating those
+    smaller regular expressions.  The default distribution of these
+    types is 85%% characters, 10%% classes, and 5%% alternation.  These
+    values were derived from the regular expression sets we examined.
+    ''')
+    args = parser.parse_args()
+    if args.chardist:
+        char_dist = re.split(r'[\s,;]+', args.chardist)
+    if args.classdist:
+        class_dist = re.split(r'[\s,;]+', args.classdist)
+    if args.minlen < 1:
+        args.minlen = 1
+    if args.repdist:
+        rep_dist = re.split(r'[\s,;]+', args.repdist)
+    if args.typedist:
+        type_dist = re.split(r'[\s,;]+', args.typedist)
+    create_regex_list(args.regexnum, args.length, type_dist, char_dist, class_dist,
+                      rep_dist, args.repetition_chance, args.option_chance,
+                      args.negation_prob, args.output, args.minlen, args.maxlen,
+                      args.group)
     print("Finished creating random regular expressions.")
     sys.exit(0)
 
@@ -442,107 +504,6 @@ def check_pcre_compile(re):
     except:
         return False
     return True
-
-
-def usage():
-    usage_stmt = """regex_generator--Random Regular Expression Generator.
-    usage: regex_generator.py [-C char distribution] [-c number regex]
-    [-D class distribution] [-f output re file]
-    [-l lambda for length generation] [-M maximum regex length]
-	[-m minimum regex length] [-n negation probability]
-    [-o options chance] [-R repetition chance] [-r repetition distribution]
-    [-t re structural type distribution] [-?] [-g]
-
-    -C \t Character Distribution: This sets the possibility of seeing
-    particular constructs or characters.  See a brief explanation of
-    distibutions below for examples on how to use this.  The default
-    distribution puts some emphasis on alphabet and number characters.
-    This distribution has five slots: ASCII Characters, Binary characters
-    in \x00 (hex) format, Alphabetical letters (upper or lower case),
-    Digits, and substitution classes (like \w).
-    An example input to this would be "10,20,10,40,20"
-    which would mean 10% chance any generated chae would come from ASCII,
-    20% binary, 10% letters, etc.  One Caveat is that ASCII chars that
-    might cause problems with regular expressions (like `[' or '{')
-    are converted to hex representation (\x3b for example).
-    -c \t number of regular expression to generate.  Default is one.
-    -D \t Class Distribution: There are only two slots in the class
-    distribution.  The first slot is the probability that the class is
-    comprised of some number of randomly generated character.  The
-    second slot is the probability that the class is comprised of
-    ranges (like a-z).
-    -f \t output file name.  This sets the name of the file where the
-    regular expressions are stored.  The default is a file named rand.re
-    in the current working directory.
-    -g \t Groups: All regular expressions will have a common prefix with
-    at least one or more other regular expressions (as long as there are
-    more than one regex.)  A common prefix is just a regular expression
-    that is the same for some set of regular expressions.  The total
-    number of possible common prefixes is from 1 to 1/2 the size of the
-    total regular expressions to generate.  The default value for this
-    is false.  This option takes no parameters.
-    -l \t lambda for length:  This is the mean length for an exponentional
-    distribution of regular expression lengths.  The default value is 65
-    (derived from the average regex length taken from several regular
-    expression sets used in computer security).
-	-M \t Maximum Regex Length: make regular expressions at most this
-    structural length or shorter. By default, maximum length is not limited.
-    -m \t Minimum Regex Length: make regular expressions at least this
-    this length or longer.  Defaults to 3, and will automatically use a
-    value of 1 if the input is zero or less.
-    -n \t negation probability: The probability that a character class will
-    be a negation class ([^xyz]) rather than a normal character class ([xyz]).
-    Default probability is 15% (arbitrarily set).
-    -o \t option chance:  This is the chance for an option to be appended
-    to the regular expression.  Current options are 'i', 'm', and 's'.
-    If options are appended to a regular expression one or more are
-    appended.  The default chance is 20%.
-    -R \t repetition chance: The chance of repetition occuring after
-    any structural component has been added to the regular expression.
-    The default value is 5% which is roughly the amount of repetition
-    seen in the regular expression files we have examined.
-    -r \t repetion distribution: The distribution of repetition structures.
-    The slots are: Zero to one (?), Zero to many (*), one to many (+), and
-    counting ({x,y}).  The default distribution favors * and +.
-    -t \t Re structural type distribution: The distribution for the
-    primary structural components of the regular expression.  These
-    are comprised of three slots, or categories: characters, classes,
-    and alternation.  Note, alternation will simply generate a smaller
-    regular expression up to the size of the remaining length left to
-    the re.  In other words, alternation will result in several smaller
-    regular expressions being joined into the overall regular expression.
-    The alternation uses the exact same methodology in creating those
-    smaller regular expressions.  The default distribution of these
-    types is 85% characters, 10% classes, and 5% alternation.  These
-    values were derived from the regular expression sets we examined.
-    -? \t print this help.
-
-    This generator will create random regular expressions.  It is possible
-    to tune the structures within the regular expressions to a prbability
-    distribution, but currently not the content.  This is desirable in
-    order to explore the maximum diversity in possible regular expressions
-    (though not necessarily realistic regular expressions).
-    The distributions are handled by creating a list of probabilities for
-    the various possibilities, or slots, for a particular distribution.
-    These are added as command line arguments using a simple string
-    list like: "10,30,40,20".  The list should have as many values
-    as it has slots.  The total of all values in the list should be
-    100 and there should not be any fractions.  The value at each slot
-    is the probability that that slot will be chosen.  For example,
-    the base RE structural type distribution has three slots.  The
-    first slot is the probability that the next structure type is
-    a character (where a character can be a letter, digit, binary, ASCII,
-    or substitution class (like \w).  The second slot is for character
-    classes like [ab@%], [^123], or [a-z].  The final slot is the probability
-    of alternation occuring like (ab|cd).  With these three slots you can tune
-    how often you would like the structures to appear in your regular
-    expressions.  For example, python3.4 -c 10 -t "80,10,10" would create
-    10 regular expressions where 80% of the structures used would be
-    characters, 10 percent would be character classes, and 10% alternation.
-    """
-    print(usage_stmt)
-
-    sys.exit(0)
 
 
 if __name__ == "__main__":
