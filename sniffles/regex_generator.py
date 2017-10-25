@@ -506,22 +506,5 @@ def check_pcre_compile(re):
     return True
 
 
-def usage():
-    usage_stmt = """regex_generator--Random Regular Expression Generator.
-    usage: regex_generator.py [-C char distribution] [-c number regex]
-    [-D class distribution] [-f output re file]
-    [-l lambda for length generation] [-M maximum regex length]
-	[-m minimum regex length] [-n negation probability]
-    [-o options chance] [-R repetition chance] [-r repetition distribution]
-    [-t re structural type distribution] [-?] [-g]
-
-    -? \t print this help.
-
-    """
-    print(usage_stmt)
-
-    sys.exit(0)
-
-
 if __name__ == "__main__":
     main()
