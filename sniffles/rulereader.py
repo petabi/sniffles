@@ -129,9 +129,8 @@ class RuleParser(object):
                     to the instance.
     """
 
-    def __init__(self, filename=None):
+    def __init__(self):
         self.rules = []
-        self.filename = filename
         self.background_traffic = None
 
     def addRule(self, rule=None):
@@ -166,19 +165,19 @@ class RuleParser(object):
 
     def parseRuleFile(self, filename=None):
         try:
-            self.fd = open(filename, encoding='utf-8')
+            rule_file = open(filename, encoding='utf-8')
         except Exception as err:
             print("Error reading Basic rule file: Could not open: ",
                   filename)
             print("Error: ", err)
             return None
-        line = self.fd.readline()
+        line = rule_file.readline()
         while line:
             line = line.strip()
             if len(line) > 0 and line[0] != '#':
                 self.parseRule(line)
-            line = self.fd.readline()
-        self.fd.close()
+            line = rule_file.readline()
+        rule_file.close()
 
     def testForRuleFile(self, filename=None):
         return True

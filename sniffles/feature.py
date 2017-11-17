@@ -361,7 +361,7 @@ class IPFeature(Feature):
             elif self.version == 6:
                 myip.append(0x2001)
                 myip.append(random.randint(0x0000, 0x01F8) + 0x400)
-                for i in range(0, 6):
+                for _ in range(0, 6):
                     myip.append(random.randint(0, 65535))
             else:
                 print("Error, no IP version: ", self.version)
@@ -411,7 +411,6 @@ class FeatureParser(object):
                 print("Could not read feature file.")
                 print("FeatureParser-parseFile: " + str(err))
                 raise Exception("The program will stop.")
-                return False
             line = fd.readline()
             lineNumber = 1
             while line:

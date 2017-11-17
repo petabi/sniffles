@@ -4,7 +4,7 @@ import re
 import sys
 
 import sniffles.pcrecomp
-from sniffles.nfa import PCRE_CASELESS, PCRE_DOTALL, PCRE_MULTILINE, PCRE_OPT
+from sniffles.nfa import PCRE_OPT
 
 
 """
@@ -186,8 +186,7 @@ def create_regex_list(number, lambd, type_dist, char_dist, class_dist,
     mygroups = []
     if groups and number > 1:
         mygroups = getREGroups(number, type_dist, char_dist,
-                               class_dist, rep_dist, rep_chance, negation_prob,
-                               min_regex_length)
+                               class_dist, rep_dist, rep_chance, negation_prob)
 
     count = 0
     while count < number:
@@ -476,7 +475,7 @@ def get_repetition(rep_dist, rep_start_max=5, rep_end_max=10):
 
 
 def getREGroups(number, type_dist, char_dist, class_dist,
-                rep_dist, rep_chance, negation_prob, min_regex_len):
+                rep_dist, rep_chance, negation_prob):
     new_groups = []
     if number > 1:
         num_groups = random.randint(1, int(number / 2))
