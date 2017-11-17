@@ -239,7 +239,7 @@ class NFA:
             if not next_active:
                 return False
             active = next_active
-        return (self.accept in active)
+        return self.accept in active
 
     def next_states(self, active, sym):
         next_active = []

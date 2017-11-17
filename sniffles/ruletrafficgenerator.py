@@ -116,7 +116,6 @@ class Conversation(object):
         self.ts_active = SortedDict()
         self.started = False
         current_sec = sec
-        current_usec = usec
         if current_sec < 0:
             sec = sconf.getFirstTimestamp()
         if con:
@@ -148,7 +147,7 @@ class Conversation(object):
         if not self.hasPackets():
             return None
         pkt = None
-        key, ts = self.ts_active.popitem()
+        _, ts = self.ts_active.popitem()
         sec = 0
         usec = 0
         if ts.hasPackets():
@@ -502,7 +501,6 @@ class TrafficStream(object):
         self.frag_id = random.randint(1, 65000)
         myoffset = 0
         myindex = 0
-        mf = True
         whole_pkt = self.buildPkt(dir, ACK, content)
         data = whole_pkt.get_packet()
         frag_content = Content(data[34:], len(data[34:]), False, True)

@@ -292,7 +292,7 @@ def build_eval_pcap(rules, traffic_writer, sconf):
     while traffic_queue:
         current_stream = traffic_queue.pop(0)
         while current_stream.hasPackets():
-            s, u, pkt = current_stream.getNextPacket()
+            _, _, pkt = current_stream.getNextPacket()
             if pkt:
                 traffic_writer.write_packet(
                     pkt.get_size(), pkt.get_packet(),
@@ -343,7 +343,7 @@ def write_packets(queue, traffic_writer, sconf, fd_result):
         half_threshold = int(len(queue) / 2)
     num_packets = 0
     while queue and len(queue) > half_threshold:
-        key, con_list = queue.popitem(last=False)
+        _, con_list = queue.popitem(last=False)
         for current_conversation in con_list:
             if current_conversation.hasPackets():
                 # write that packet
