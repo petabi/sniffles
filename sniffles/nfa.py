@@ -24,7 +24,7 @@ WORDCHAR = [
 TOTAL_STATES = 0
 
 
-class NFAState(object):
+class NFAState:
     def __init__(self):
         self.tx = [[] for i in range(NSYMBOLS + 1)]
 

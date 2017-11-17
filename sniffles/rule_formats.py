@@ -1,4 +1,4 @@
-class RuleFormat(object):
+class RuleFormat:
 
     def __init__(self, rule=None):
         self.rule = rule

@@ -28,7 +28,7 @@ def get_all_subclasses(myCls):
     return all_subclasses
 
 
-class Rule(object):
+class Rule:
     """
         The Rule class marks the base class for any rule.
         If a rule is to have added features, then this class must
@@ -93,7 +93,7 @@ class Rule(object):
         self.name = name
 
 
-class RuleParser(object):
+class RuleParser:
     """
         The RuleParser class defines the class that is used to parse
         a set of rules.  This is the class that must be extended to add
@@ -183,7 +183,7 @@ class RuleParser(object):
         return True
 
 
-class RuleContent(object):
+class RuleContent:
     """
         The RuleContent object is a means of storing multiple
         content strings for a single rule.  This is necessary for
@@ -232,7 +232,7 @@ class RuleContent(object):
         return mystr
 
 
-class RulePkt(object):
+class RulePkt:
     """
         Define individual packet rules.  These rules can play across multiple
         packets.
@@ -406,7 +406,7 @@ class RulePkt(object):
         self.ttl_expiry = ttl_expiry
 
 
-class TrafficStreamRule(object):
+class TrafficStreamRule:
     """
         The TrafficStreamRule defines all of the particulars
         necessary to build a traffic stream in the rule traffic
