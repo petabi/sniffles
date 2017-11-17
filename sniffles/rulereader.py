@@ -1,4 +1,3 @@
-import codecs
 import random
 import re
 import sys
@@ -167,7 +166,7 @@ class RuleParser(object):
 
     def parseRuleFile(self, filename=None):
         try:
-            self.fd = codecs.open(filename, 'r', encoding='utf-8')
+            self.fd = open(filename, encoding='utf-8')
         except Exception as err:
             print("Error reading Basic rule file: Could not open: ",
                   filename)
@@ -1284,7 +1283,7 @@ class SnortRuleParser(RuleParser):
 
     def openSnortFile(self, filename):
         try:
-            self.fd = codecs.open(filename, 'r', encoding='utf-8')
+            self.fd = open(filename, encoding='utf-8')
         except Exception as err:
             print("Error reading Snort rule file: Could not open: ",
                   filename)

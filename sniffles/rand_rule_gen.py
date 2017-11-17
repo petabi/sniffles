@@ -1,5 +1,4 @@
 import argparse
-import codecs
 
 from sniffles.feature import *
 from sniffles.rule_formats import *
@@ -34,7 +33,7 @@ def generateRules(feature_list, count=1):
 
 def printRules(rule_list=None, outfile=None, rule_format=None):
     if rule_list and outfile:
-        fd = codecs.open(outfile, 'w', encoding='utf-8')
+        fd = open(outfile, 'w', encoding='utf-8')
         for rule in rule_list:
             rwf = getRuleWithFormat(rule, rule_format)
             fd.write(str(rwf))
