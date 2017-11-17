@@ -105,7 +105,7 @@ def get_random_protocol():
     return 'tcp'
 
 
-class Conversation(object):
+class Conversation:
     """
         Dictates rules for a particular communication or series of
         communications.
@@ -205,7 +205,7 @@ class Conversation(object):
                         break
 
 
-class TrafficStream(object):
+class TrafficStream:
     """
         Basic definition of a traffic stream.  Packets will be created
         dependent on the values provided to this object.  Extend this
@@ -1211,7 +1211,7 @@ class ScanAttack(TrafficStream):
         return pkt
 
 
-class Packet(object):
+class Packet:
     """
         Container and generator for packets.  Will build headers and content
         for a given packet.  Once built, use get_packet() to pullout the
@@ -1356,7 +1356,7 @@ class Packet(object):
         return self.content
 
 
-class Content(object):
+class Content:
     """
         Container for holding generated content.  Used so that the
         content can be manipulated to fit the constraints placed on
@@ -2110,7 +2110,7 @@ class EthernetFrame:
                 self.d_mac = MAC_IP_MAP[dip]
 
 
-class IP(object):
+class IP:
     """
         Base class for generating IP headers.  Should not be instantiated.
         Provides the shared functionality for IP headers.
@@ -2411,7 +2411,7 @@ class Port:
             self.port_value = random.randint(0, 65535)
 
 
-class TransportLayer(object):
+class TransportLayer:
     """
         Base class for transport layer objects.  Defaults transport layer
         objects to TCP.

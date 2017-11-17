@@ -31,7 +31,7 @@ def getVersion():
     return version
 
 
-class SnifflesConfig(object):
+class SnifflesConfig:
     """
     Class SnifflesConfig:
       The Configuration object for Sniffles.  This object holds the

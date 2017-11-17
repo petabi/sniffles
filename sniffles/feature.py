@@ -4,7 +4,7 @@ import sys
 from sniffles.regex_generator import *
 
 
-class AmbiguousNotation(object):
+class AmbiguousNotation:
 
     def __init__(self, notation=None):
         self.notation = notation
@@ -137,7 +137,7 @@ class ListNotation(AmbiguousNotation):
         return mystring
 
 
-class Feature(object):
+class Feature:
 
     def __init__(self, name=None, lower_bound=0, upper_bound=0,
                  complexity_prob=0, ambiguity_list=None):
@@ -397,7 +397,7 @@ class IPFeature(Feature):
 #       or just * for a wildcard or similar single option.
 
 
-class FeatureParser(object):
+class FeatureParser:
 
     def __init__(self, filename=None):
         self.features = []
