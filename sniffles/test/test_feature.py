@@ -246,13 +246,9 @@ class TestFeature(unittest.TestCase):
         test = featureParser.buildAmbiguityList("[mozart,beethoven,"
                                                 "bach]")
         self.assertEqual(len(test), 3)
-        for i in range(0, len(test)):
-            if i == 0:
-                self.assertEqual(str(test[i]), "mozart")
-            elif i == 1:
-                self.assertEqual(str(test[i]), "beethoven")
-            else:
-                self.assertEqual(str(test[i]), "bach")
+        self.assertEqual(str(test[0]), "mozart")
+        self.assertEqual(str(test[1]), "beethoven")
+        self.assertEqual(str(test[2]), "bach")
 
         def convertToList(strList):
             return (strList[1:-1]).split(",")
@@ -264,56 +260,45 @@ class TestFeature(unittest.TestCase):
         # testing ListNotation
         test = featureParser.buildAmbiguityList("[mozart,[5,15]]")
         self.assertEqual(len(test), 2)
-        for i in range(0, len(test)):
-            if i == 0:
-                self.assertEqual(str(test[i]), "mozart")
-            elif i == 1:
-                self.assertTrue(isinstance(test[i], ListNotation))
-                for value in convertToList(str(test[i])):
-                    iVal = int(value)
-                    self.assertTrue(iVal >= 5)
-                    self.assertTrue(iVal <= 15)
+        self.assertEqual(str(test[0]), "mozart")
+        self.assertTrue(isinstance(test[1], ListNotation))
+        for value in convertToList(str(test[1])):
+            iVal = int(value)
+            self.assertTrue(iVal >= 5)
+            self.assertTrue(iVal <= 15)
 
         test = featureParser.buildAmbiguityList("[mozart,[5,15],[9:13]]")
         self.assertEqual(len(test), 3)
-        for i in range(0, 3):
-            if i == 0:
-                self.assertEqual(str(test[i]), "mozart")
-            elif i == 1:
-                self.assertTrue(isinstance(test[i], ListNotation))
-                for value in convertToList(str(test[i])):
-                    iVal = int(value)
-                    self.assertTrue(iVal >= 5)
-                    self.assertTrue(iVal <= 15)
-            else:
-                self.assertTrue(isinstance(test[i], RangeNotation))
-                values = convertToRange(str(test[i]))
-                lower = int(values[0])
-                upper = int(values[1])
-                self.assertTrue(lower < upper)
+        self.assertEqual(str(test[0]), "mozart")
+        self.assertTrue(isinstance(test[1], ListNotation))
+        for value in convertToList(str(test[1])):
+            iVal = int(value)
+            self.assertTrue(iVal >= 5)
+            self.assertTrue(iVal <= 15)
+        self.assertTrue(isinstance(test[2], RangeNotation))
+        values = convertToRange(str(test[2]))
+        lower = int(values[0])
+        upper = int(values[1])
+        self.assertTrue(lower < upper)
 
         test = featureParser.buildAmbiguityList("[mozart,[5,15],[9:13]"
                                                 ", {mon, fri,wed}]")
         self.assertEqual(len(test), 4)
-        for i in range(0, 3):
-            if i == 0:
-                self.assertEqual(str(test[i]), "mozart")
-            elif i == 1:
-                self.assertTrue(isinstance(test[i], ListNotation))
-                for value in convertToList(str(test[i])):
-                    iVal = int(value)
-                    self.assertTrue(iVal >= 5)
-                    self.assertTrue(iVal <= 15)
-            elif i == 2:
-                self.assertTrue(isinstance(test[i], RangeNotation))
-                values = convertToRange(str(test[i]))
-                lower = int(values[0])
-                upper = int(values[1])
-                self.assertTrue(lower < upper)
-            else:
-                self.assertTrue(isinstance(test[i], SetNotation))
-                testList = ["mon", "wed", "fri"]
-                for j in range(0, 10):
-                    values = (test.toString[i]()[1:-1]).split(",")
-                    for value in values:
-                        self.assertTrue(value in testList)
+        self.assertEqual(str(test[0]), "mozart")
+        self.assertTrue(isinstance(test[1], ListNotation))
+        for value in convertToList(str(test[1])):
+            iVal = int(value)
+            self.assertTrue(iVal >= 5)
+            self.assertTrue(iVal <= 15)
+        self.assertTrue(isinstance(test[2], RangeNotation))
+        values = convertToRange(str(test[2]))
+        lower = int(values[0])
+        upper = int(values[1])
+        self.assertTrue(lower < upper)
+        for i in range(3, 4):
+            self.assertTrue(isinstance(test[i], SetNotation))
+            testList = ["mon", "wed", "fri"]
+            for j in range(0, 10):
+                values = (test[i].toString()[1:-1]).split(",")
+                for value in values:
+                    self.assertTrue(value in testList)
