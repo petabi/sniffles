@@ -24,7 +24,7 @@ class SetNotation(AmbiguousNotation):
     # for example: {5,6,9}
     # it can return [5,6] or [5,9] or [6,9]
     def __init__(self, notation):
-        self.notation = notation
+        super().__init__(notation)
         mystr = notation[1:-1]
         self.values = mystr.split(",")
         self.max_list_size = len(self.values)
@@ -42,7 +42,7 @@ class RangeNotation(AmbiguousNotation):
     # Range notation should be expressed as [x:y] where
     # x is lower bound and y is upper bound.
     def __init__(self, notation):
-        self.notation = notation
+        super().__init__(notation)
         self.prefix = notation[0:1]
         self.suffix = notation[-1:]
         myrange = notation[1:-1]
@@ -77,7 +77,7 @@ class ListNotation(AmbiguousNotation):
     # for [20,20], it will be converted into [19,20]
 
     def __init__(self, notation):
-        self.separator = notation
+        super().__init__(notation)
         self.prefix = notation[0:1]
         self.suffix = notation[-1:]
         mylist = notation[1:-1]
@@ -187,9 +187,8 @@ class Feature:
 class ContentFeature(Feature):
     def __init__(self, name="content", regex=True, complexity_prob=0, len=0,
                  min_regex_length=3):
-        self.feature_name = name
+        super().__init__(name, complexity_prob=complexity_prob)
         self.regex = regex
-        self.complexity_prob = complexity_prob
         self.length = len
         self.min_regex_length = min_regex_length
 
@@ -243,10 +242,9 @@ class ProtocolFeature(Feature):
 
     def __init__(self, name="proto", proto_list=None, complexity_prob=0,
                  ambiguity_list=None):
-        self.feature_name = name
+        super().__init__(name, complexity_prob=complexity_prob,
+                         ambiguity_list=ambiguity_list)
         self.proto_list = proto_list
-        self.complexity_prob = complexity_prob
-        self.ambiguity_list = ambiguity_list
 
     def __str__(self):
         return self.toString()
@@ -284,9 +282,8 @@ class ProtocolFeature(Feature):
 class IPFeature(Feature):
 
     def __init__(self, name="ip", version=4, complexity_prob=0):
-        self.feature_name = name
+        super().__init__(name, complexity_prob=complexity_prob)
         self.version = version
-        self.complexity_prob = complexity_prob
 
     def __str__(self):
         return self.toString()
