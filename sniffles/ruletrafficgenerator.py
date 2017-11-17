@@ -512,7 +512,6 @@ class TrafficStream(object):
             myend = myindex + (frag_size * 8)
             if i == (myfrags - 1):
                 myend = frag_content.get_size()
-                mf = False
             self.last_off = myoffset
 
             self.fragments.append(
