@@ -1,4 +1,3 @@
-import codecs
 import random
 import sys
 
@@ -407,7 +406,7 @@ class FeatureParser(object):
     def parseFile(self, filename=None):
         if filename is not None:
             try:
-                fd = codecs.open(filename, 'r', encoding='utf-8')
+                fd = open(filename, encoding='utf-8')
             except Exception as err:
                 print("Could not read feature file.")
                 print("FeatureParser-parseFile: " + str(err))

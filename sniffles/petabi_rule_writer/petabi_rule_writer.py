@@ -2,7 +2,6 @@ import argparse
 import sys
 import re
 import random
-import codecs
 from collections import OrderedDict
 import sniffles.pcrecomp
 from sniffles.nfa import PCRE_OPT
@@ -150,7 +149,7 @@ def regexParser(filename=None):
     regex = []
     if filename:
         try:
-            fd = codecs.open(filename, 'r', encoding='utf-8')
+            fd = open(filename, encoding='utf-8')
         except Exception as err:
             print("Could not read regex file")
             print("regexParser: " + str(err))
@@ -362,7 +361,7 @@ def formatPktRule(regex=None, count='1', fragment=False,
 # Output: petabi rule file.
 def printRule(ruleList=None, outfile=None):
     if ruleList:
-        fd = codecs.open(outfile, 'w', encoding='utf-8')
+        fd = open(outfile, 'w', encoding='utf-8')
         fd.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
         fd.write("<petabi_rules>\n")
         for key in ruleList:
