@@ -387,8 +387,8 @@ class RulePkt:
     def setFragment(self, f=0):
         self.fragment = f
 
-    def setLength(self, l=-1):
-        self.length = l
+    def setLength(self, len=-1):
+        self.length = len
 
     def setOOO(self, o=False):
         self.ooo = o
@@ -619,8 +619,8 @@ class TrafficStreamRule:
     def setOOO(self, o=False):
         self.ooo = o
 
-    def setPacketLoss(self, l=0):
-        self.loss = l
+    def setPacketLoss(self, len=0):
+        self.loss = len
 
     def setProto(self, p="any"):
         self.proto = p
@@ -636,9 +636,6 @@ class TrafficStreamRule:
 
     def setTeardown(self, td=False):
         self.teardown = td
-
-    def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
-        return TrafficStream(self, sconf, secs, usecs)
 
 
 # Create Background Traffic rules
@@ -856,9 +853,6 @@ class BackgroundTrafficRule(TrafficStreamRule):
             return True
         return False
 
-    def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
-        return BackgroundTraffic(self, sconf, secs, usecs)
-
 
 class ScanAttackRule(TrafficStreamRule):
 
@@ -927,9 +921,6 @@ class ScanAttackRule(TrafficStreamRule):
 
     def setOffset(self, value):
         self.offset = value
-
-    def getTrafficStreamObject(self, sconf, secs=-1, usecs=0):
-        return ScanAttack(self, sconf, secs, usecs)
 
 
 class SnortRuleContent(RuleContent):
@@ -1112,28 +1103,28 @@ class SnortRuleContent(RuleContent):
     def setDistance(self, d=0):
         try:
             d = int(d)
-        except:
+        except ValueError:
             d = 0
         self.distance = d
 
     def setOffset(self, o=0):
         try:
             o = int(o)
-        except:
+        except ValueError:
             o = 0
         self.offset = o
 
     def setDepth(self, d=0):
         try:
             d = int(d)
-        except:
+        except ValueError:
             d = 0
         self.depth = d
 
     def setWithin(self, w=0):
         try:
             w = int(w)
-        except:
+        except ValueError:
             w = 0
         self.within = w
 
