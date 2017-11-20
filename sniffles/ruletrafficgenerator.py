@@ -126,7 +126,12 @@ class Conversation:
         while tsrules:
             myrule = tsrules.pop(0)
             if myrule:
-                myts = myrule.getTrafficStreamObject(sconf, sec, usec)
+                if myrule.testTypeRule("Background"):
+                    myts = BackgroundTraffic(myrule, sconf, sec, usec)
+                elif myrule.testTypeRule("ScanAttack"):
+                    myts = ScanAttack(myrule, sconf, sec, usec)
+                else:
+                    myts = TrafficStream(myrule, sconf, sec, usec)
             else:
                 myts = TrafficStream(None, sconf, sec, usec)
             self.ts.append(myts)
@@ -1951,7 +1956,7 @@ class EthernetFrame:
             if path is not None:
                 try:
                     fd = open(path, 'r')
-                except:
+                except Exception:
                     print("Could not open mac definition file: ", path)
                     sys.exit(1)
 
