@@ -387,8 +387,8 @@ class RulePkt:
     def setFragment(self, f=0):
         self.fragment = f
 
-    def setLength(self, len=-1):
-        self.length = len
+    def setLength(self, length=-1):
+        self.length = length
 
     def setOOO(self, o=False):
         self.ooo = o
@@ -440,7 +440,7 @@ class TrafficStreamRule:
     """
 
     def __init__(self, proto="any", sip="$EXTERNAL_NET", dip="$HOME_NET",
-                 sport="any", dport="any", len=-1, ipv=4, synch=False,
+                 sport="any", dport="any", length=-1, ipv=4, synch=False,
                  handshake=False, teardown=False, ooo=False,
                  ooo_prob=50, loss=0, flow="to server", ack=False,
                  latency=None):
@@ -455,7 +455,7 @@ class TrafficStreamRule:
         self.handshake = handshake
         self.ipv = ipv
         self.latency = latency
-        self.len = len
+        self.length = length
         self.loss = loss
         self.ooo = False
         self.ooo_prob = ooo_prob
@@ -470,10 +470,10 @@ class TrafficStreamRule:
     def __str__(self):
         mystr = "Traffic Stream Rule\n"
         mystr += "Packet lengths are: "
-        if self.len < 0:
+        if self.length < 0:
             mystr += "based on content length\n"
         else:
-            mystr += "Fixed at " + str(self.len) + " bytes\n"
+            mystr += "Fixed at " + str(self.length) + " bytes\n"
         mystr += "IP Version: " + str(self.ipv) + "\n"
         mystr += "Protocol: " + self.proto + "\n"
         mystr += "Src IP: " + self.src_ip + "\n"
@@ -538,7 +538,7 @@ class TrafficStreamRule:
         return self.ipv
 
     def getLength(self):
-        return self.len
+        return self.length
 
     def getLatency(self):
         return self.latency
@@ -610,8 +610,8 @@ class TrafficStreamRule:
     def setLatency(self, lat):
         self.latency = lat
 
-    def setLen(self, len=-1):
-        self.len = len
+    def setLen(self, length=-1):
+        self.length = length
 
     def setOOOProb(self, op=50):
         self.ooo_prob = op
@@ -619,8 +619,8 @@ class TrafficStreamRule:
     def setOOO(self, o=False):
         self.ooo = o
 
-    def setPacketLoss(self, len=0):
-        self.loss = len
+    def setPacketLoss(self, loss=0):
+        self.loss = loss
 
     def setProto(self, p="any"):
         self.proto = p
