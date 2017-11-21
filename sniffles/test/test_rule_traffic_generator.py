@@ -1,5 +1,6 @@
 import unittest
 from sniffles.ruletrafficgenerator import *
+from sniffles.rulereader import *
 from sniffles.vendor_mac_list import VENDOR_MAC_OUI
 from sniffles.snifflesconfig import *
 
@@ -66,7 +67,8 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         # source is 0800, destination is 0800
         myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
                                ETHERNET_HDR_GEN_DISTRIBUTION,
-                               'sniffles/test/data_files/mac_definition_file.txt')
+                               'sniffles/test/data_files/'
+                               'mac_definition_file.txt')
         self.assertEqual(''.join(['%02x' % i
                                   for i in myehdr.get_d_mac()[0:2]]),
                          '0080')
@@ -77,12 +79,14 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         mystr1 = str(myehdr)
         myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
                                ETHERNET_HDR_GEN_DISTRIBUTION,
-                               'sniffles/test/data_files/mac_definition_file.txt')
+                               'sniffles/test/data_files/'
+                               'mac_definition_file.txt')
         self.assertEqual(mystr1, str(myehdr))
         myehdr.clear_globals()
         myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
                                ETHERNET_HDR_GEN_DISTRIBUTION,
-                               'sniffles/test/data_files/mac_definition_file.txt')
+                               'sniffles/test/data_files/'
+                               'mac_definition_file.txt')
         self.assertNotEqual(mystr1, str(myehdr))
 
         myehdr.clear_globals()
@@ -90,8 +94,10 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         # source is 0070, destination is 0080
         myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
                                ETHERNET_HDR_GEN_DISTRIBUTION,
-                               'sniffles/test/data_files/mac_definition_file.txt:'
-                               'sniffles/test/data_files/mac_definition_file1.txt')
+                               'sniffles/test/data_files/'
+                               'mac_definition_file.txt:'
+                               'sniffles/test/data_files/'
+                               'mac_definition_file1.txt')
 
         self.assertEqual(''.join(['%02x' % i
                                   for i in myehdr.get_d_mac()[0:2]]),
@@ -106,7 +112,8 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
                                ETHERNET_HDR_GEN_DISTRIBUTION,
                                '?:'
-                               'sniffles/test/data_files/mac_definition_file1.txt')
+                               'sniffles/test/data_files/'
+                               'mac_definition_file1.txt')
 
         self.assertTrue(''.join(['%02x' % i
                                  for i in myehdr.get_s_mac()[0:3]])
@@ -780,8 +787,11 @@ class TestRuleTrafficGenerator(unittest.TestCase):
             if mypkt.get_content() is None or \
                mypkt.get_content().get_size() == 0:
                 self.assertIn(mypkt.transport_hdr.get_ack_num(), [myseq + 1,
-                                                                  myseq + 101, myseq + 201, myseq + 301,
-                                                                  myseq + 401, myseq + 501])
+                                                                  myseq + 101,
+                                                                  myseq + 201,
+                                                                  myseq + 301,
+                                                                  myseq + 401,
+                                                                  myseq + 501])
             else:
                 self.assertEqual(mypkt.get_content().get_size(), 100)
 
@@ -811,8 +821,13 @@ class TestRuleTrafficGenerator(unittest.TestCase):
             if mypkt.get_content() is None or \
                mypkt.get_content().get_size() == 0:
                 self.assertIn(mypkt.transport_hdr.get_ack_num(), [myseq + 1,
-                                                                  myseq + 11, myseq + 21, myseq + 31,
-                                                                  myseq + 41, myseq + 51, myseq + 61, myseq + 71,
+                                                                  myseq + 11,
+                                                                  myseq + 21,
+                                                                  myseq + 31,
+                                                                  myseq + 41,
+                                                                  myseq + 51,
+                                                                  myseq + 61,
+                                                                  myseq + 71,
                                                                   myseq + 81])
             else:
                 self.assertEqual(mypkt.get_content().get_size(), 10)
@@ -859,6 +874,23 @@ class TestRuleTrafficGenerator(unittest.TestCase):
             self.assertEqual(mypkt.get_content().get_size(), 1)
             if i < 4:
                 self.assertIn(mypkt.get_content().get_data(), [b'1', b'2',
-                                                               b'3', b'4', b'5'])
+                                                               b'3', b'4',
+                                                               b'5'])
         mypkt = myts.getNextPacket()
         self.assertEqual(mypkt, None)
+
+    def test_rule_no_content_options(self):
+        myparser = SnortRuleParser()
+        myparser.parseRule(r'alert tcp any any -> $HOME_NET any'
+                           ' (msg:"TCP SYN packet";sid:1000002)')
+        myrule = myparser.getRules()[0]
+        self.assertNotEqual(myrule, None)
+        mytsrule = myrule.getTS()[0]
+        mytsrule.setLen(100)
+        myts = TrafficStream(mytsrule, None, 1, 1)
+        self.assertNotEqual(myts, None)
+        self.assertEqual(myts.hasPackets(), True)
+        mypkt = myts.getNextPacket()
+        self.assertNotEqual(mypkt, None)
+        self.assertGreater(mypkt.get_size(), 100)
+        self.assertEqual(myts.hasPackets(), False)
