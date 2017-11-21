@@ -1461,7 +1461,7 @@ class ContentGenerator:
         self.index = 0
         if rand or rule is None:
             if length < 0:
-                length = random.randint(0, 1400) + 10
+                length = random.randint(10, 1400)
             self.published.append(Content(self.generate_random_data(length),
                                           length, False, False))
         elif full_eval:
@@ -1586,7 +1586,7 @@ class ContentGenerator:
                     path = []
                     self.follow_all_branches(nfa, nfa.start, path)
 
-    def generate_nfa_data(self, rule=None, length=0):
+    def generate_nfa_data(self, rule=None, length=-1):
         if rule:
             data = []
             http_content = []
