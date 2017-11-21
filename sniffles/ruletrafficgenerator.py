@@ -1593,7 +1593,7 @@ class ContentGenerator:
             content_options = rule.getContent()
             if content_options is None:
                 if length == -1:
-                    length = random.randint(0, 1400) + 10
+                    length = random.randint(10, 1400)
                 return self.generate_random_data(length)
             for con in content_options:
                 generated = []
