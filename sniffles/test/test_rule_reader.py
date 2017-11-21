@@ -429,3 +429,15 @@ class TestRuleReader(unittest.TestCase):
         self.assertEqual(tsrules[4].getSrcIp(), '1.2.3.5')
         self.assertEqual(tsrules[4].getOutOfOrder(), True)
         self.assertEqual(tsrules[5].getSport(), '9005')
+
+    def test_test_for_rule_file(self):
+        myp = SnortRuleParser()
+        self.assertTrue(myp.testForRuleFile(
+                        'sniffles/test/test.rules'))
+        self.assertFalse(myp.testForRuleFile(
+                         'sniffles/test/data_files/test_all.xml'))
+        myp = PetabiRuleParser()
+        self.assertFalse(myp.testForRuleFile(
+                        'sniffles/test/data_files/rules/test_rules2.rules'))
+        self.assertTrue(myp.testForRuleFile(
+                         'sniffles/test/data_files/test_all.xml'))

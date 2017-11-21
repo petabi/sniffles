@@ -1256,14 +1256,13 @@ class SnortRuleParser(RuleParser):
     def testForRuleFile(self, filename=None):
         is_snort_rule_file = False
         snort_rule_sig = re.compile(
-            "\\s*(alert|log|pass|activate|dynamic|reject|drop|sdrop)" +
-            "\\s+\\w+\\s+[\\w$]+\\s+[\\w$]+\\s+<?->\\s+[\\w$]+\\s+[\\w$]+" +
-            "\\s*\\([^)]+\\)")
+            r'\s*(alert|log|pass|activate|dynamic|reject|drop|sdrop)'
+            r'\s+\w+\s+[\w$]+\s+[\w$]+\s+<?->\s+[\w$]+\s+[\w$]+\s*\([^)]+\)')
         if self.openSnortFile(filename):
             line = self.fd.readline()
             while line:
                 line = line.strip()
-                if len(line) > 0 and line[0] != '#':
+                if line and line[0] != '#':
                     if snort_rule_sig.match(line):
                         is_snort_rule_file = True
                         break
@@ -1524,9 +1523,8 @@ class RuleList:
                 myp = p()
                 if myp.testForRuleFile(filename):
                     return myp
-        print("Could not find a parser for the rules provided.")
-        print("Using a generic rule parser.  This probably does")
-        print("not do what you are expecting!")
+        print("Could not find a parser for file: ", filename)
+        print("Defaulting to a generic parser.")
         return RuleParser()
 
     def readRuleFile(self, filename):
