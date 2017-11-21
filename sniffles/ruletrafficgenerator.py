@@ -1467,7 +1467,7 @@ class ContentGenerator:
         elif full_eval:
             self.generate_full_eval(rule)
         else:
-            generated = self.generate_nfa_data(rule)
+            generated = self.generate_nfa_data(rule, length)
             if length < 0:
                 if rule and rule.getLength() > 0:
                     length = rule.getLength()
@@ -1586,11 +1586,15 @@ class ContentGenerator:
                     path = []
                     self.follow_all_branches(nfa, nfa.start, path)
 
-    def generate_nfa_data(self, rule=None):
+    def generate_nfa_data(self, rule=None, length=0):
         if rule:
             data = []
             http_content = []
             content_options = rule.getContent()
+            if content_options is None:
+                if length == 0:
+                    length = random.randint(0, 1400) + 10
+                return self.generate_random_data(length)
             for con in content_options:
                 generated = []
                 if con.getName() == 'Snort Rule Content' and \
