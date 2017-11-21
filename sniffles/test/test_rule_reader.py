@@ -433,7 +433,7 @@ class TestRuleReader(unittest.TestCase):
     def test_test_for_rule_file(self):
         myp = SnortRuleParser()
         self.assertTrue(myp.testForRuleFile(
-                        'sniffles/test/test.rules'))
+                        'sniffles/test/data_files/rules/test_rules2.rules'))
         self.assertFalse(myp.testForRuleFile(
                          'sniffles/test/data_files/test_all.xml'))
         myp = PetabiRuleParser()
