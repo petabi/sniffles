@@ -310,7 +310,8 @@ class TrafficStream:
                 self.flow_ack = True
             flow_opts = rule.getFlowOptions()
             self.myp = rule.getPkts()
-            self.packets_in_stream = len(rule.getPkts())
+            if len(rule.getPkts()) > self.packets_in_stream:
+                self.packets_in_stream = len(rule.getPkts())
             self.proto = rule.getProto()
             self.dport = Port(rule.getDport())
             self.sport = Port(rule.getSport())
@@ -541,6 +542,7 @@ class TrafficStream:
                            seq=None, ack=None):
         if myrule is None:
             myrule = self.rule
+
         pkt = None
         con = None
         if self.full_eval:
@@ -637,7 +639,8 @@ class TrafficStream:
             # If p_count is zero, then we have finished with this pkt rule.
             if self.p_count <= 0:
                 self.packets_in_stream -= 1
-                if len(self.myp) > 0:
+                if len(self.myp) > 1 or len(self.myp) == 1 and \
+                   self.packets_in_stream == 0 :
                     self.myp.pop(0)
                 if self.content_string is not None:
                     self.content_string = None

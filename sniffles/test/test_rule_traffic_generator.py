@@ -894,3 +894,28 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         self.assertNotEqual(mypkt, None)
         self.assertGreater(mypkt.get_size(), 100)
         self.assertEqual(myts.hasPackets(), False)
+
+    def test_snort_rule_w_pkt_p_stream_set(self):
+        myparser = SnortRuleParser()
+        myparser.parseRule(r'alert tcp $EXTERNAL_NET any -> '
+                           r'$HOME_NET $HTTP_PORTS (msg:"test1-1";'
+                           r' flow:to_server,established; content:'
+                           r'"work.Method.denyExecution"; nocase; '
+                           r'http_uri; content:"u0023"; nocase; http_uri;'
+                           r' sid:1;')
+        sconf = SnifflesConfig()
+        sconf.setPktsPerStream(7)
+        self.assertEqual(7, sconf.getPktsPerStream())
+        myrule = myparser.getRules()[0]
+        myts = myrule.getTS()
+        self.assertEqual(1, len(myts))
+        self.assertTrue(myts[0].testTypeRule('Standard'))
+        self.assertFalse(myts[0].testTypeRule('Background'))
+        self.assertFalse(myts[0].testTypeRule('ScanAttack'))
+        mycon = Conversation(myrule, sconf)
+        self.assertEqual(1, mycon.getNumberOfStreams())
+        print(str(mycon))
+        count = 0
+        while mycon.getNextPacket():
+            count += 1
+        self.assertEqual(7, count)
