@@ -640,7 +640,7 @@ class TrafficStream:
             if self.p_count <= 0:
                 self.packets_in_stream -= 1
                 if len(self.myp) > 1 or len(self.myp) == 1 and \
-                   self.packets_in_stream == 0 :
+                   self.packets_in_stream == 0:
                     self.myp.pop(0)
                 if self.content_string is not None:
                     self.content_string = None
