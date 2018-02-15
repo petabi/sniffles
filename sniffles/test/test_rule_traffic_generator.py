@@ -1,8 +1,13 @@
+import random
+import struct
 import unittest
-from sniffles.ruletrafficgenerator import *
-from sniffles.rulereader import *
+
+import sniffles.ruletrafficgenerator as rtgen
+from sniffles.rulereader import (BackgroundTrafficRule, RuleList, RulePkt,
+                                 ScanAttackRule, SnortRuleParser,
+                                 TrafficStreamRule)
+from sniffles.snifflesconfig import SnifflesConfig
 from sniffles.vendor_mac_list import VENDOR_MAC_OUI
-from sniffles.snifflesconfig import *
 
 
 class TestRuleTrafficGenerator(unittest.TestCase):
@@ -17,7 +22,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         self.assertEqual(firstTSRule.getTCPOverlap(), True)
         self.assertEqual(firstTSRule.getHandshake(), True)
         self.assertEqual(firstTSRule.getTeardown(), True)
-        myTS = TrafficStream(firstTSRule)
+        myTS = rtgen.TrafficStream(firstTSRule)
         pkt = myTS.getNextPacket()
         initSeqClient = pkt.get_seq_num()
         pkt = myTS.getNextPacket()
@@ -47,17 +52,20 @@ class TestRuleTrafficGenerator(unittest.TestCase):
 
     def test_build_random_ethernet_header(self):
         random.seed()
-        myehdr = EthernetFrame('10.0.0.1', '10.1.1.1', ETHERNET_HDR_GEN_RANDOM)
+        myehdr = rtgen.EthernetFrame(
+            '10.0.0.1', '10.1.1.1', rtgen.ETHERNET_HDR_GEN_RANDOM)
         self.assertIn(myehdr.get_d_mac()[0:3], VENDOR_MAC_OUI)
         self.assertIn(myehdr.get_s_mac()[0:3], VENDOR_MAC_OUI)
         myehdrstr1 = str(myehdr)
-        myehdr = EthernetFrame('10.0.0.1', '10.1.1.1', ETHERNET_HDR_GEN_RANDOM)
+        myehdr = rtgen.EthernetFrame(
+            '10.0.0.1', '10.1.1.1', rtgen.ETHERNET_HDR_GEN_RANDOM)
         myehdrstr2 = str(myehdr)
         self.assertEqual(myehdrstr1, myehdrstr2)
         self.assertEqual(((myehdr.get_ether_type() >> 8) & 0xff), 0x08)
         self.assertEqual((myehdr.get_ether_type() & 0xff), 0x00)
         myehdr.clear_globals()
-        myehdr = EthernetFrame('10.0.0.1', '10.1.1.1', ETHERNET_HDR_GEN_RANDOM)
+        myehdr = rtgen.EthernetFrame(
+            '10.0.0.1', '10.1.1.1', rtgen.ETHERNET_HDR_GEN_RANDOM)
         self.assertNotEqual(myehdrstr1, str(myehdr))
 
     def test_build_ethernet_header_dist(self):
@@ -65,10 +73,10 @@ class TestRuleTrafficGenerator(unittest.TestCase):
                               for addr in VENDOR_MAC_OUI]
 
         # source is 0800, destination is 0800
-        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
-                               ETHERNET_HDR_GEN_DISTRIBUTION,
-                               'sniffles/test/data_files/'
-                               'mac_definition_file.txt')
+        myehdr = rtgen.EthernetFrame('10.2.2.2', '10.3.3.3',
+                                     rtgen.ETHERNET_HDR_GEN_DISTRIBUTION,
+                                     'sniffles/test/data_files/'
+                                     'mac_definition_file.txt')
         self.assertEqual(''.join(['%02x' % i
                                   for i in myehdr.get_d_mac()[0:2]]),
                          '0080')
@@ -77,27 +85,27 @@ class TestRuleTrafficGenerator(unittest.TestCase):
                                   for i in myehdr.get_s_mac()[0:2]]),
                          '0080')
         mystr1 = str(myehdr)
-        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
-                               ETHERNET_HDR_GEN_DISTRIBUTION,
-                               'sniffles/test/data_files/'
-                               'mac_definition_file.txt')
+        myehdr = rtgen.EthernetFrame('10.2.2.2', '10.3.3.3',
+                                     rtgen.ETHERNET_HDR_GEN_DISTRIBUTION,
+                                     'sniffles/test/data_files/'
+                                     'mac_definition_file.txt')
         self.assertEqual(mystr1, str(myehdr))
         myehdr.clear_globals()
-        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
-                               ETHERNET_HDR_GEN_DISTRIBUTION,
-                               'sniffles/test/data_files/'
-                               'mac_definition_file.txt')
+        myehdr = rtgen.EthernetFrame('10.2.2.2', '10.3.3.3',
+                                     rtgen.ETHERNET_HDR_GEN_DISTRIBUTION,
+                                     'sniffles/test/data_files/'
+                                     'mac_definition_file.txt')
         self.assertNotEqual(mystr1, str(myehdr))
 
         myehdr.clear_globals()
 
         # source is 0070, destination is 0080
-        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
-                               ETHERNET_HDR_GEN_DISTRIBUTION,
-                               'sniffles/test/data_files/'
-                               'mac_definition_file.txt:'
-                               'sniffles/test/data_files/'
-                               'mac_definition_file1.txt')
+        myehdr = rtgen.EthernetFrame('10.2.2.2', '10.3.3.3',
+                                     rtgen.ETHERNET_HDR_GEN_DISTRIBUTION,
+                                     'sniffles/test/data_files/'
+                                     'mac_definition_file.txt:'
+                                     'sniffles/test/data_files/'
+                                     'mac_definition_file1.txt')
 
         self.assertEqual(''.join(['%02x' % i
                                   for i in myehdr.get_d_mac()[0:2]]),
@@ -109,11 +117,11 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         myehdr.clear_globals()
 
         # source is randomly, destination is 0070
-        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
-                               ETHERNET_HDR_GEN_DISTRIBUTION,
-                               '?:'
-                               'sniffles/test/data_files/'
-                               'mac_definition_file1.txt')
+        myehdr = rtgen.EthernetFrame('10.2.2.2', '10.3.3.3',
+                                     rtgen.ETHERNET_HDR_GEN_DISTRIBUTION,
+                                     '?:'
+                                     'sniffles/test/data_files/'
+                                     'mac_definition_file1.txt')
 
         self.assertTrue(''.join(['%02x' % i
                                  for i in myehdr.get_s_mac()[0:3]])
@@ -125,10 +133,10 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         myehdr.clear_globals()
 
         # source is 0800, destination is randomly
-        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
-                               ETHERNET_HDR_GEN_DISTRIBUTION,
-                               'examples/mac_definition_file.txt:'
-                               '?')
+        myehdr = rtgen.EthernetFrame('10.2.2.2', '10.3.3.3',
+                                     rtgen.ETHERNET_HDR_GEN_DISTRIBUTION,
+                                     'examples/mac_definition_file.txt:'
+                                     '?')
 
         self.assertEqual(''.join(['%02x' % i
                                   for i in myehdr.get_s_mac()[0:2]]),
@@ -139,10 +147,10 @@ class TestRuleTrafficGenerator(unittest.TestCase):
                         in testVENDOR_MAC_OUI)
 
         # if we dont clear the global, it will be the same
-        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
-                               ETHERNET_HDR_GEN_DISTRIBUTION,
-                               'examples/mac_definition_file1.txt:'
-                               'examples/mac_definition_file.txt')
+        myehdr = rtgen.EthernetFrame('10.2.2.2', '10.3.3.3',
+                                     rtgen.ETHERNET_HDR_GEN_DISTRIBUTION,
+                                     'examples/mac_definition_file1.txt:'
+                                     'examples/mac_definition_file.txt')
 
         self.assertEqual(''.join(['%02x' % i
                                   for i in myehdr.get_s_mac()[0:2]]),
@@ -154,10 +162,10 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         myehdr.clear_globals()
 
         # both is randomly
-        myehdr = EthernetFrame('10.2.2.2', '10.3.3.3',
-                               ETHERNET_HDR_GEN_DISTRIBUTION,
-                               '?:'
-                               '?')
+        myehdr = rtgen.EthernetFrame('10.2.2.2', '10.3.3.3',
+                                     rtgen.ETHERNET_HDR_GEN_DISTRIBUTION,
+                                     '?:'
+                                     '?')
 
         self.assertTrue(''.join(['%02x' % i
                                  for i in myehdr.get_s_mac()[0:3]])
@@ -169,63 +177,63 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         myehdr.clear_globals()
 
     def test_get_dist_mac_oui_with_empty_dist(self):
-        ef = EthernetFrame('10.2.2.2', '10.3.3.3',
-                           ETHERNET_HDR_GEN_DISTRIBUTION)
+        ef = rtgen.EthernetFrame('10.2.2.2', '10.3.3.3',
+                                 rtgen.ETHERNET_HDR_GEN_DISTRIBUTION)
         with self.assertRaises(KeyError):
             ef.get_dist_mac_oui('src')
 
     def test_build_ip_header(self):
-        myipv4a = IPV4(None, None)
-        myipv4b = IPV4(myipv4a.get_sip(), myipv4a.get_dip())
+        myipv4a = rtgen.IPV4(None, None)
+        myipv4b = rtgen.IPV4(myipv4a.get_sip(), myipv4a.get_dip())
         self.assertEqual(myipv4a.get_sip(), myipv4b.get_sip())
         self.assertEqual(myipv4a.get_dip(), myipv4b.get_dip())
-        myipv6a = IPV6(None, None)
-        myipv6b = IPV6(myipv6a.get_sip(), myipv6a.get_dip())
+        myipv6a = rtgen.IPV6(None, None)
+        myipv6b = rtgen.IPV6(myipv6a.get_sip(), myipv6a.get_dip())
         self.assertEqual(myipv6a.get_sip(), myipv6b.get_sip())
         self.assertEqual(myipv6a.get_dip(), myipv6b.get_dip())
 
     def test_get_ports(self):
-        myport = Port("80")
+        myport = rtgen.Port("80")
         self.assertEqual(myport.get_port_value(), 80)
-        myport = Port("$HTTP_PORTS")
-        self.assertIn(myport.get_port_value(), HTTP_PORTS)
-        myport = Port("$FTP_PORTS")
-        self.assertIn(myport.get_port_value(), FTP_PORTS)
-        myport = Port("$MAIL_PORTS")
-        self.assertIn(myport.get_port_value(), MAIL_PORTS)
-        myport = Port("$POP_PORTS")
-        self.assertIn(myport.get_port_value(), POP_PORTS)
-        myport = Port("$SMB_PORTS")
-        self.assertIn(myport.get_port_value(), SMB_PORTS)
-        myport = Port("$NBT_PORTS")
-        self.assertIn(myport.get_port_value(), NBT_PORTS)
-        myport = Port("$NNTP_PORTS")
-        self.assertIn(myport.get_port_value(), NNTP_PORTS)
-        myport = Port("$DNS_PORTS")
-        self.assertIn(myport.get_port_value(), DNS_PORTS)
-        myport = Port("$FILE_PORTS")
-        self.assertIn(myport.get_port_value(), FILE_PORTS)
-        myport = Port("$ORACLE_PORTS")
-        self.assertIn(myport.get_port_value(), ORACLE_PORTS)
-        myport = Port("[10:20]")
+        myport = rtgen.Port("$rtgen.HTTP_PORTS")
+        self.assertIn(myport.get_port_value(), rtgen.HTTP_PORTS)
+        myport = rtgen.Port("$rtgen.FTP_PORTS")
+        self.assertIn(myport.get_port_value(), rtgen.FTP_PORTS)
+        myport = rtgen.Port("$rtgen.MAIL_PORTS")
+        self.assertIn(myport.get_port_value(), rtgen.MAIL_PORTS)
+        myport = rtgen.Port("$rtgen.POP_PORTS")
+        self.assertIn(myport.get_port_value(), rtgen.POP_PORTS)
+        myport = rtgen.Port("$rtgen.SMB_PORTS")
+        self.assertIn(myport.get_port_value(), rtgen.SMB_PORTS)
+        myport = rtgen.Port("$rtgen.NBT_PORTS")
+        self.assertIn(myport.get_port_value(), rtgen.NBT_PORTS)
+        myport = rtgen.Port("$rtgen.NNTP_PORTS")
+        self.assertIn(myport.get_port_value(), rtgen.NNTP_PORTS)
+        myport = rtgen.Port("$rtgen.DNS_PORTS")
+        self.assertIn(myport.get_port_value(), rtgen.DNS_PORTS)
+        myport = rtgen.Port("$rtgen.FILE_PORTS")
+        self.assertIn(myport.get_port_value(), rtgen.FILE_PORTS)
+        myport = rtgen.Port("$rtgen.ORACLE_PORTS")
+        self.assertIn(myport.get_port_value(), rtgen.ORACLE_PORTS)
+        myport = rtgen.Port("[10:20]")
         self.assertIn(myport.get_port_value(), range(10, 21))
-        myport = Port("[:10]")
+        myport = rtgen.Port("[:10]")
         self.assertIn(myport.get_port_value(), range(0, 11))
-        myport = Port("[65530:]")
+        myport = rtgen.Port("[65530:]")
         self.assertIn(myport.get_port_value(), range(65530, 65536))
-        myport = Port("1,5,80,1000,4000,50000")
+        myport = rtgen.Port("1,5,80,1000,4000,50000")
         self.assertIn(myport.get_port_value(), [1, 5, 80, 1000, 4000, 50000])
 
     def test_transport_header(self):
         mydata = struct.pack("!HH", 0, 0)
-        mytrans = ICMP("1", "0")
+        mytrans = rtgen.ICMP("1", "0")
         mytesttrans = struct.pack("!BBHI", 1, 0, 0, 0)
         self.assertEqual(mytrans.get_transport_header(), mytesttrans)
         mytrans.set_checksum('10.0.0.1', '10.0.0.2', 1, mytrans.get_size() + 4,
                              mydata)
         self.assertEqual(mytrans.get_checksum(), 0xeaef)
 
-        mytrans = TCP("4660", "128", 1, 0)
+        mytrans = rtgen.TCP("4660", "128", 1, 0)
         mytesttrans = struct.pack("!HHIIHHHH", 0x1234, 0x80, 1, 0, 0x5000,
                                   0xfde8, 0, 0)
         self.assertEqual(mytrans.get_transport_header(), mytesttrans)
@@ -233,7 +241,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
                              mydata)
         self.assertEqual(mytrans.get_checksum(), 0x8b40)
 
-        mytrans = UDP("17185", "83")
+        mytrans = rtgen.UDP("17185", "83")
         mytesttrans = struct.pack("!HHHH", 0x4321, 0x53, 0, 0)
         self.assertEqual(mytrans.get_transport_header(), mytesttrans)
         mytrans.set_checksum('10.0.0.1', '10.0.0.2', 17,
@@ -314,7 +322,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         # TESTING GET REQUEST AND HTTP_URI
         myrule = myrules.pop(0)
         myts = myrule.getTS()[0]
-        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        mycontent = rtgen.ContentGenerator(myts.getPkts()[0], -1, False, True)
         myhttpdata = mycontent.get_next_published_content().get_data()
         textruledata = struct.pack(
             "!59s", bytearray(map(ord, 'GET /tutorials/other/ '
@@ -326,7 +334,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         # TESTING POST REQUEST AND HTTP_URI
         myrule = myrules.pop(0)
         myts = myrule.getTS()[0]
-        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        mycontent = rtgen.ContentGenerator(myts.getPkts()[0], -1, False, True)
         myhttpdata = mycontent.get_next_published_content().get_data()
         textruledata = convert_to_binary_data('POST /tutorials/other/ '
                                               'HTTP/1.1\r\n'
@@ -354,7 +362,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         self.assertEqual(mySnortContents[2].getContentString(),
                          "cookie: SESSIONID=560")
 
-        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        mycontent = rtgen.ContentGenerator(myts.getPkts()[0], -1, False, True)
         myhttpdata = mycontent.get_next_published_content().get_data()
         test_str = 'POST /tutorials/other/ ' \
                    'HTTP/1.1\r\n' \
@@ -389,7 +397,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         self.assertEqual(mySnortContents[3].getContentString(),
                          "cookie: SESSIONID=560")
 
-        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        mycontent = rtgen.ContentGenerator(myts.getPkts()[0], -1, False, True)
         myhttpdata = mycontent.get_next_published_content().get_data()
         test_str = 'POST /tutorials/other/ ' \
                    'HTTP/1.1 ' \
@@ -431,7 +439,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         self.assertEqual(mySnortContents[4].getContentString(),
                          "cookie: SESSIONID=560")
 
-        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        mycontent = rtgen.ContentGenerator(myts.getPkts()[0], -1, False, True)
         myhttpdata = mycontent.get_next_published_content().get_data()
         test_str = 'POST /tutorials/other/ ' \
                    'HTTP/1.1 ' \
@@ -449,7 +457,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         mySnortContents = myts.getPkts()[0].getContent()
         self.assertEqual(len(mySnortContents), 6)
 
-        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        mycontent = rtgen.ContentGenerator(myts.getPkts()[0], -1, False, True)
         myhttpdata = mycontent.get_next_published_content().get_data()
         test_str = 'POST /tutorials/other/ ' \
                    'HTTP/1.1 ' \
@@ -496,20 +504,20 @@ class TestRuleTrafficGenerator(unittest.TestCase):
 
         myrule = myrules.pop(0)
         myts = myrule.getTS()[0]
-        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        mycontent = rtgen.ContentGenerator(myts.getPkts()[0], -1, False, True)
         mytestcontent = struct.pack("!22s", bytearray(textruledata))
         self.assertEqual(mycontent.get_next_published_content().get_data(),
                          mytestcontent)
 
         myrule = myrules.pop(0)
         myts = myrule.getTS()[0]
-        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        mycontent = rtgen.ContentGenerator(myts.getPkts()[0], -1, False, True)
         self.assertEqual(
             len(mycontent.get_next_published_content().get_data()), 30)
 
         myrule = myrules.pop(0)
         myts = myrule.getTS()[0]
-        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        mycontent = rtgen.ContentGenerator(myts.getPkts()[0], -1, False, True)
         myhttpdata = mycontent.get_next_published_content().get_data()
 
         textruledata = struct.pack(
@@ -522,7 +530,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         myrule = myrules.pop(0)
         myts = myrule.getTS()[0]
         self.assertEqual(len(myrules), 0)
-        mycontent = ContentGenerator(myts.getPkts()[0], -1, False, True)
+        mycontent = rtgen.ContentGenerator(myts.getPkts()[0], -1, False, True)
         myhttpdata = mycontent.get_next_published_content().get_data()
         textruledata = struct.pack(
             "!69s", bytearray(map(ord, "POST www.test.com/hello/ "
@@ -531,12 +539,12 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         self.assertEqual(myhttpdata, textruledata)
 
     def test_content_gen(self):
-        cg = ContentGenerator()
+        cg = rtgen.ContentGenerator()
         mycon = cg.get_next_published_content()
         self.assertNotEqual(mycon.get_size(), 0)
 
         mypkt = RulePkt("to client", "/abcdef/m", 1, 150)
-        cg = ContentGenerator(mypkt, 150, False, True)
+        cg = rtgen.ContentGenerator(mypkt, 150, False, True)
         mycon = cg.get_next_published_content()
         self.assertEqual(mycon.get_size(), 150)
         self.assertEqual(
@@ -546,13 +554,13 @@ class TestRuleTrafficGenerator(unittest.TestCase):
             b'abcabcabcabcabcabcabcabcabcdef')
 
         mypkt = RulePkt("to server", "/1234567890/", 1, 5)
-        cg = ContentGenerator(mypkt, 5, False, True)
+        cg = rtgen.ContentGenerator(mypkt, 5, False, True)
         mycon = cg.get_next_published_content()
         self.assertEqual(mycon.get_size(), 5)
         self.assertEqual(mycon.get_data(), b'12345')
 
         mypkt = RulePkt("to server", "/abc(cd|ef)g/")
-        cg = ContentGenerator(mypkt, -1, False, True, True)
+        cg = rtgen.ContentGenerator(mypkt, -1, False, True, True)
 
         # Note: 4 is the correct number of published content as the above
         # regex is not anchored and thus can begin with an arbitrary
@@ -563,24 +571,24 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         self.assertEqual(cg.get_number_of_published_content(), 1)
 
         mypkt = RulePkt("to server", "/^1234567890/")
-        cg = ContentGenerator(mypkt)
+        cg = rtgen.ContentGenerator(mypkt)
         mycon = cg.get_next_published_content()
         self.assertEqual(mycon.get_size(), 10)
 
     def test_content_gen_zero_data(self):
         mypkt = RulePkt("to client", "/a*/", 1)
-        cg = ContentGenerator(mypkt)
+        cg = rtgen.ContentGenerator(mypkt)
         mycon = cg.get_next_published_content()
         self.assertEqual(mycon.get_size(), 1)
         self.assertEqual(mycon.get_data(), b'a')
 
     def test_packet(self):
         myrpkt = RulePkt("to server", "/12345/")
-        cg = ContentGenerator(myrpkt)
-        mypkt = Packet('udp', '10.11.12.13', '13.12.11.10', 4, '1234', '4321',
-                       ACK, 0, 0, ETHERNET_HDR_GEN_RANDOM, None,
-                       cg.get_next_published_content())
-        ip_gen = IPV4()
+        cg = rtgen.ContentGenerator(myrpkt)
+        mypkt = rtgen.Packet('udp', '10.11.12.13', '13.12.11.10', 4, '1234', '4321',
+                             rtgen.ACK, 0, 0, rtgen.ETHERNET_HDR_GEN_RANDOM, None,
+                             cg.get_next_published_content())
+        ip_gen = rtgen.IPV4()
         self.assertEqual(mypkt.get_src_ip(), '10.11.12.13')
         self.assertEqual(mypkt.get_dst_ip(), '13.12.11.10')
         self.assertEqual(mypkt.get_size(), 47)
@@ -595,7 +603,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         for protocol in protocol_list:
             rule = BackgroundTrafficRule()
             rule.updateContent(protocol)
-            backgroundTraffic = BackgroundTraffic(rule, None)
+            backgroundTraffic = rtgen.BackgroundTraffic(rule, None)
 
             # Get port value depending on flow
             flow = rule.getFlowOptions()
@@ -608,11 +616,11 @@ class TestRuleTrafficGenerator(unittest.TestCase):
 
             # Check if the port is chosen from correct list
             if protocol == 'http':
-                self.assertIn(port_value, HTTP_PORTS)
+                self.assertIn(port_value, rtgen.HTTP_PORTS)
             elif protocol == 'ftp':
-                self.assertIn(port_value, FTP_PORTS)
+                self.assertIn(port_value, rtgen.FTP_PORTS)
             elif protocol == 'pop':
-                self.assertIn(port_value, POP_PORTS)
+                self.assertIn(port_value, rtgen.POP_PORTS)
             elif protocol == 'imap':
                 self.assertEqual(port_value, 143)
             elif protocol == 'smtp':
@@ -620,10 +628,10 @@ class TestRuleTrafficGenerator(unittest.TestCase):
 
     def test_scan(self):
 
-        rule = ScanAttackRule(SYN_SCAN, '192.168.1.2', ['1', '2', '3', '4'],
+        rule = ScanAttackRule(rtgen.SYN_SCAN, '192.168.1.2', ['1', '2', '3', '4'],
                               '4567', 1, 100, 0, 100)
         rule.setSrcIp('192.168.1.1')
-        scanner = ScanAttack(rule, None)
+        scanner = rtgen.ScanAttack(rule, None)
 
         self.assertEqual(scanner.getPacketsRemaining(), 100)
         mypkt = scanner.getNextPacket()
@@ -636,12 +644,12 @@ class TestRuleTrafficGenerator(unittest.TestCase):
             scanner.getNextPacket()
         self.assertEqual(scanner.getPacketsRemaining(), 1)
 
-        rule = ScanAttackRule(CONNECTION_SCAN, '192.168.1.2',
+        rule = ScanAttackRule(rtgen.CONNECTION_SCAN, '192.168.1.2',
                               ['1', '2', '3', '4'],
                               '4567', 1, 100, 0, 100)
         rule.setSrcIp('192.168.1.1')
 
-        scanner = ScanAttack(rule, None)
+        scanner = rtgen.ScanAttack(rule, None)
 
         self.assertEqual(scanner.getPacketsRemaining(), 100)
         for i in range(0, 299):
@@ -649,7 +657,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         self.assertEqual(scanner.getPacketsRemaining(), 1)
 
     def test_traffic_stream_rand(self):
-        myts = TrafficStream()
+        myts = rtgen.TrafficStream()
         self.assertEqual(myts.hasPackets(), True)
         myp = myts.getNextPacket()
         self.assertNotEqual(myp.get_size(), 0)
@@ -658,7 +666,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         myConfig.setPktLength(100)
         myConfig.setPktsPerStream(5)
 
-        myts = TrafficStream(None, myConfig)
+        myts = rtgen.TrafficStream(None, myConfig)
 
         mycount = 0
         while myts.hasPackets():
@@ -679,20 +687,21 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         myConfig.setTCPHandshake(True)
         myConfig.setTCPTeardown(True)
 
-        myts = TrafficStream(None, myConfig)
+        myts = rtgen.TrafficStream(None, myConfig)
 
         mypkt = myts.getNextPacket()
         while mypkt.get_proto() != 'tcp':
-            myts = TrafficStream(None, myConfig)
+            myts = rtgen.TrafficStream(None, myConfig)
             mypkt = myts.getNextPacket()
         myseq = mypkt.transport_hdr.get_seq_num()
 
-        self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
+        self.assertEqual(mypkt.transport_hdr.get_flags(), rtgen.SYN)
         mypkt = myts.getNextPacket()
-        self.assertEqual(mypkt.transport_hdr.get_flags(), (SYN + ACK))
+        self.assertEqual(mypkt.transport_hdr.get_flags(),
+                         (rtgen.SYN + rtgen.ACK))
         myack = mypkt.transport_hdr.get_seq_num()
         mypkt = myts.getNextPacket()
-        self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
+        self.assertEqual(mypkt.transport_hdr.get_flags(), rtgen.ACK)
         self.assertEqual(mypkt.transport_hdr.get_seq_num(), myseq + 1)
         self.assertEqual(mypkt.transport_hdr.get_ack_num(), myack + 1)
         self.assertEqual(mypkt.get_size(), 254)
@@ -701,13 +710,15 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         self.assertEqual(mypkt.get_size(), 54)
         self.assertEqual(mypkt.get_content().get_size(), 0)
         mypkt = myts.getNextPacket()
-        self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
+        self.assertEqual(mypkt.transport_hdr.get_flags(),
+                         rtgen.FIN + rtgen.ACK)
         mypkt = myts.getNextPacket()
-        self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
+        self.assertEqual(mypkt.transport_hdr.get_flags(), rtgen.ACK)
         mypkt = myts.getNextPacket()
-        self.assertEqual(mypkt.transport_hdr.get_flags(), FIN + ACK)
+        self.assertEqual(mypkt.transport_hdr.get_flags(),
+                         rtgen.FIN + rtgen.ACK)
         mypkt = myts.getNextPacket()
-        self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
+        self.assertEqual(mypkt.transport_hdr.get_flags(), rtgen.ACK)
 
     def test_traffic_stream_frags(self):
 
@@ -725,15 +736,16 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         myConfig.setTCPTeardown(True)
         myConfig.setFullMatch(True)
 
-        myts = TrafficStream(mytsrule, myConfig)
+        myts = rtgen.TrafficStream(mytsrule, myConfig)
 
         mypkt = myts.getNextPacket()
         myseq = mypkt.transport_hdr.get_seq_num()
-        self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
+        self.assertEqual(mypkt.transport_hdr.get_flags(), rtgen.SYN)
         mypkt = myts.getNextPacket()
-        self.assertEqual(mypkt.transport_hdr.get_flags(), (SYN + ACK))
+        self.assertEqual(mypkt.transport_hdr.get_flags(),
+                         (rtgen.SYN + rtgen.ACK))
         mypkt = myts.getNextPacket()
-        self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
+        self.assertEqual(mypkt.transport_hdr.get_flags(), rtgen.ACK)
         self.assertEqual(mypkt.transport_hdr.get_seq_num(), myseq + 1)
         mypkt = myts.getNextPacket()
         self.assertNotEqual(mypkt.network_hdr.get_frag_id(), 0)
@@ -747,7 +759,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         self.assertIn(mypkt.get_size(), [202, 218])
         mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.get_size(), 54)
-        self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
+        self.assertEqual(mypkt.transport_hdr.get_flags(), rtgen.ACK)
         mypkt = myts.getNextPacket()
         self.assertNotEqual(mypkt.network_hdr.get_frag_id(), 0)
         self.assertIn(mypkt.network_hdr.get_frag_offset(), [8192, 8213, 42])
@@ -760,7 +772,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         self.assertIn(mypkt.get_size(), [202, 218])
         mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.get_size(), 54)
-        self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
+        self.assertEqual(mypkt.transport_hdr.get_flags(), rtgen.ACK)
 
     def test_traffic_stream_ooo(self):
 
@@ -775,13 +787,14 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         myConfig.setTCPACK(True)
         myConfig.setTCPHandshake(True)
 
-        myts = TrafficStream(mytsrule, myConfig)
+        myts = rtgen.TrafficStream(mytsrule, myConfig)
 
         mypkt = myts.getNextPacket()
         myseq = mypkt.transport_hdr.get_seq_num()
-        self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
+        self.assertEqual(mypkt.transport_hdr.get_flags(), rtgen.SYN)
         mypkt = myts.getNextPacket()
-        self.assertEqual(mypkt.transport_hdr.get_flags(), (SYN + ACK))
+        self.assertEqual(mypkt.transport_hdr.get_flags(),
+                         (rtgen.SYN + rtgen.ACK))
         while myts.hasPackets():
             mypkt = myts.getNextPacket()
             if mypkt.get_content() is None or \
@@ -809,13 +822,14 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         myConfig.setTCPHandshake(True)
         myConfig.setFullMatch(True)
 
-        myts = TrafficStream(mytsrule, myConfig)
+        myts = rtgen.TrafficStream(mytsrule, myConfig)
 
         mypkt = myts.getNextPacket()
         myseq = mypkt.transport_hdr.get_seq_num()
-        self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
+        self.assertEqual(mypkt.transport_hdr.get_flags(), rtgen.SYN)
         mypkt = myts.getNextPacket()
-        self.assertEqual(mypkt.transport_hdr.get_flags(), (SYN + ACK))
+        self.assertEqual(mypkt.transport_hdr.get_flags(),
+                         (rtgen.SYN + rtgen.ACK))
         while myts.hasPackets():
             mypkt = myts.getNextPacket()
             if mypkt.get_content() is None or \
@@ -842,15 +856,15 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         myConfig = SnifflesConfig()
         myConfig.setFullMatch(True)
 
-        myts = TrafficStream(mytsrule, myConfig)
+        myts = rtgen.TrafficStream(mytsrule, myConfig)
 
         mypkt = myts.getNextPacket()
-        self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
+        self.assertEqual(mypkt.transport_hdr.get_flags(), rtgen.ACK)
         self.assertEqual(mypkt.get_content().get_size(), 5)
         self.assertEqual(mypkt.get_content().get_data(), b'abcde')
 
         mypkt = myts.getNextPacket()
-        self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
+        self.assertEqual(mypkt.transport_hdr.get_flags(), rtgen.ACK)
         self.assertNotEqual(mypkt.get_content().get_data(), b'abcde')
         self.assertEqual(mypkt.get_content().get_data(), b'fghij')
         self.assertEqual(mypkt.get_content().get_size(), 5)
@@ -866,11 +880,11 @@ class TestRuleTrafficGenerator(unittest.TestCase):
 
         myConfig = SnifflesConfig()
 
-        myts = TrafficStream(mytsrule, myConfig)
+        myts = rtgen.TrafficStream(mytsrule, myConfig)
 
         for i in range(0, 5):
             mypkt = myts.getNextPacket()
-            self.assertEqual(mypkt.transport_hdr.get_flags(), ACK)
+            self.assertEqual(mypkt.transport_hdr.get_flags(), rtgen.ACK)
             self.assertEqual(mypkt.get_content().get_size(), 1)
             if i < 4:
                 self.assertIn(mypkt.get_content().get_data(), [b'1', b'2',
@@ -882,12 +896,12 @@ class TestRuleTrafficGenerator(unittest.TestCase):
     def test_rule_no_content_options(self):
         myparser = SnortRuleParser()
         myparser.parseRule(r'alert tcp any any -> $HOME_NET any'
-                           ' (msg:"TCP SYN packet";sid:1000002)')
+                           ' (msg:"TCP rtgen.SYN packet";sid:1000002)')
         myrule = myparser.getRules()[0]
         self.assertNotEqual(myrule, None)
         mytsrule = myrule.getTS()[0]
         mytsrule.setLen(100)
-        myts = TrafficStream(mytsrule, None, 1, 1)
+        myts = rtgen.TrafficStream(mytsrule, None, 1, 1)
         self.assertNotEqual(myts, None)
         self.assertEqual(myts.hasPackets(), True)
         mypkt = myts.getNextPacket()
@@ -898,7 +912,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
     def test_snort_rule_w_pkt_p_stream_set(self):
         myparser = SnortRuleParser()
         myparser.parseRule(r'alert tcp $EXTERNAL_NET any -> '
-                           r'$HOME_NET $HTTP_PORTS (msg:"test1-1";'
+                           r'$HOME_NET $rtgen.HTTP_PORTS (msg:"test1-1";'
                            r' flow:to_server,established; content:'
                            r'"work.Method.denyExecution"; nocase; '
                            r'http_uri; content:"u0023"; nocase; http_uri;'
@@ -912,7 +926,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         self.assertTrue(myts[0].testTypeRule('Standard'))
         self.assertFalse(myts[0].testTypeRule('Background'))
         self.assertFalse(myts[0].testTypeRule('ScanAttack'))
-        mycon = Conversation(myrule, sconf)
+        mycon = rtgen.Conversation(myrule, sconf)
         self.assertEqual(1, mycon.getNumberOfStreams())
         count = 0
         while mycon.getNextPacket():
@@ -922,7 +936,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
     def test_snort_rule_w_pkt_p_stream_set_w_ack(self):
         myparser = SnortRuleParser()
         myparser.parseRule(r'alert tcp $EXTERNAL_NET any -> '
-                           r'$HOME_NET $HTTP_PORTS (msg:"test1-1";'
+                           r'$HOME_NET $rtgen.HTTP_PORTS (msg:"test1-1";'
                            r' flow:to_server,established; content:'
                            r'"work.Method.denyExecution"; nocase; '
                            r'http_uri; content:"u0023"; nocase; http_uri;'
@@ -932,7 +946,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         sconf.setTCPACK(True)
         self.assertEqual(7, sconf.getPktsPerStream())
         myrule = myparser.getRules()[0]
-        mycon = Conversation(myrule, sconf)
+        mycon = rtgen.Conversation(myrule, sconf)
         self.assertEqual(1, mycon.getNumberOfStreams())
         count = 0
         while mycon.getNextPacket():

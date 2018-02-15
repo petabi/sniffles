@@ -1,6 +1,8 @@
 import unittest
-from sniffles.ruletrafficgenerator import *
-from sniffles.snifflesconfig import *
+
+from sniffles.rulereader import RuleContent, RulePkt, TrafficStreamRule
+from sniffles.ruletrafficgenerator import ACK, FIN, SYN, TrafficStream
+from sniffles.snifflesconfig import SnifflesConfig
 
 
 class TestExamples(unittest.TestCase):

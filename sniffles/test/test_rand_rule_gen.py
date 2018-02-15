@@ -1,14 +1,15 @@
-import unittest
-from sniffles.rand_rule_gen import *
-from sniffles.feature import *
 import random
+import unittest
+
+import sniffles.feature as feature
+from sniffles.rand_rule_gen import generateRules, getRuleWithFormat
 
 
 class TestRandRuleGen(unittest.TestCase):
 
     def test_generate_rule(self):
         # testing generic feature
-        featureParser = FeatureParser()
+        featureParser = feature.FeatureParser()
         line = "type=feature;name=music;complexity_prob=100;" \
                "ambiguity_list=[any,{beethoven,mozart,bach}" \
                ",[5,150],[20:25]];"
@@ -28,7 +29,7 @@ class TestRandRuleGen(unittest.TestCase):
         value = rule[6:]
 
         # testing protocol feature
-        featureParser = FeatureParser()
+        featureParser = feature.FeatureParser()
         line = "type=protocol; name=proto; proto_list=[IP,UDP," \
                "ICMP]; complexity_prob=0;ambiguity_list=None;"
         featureParser.parseLine(line)
@@ -40,7 +41,7 @@ class TestRandRuleGen(unittest.TestCase):
                         or rule == "proto=ICMP; ")
 
         # testing ip feature
-        featureParser = FeatureParser()
+        featureParser = feature.FeatureParser()
         line = "type=ip; name=sip; version=4; complexity_prob=-1;"
         featureParser.parseLine(line)
         line = "type=ip; name=dip; version=4; complexity_prob=100;"
@@ -98,7 +99,7 @@ class TestRandRuleGen(unittest.TestCase):
             self.assertTrue(val >= 0 and val <= 65535)
 
     def test_snort_rule_getRuleWithFormat(self):
-        featureParser = FeatureParser()
+        featureParser = feature.FeatureParser()
         line = "type=feature; name=alert; complexity_prob=100; " \
                "ambiguity_list=[alert, log, dyn" \
                "amic, drop, sdrop]"

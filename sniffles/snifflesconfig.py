@@ -1,14 +1,17 @@
-import re
-import sys
+import calendar
+import datetime
 import getopt
 import os
-import datetime
-import calendar
+import re
+import sys
 import time
-from os.path import normcase, join
-from sniffles.rulereader import *
-from sniffles.ruletrafficgenerator import *
-from pkg_resources import get_distribution, DistributionNotFound
+from os.path import join, normcase
+
+from pkg_resources import DistributionNotFound, get_distribution
+
+from sniffles.rulereader import (OPEN_PORT_CHANCE, SYN_SCAN,
+                                 BackgroundTrafficRule)
+from sniffles.ruletrafficgenerator import CONNECTION_SCAN, SUPPORTED_PROTOCOLS
 
 
 def getVersion():

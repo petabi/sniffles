@@ -1,10 +1,10 @@
 import unittest
-from sniffles.rulereader import *
+import sniffles.rulereader as reader
 
 
 class TestXMLRuleReader(unittest.TestCase):
     def test_parse_rule(self):
-        myrl = RuleList()
+        myrl = reader.RuleList()
         myrl.readRuleFile('sniffles/test/data_files/test_all.xml')
         self.assertEqual(len(myrl.getParsedRules()), 1)
         for r in myrl.getParsedRules():

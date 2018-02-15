@@ -1,7 +1,8 @@
 import argparse
 
-from sniffles.feature import *
-from sniffles.rule_formats import *
+from sniffles.feature import FeatureParser
+from sniffles.rule_formats import (PetabiPacketClassifierFormat, RegexFormat,
+                                   RuleFormat, SnortRuleFormat)
 
 
 def main():

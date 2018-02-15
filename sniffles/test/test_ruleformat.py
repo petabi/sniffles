@@ -1,6 +1,7 @@
-import unittest
-from sniffles.rule_formats import *
 import random
+import unittest
+
+from sniffles.rule_formats import SnortRuleFormat
 
 
 class TestRuleFormat(unittest.TestCase):

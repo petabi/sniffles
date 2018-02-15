@@ -6,10 +6,12 @@ import sys
 
 from sortedcontainers import SortedDict
 
-from sniffles.rulereader import *
-from sniffles.ruletrafficgenerator import *
-from sniffles.snifflesconfig import *
-from sniffles.traffic_writer import *
+from sniffles.rulereader import (BackgroundTrafficRule, Rule, RuleList,
+                                 ScanAttackRule)
+from sniffles.ruletrafficgenerator import (Conversation, set_ipv4_home,
+                                           set_ipv6_home)
+from sniffles.snifflesconfig import SnifflesConfig, getVersion
+from sniffles.traffic_writer import TrafficWriter
 
 TOTAL_GENERATED_PACKETS = 0
 TOTAL_GENERATED_STREAMS = 0
