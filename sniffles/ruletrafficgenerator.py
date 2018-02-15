@@ -8,6 +8,7 @@ import socket
 import struct
 import sys
 import time
+import warnings
 from collections import OrderedDict
 from os import listdir
 from os.path import isfile, join
@@ -557,12 +558,9 @@ class TrafficStream:
             if self.eval_pkts:
                 pkt = self.eval_pkts.pop(0)
             else:
-                print("Problem building full eval packets.")
-                print("Most likely you are trying to build full-eval")
-                print("Packets for rules that are not regular expressions.")
-                print("Sniffles only supports this feature for regular")
-                print("expressions.")
-                sys.exit(1)
+                raise ValueError("Problem building full eval packets. " +
+                                 "Sniffles only supports this feature for " +
+                                 "regular expressions.")
             self.packets_in_stream -= 1
         else:
             if not ack_only:
@@ -1611,13 +1609,13 @@ class ContentGenerator:
                         generated = self.generate_from_regex_wrapper(
                             con.getContentString())
                         if len(generated) < 1:
-                            print(
-                                "did not generate from: ",
-                                con.getContentString())
-                            sys.exit(0)
+                            # If we generate no data at this point, we must
+                            # assume that is a valid possibility--just return
+                            # an empty data.
+                            return data
                     else:
-                        print("Cannot generate NFA Data from: ", con)
-                        print("\n")
+                        raise ValueError("Cannot generate NFA Data from: " +
+                                         con)
 
                 if generated:
                     inter_char = 0
@@ -1777,7 +1775,8 @@ class ContentGenerator:
                 if len(generated) > 0:
                     break
         if len(generated) < 1:
-            print("No content generated!")
+            warnings.warn("No content generated for regex: " + pcre,
+                          UserWarning)
         return generated
 
     """
@@ -1964,8 +1963,8 @@ class EthernetFrame:
                 try:
                     fd = open(path, 'r')
                 except Exception:
-                    print("Could not open mac definition file: ", path)
-                    sys.exit(1)
+                    raise ValueError("Could not open mac definition file: " +
+                                     path)
 
                 VENDOR_MAC_DIST[origin] = OrderedDict()
 
@@ -2021,8 +2020,8 @@ class EthernetFrame:
                 elif paths[1] != "?":
                     dest = paths[1]
             else:
-                print("Invalid format for mac distribution file: " + dist_file)
-                sys.exit(0)
+                raise ValueError("Invalid format for mac distribution file: " +
+                                 dist_file)
 
             self.create_vendor_mac_dist(source, dest)
 
