@@ -1,9 +1,11 @@
-import re
-import xml.etree.ElementTree as ET
 import os
+import re
 import unittest
-from sniffles.petabi_rule_writer.petabi_rule_writer import *
-from sniffles.rulereader import *
+import xml.etree.ElementTree as ET
+
+import sniffles.petabi_rule_writer.petabi_rule_writer as writer
+from sniffles.rulereader import PetabiRuleParser
+
 
 """Unit tests for petabi_rule_writer.py
 
@@ -30,8 +32,8 @@ class TestPetabiRuleWriter(unittest.TestCase):
         ttl = '4'
         ttlExpiry = '5'
         pktAck = True
-        pktRule = formatPktRule(regex, count, fragment, flow, split, ttl,
-                                ttlExpiry, pktAck)
+        pktRule = writer.formatPktRule(regex, count, fragment, flow, split, ttl,
+                                       ttlExpiry, pktAck)
         root = ET.fromstring(pktRule)
         for attribute in root.attrib:
             if attribute == 'content':
@@ -70,9 +72,9 @@ class TestPetabiRuleWriter(unittest.TestCase):
         out_of_order_prob = '50'
         packet_loss = '50'
         tcpOverlap = True
-        tsRule = formatTrafficStreamRule(proto, src, dst, dport, sport, ack,
-                                         out_of_order, out_of_order_prob,
-                                         packet_loss, tcpOverlap)
+        tsRule = writer.formatTrafficStreamRule(proto, src, dst, dport, sport, ack,
+                                                out_of_order, out_of_order_prob,
+                                                packet_loss, tcpOverlap)
         # Add ending tag for testing purpsoe
         tsRule += "    </traffic_stream>"
         root = ET.fromstring(tsRule)
@@ -99,9 +101,9 @@ class TestPetabiRuleWriter(unittest.TestCase):
                 self.assertEqual(root.attrib[attribute], 'true')
 
         # Check if the head and tail is in right format
-        tsRule = formatTrafficStreamRule(proto, src, dst, dport, sport, ack,
-                                         out_of_order, out_of_order_prob,
-                                         packet_loss, tcpOverlap)
+        tsRule = writer.formatTrafficStreamRule(proto, src, dst, dport, sport, ack,
+                                                out_of_order, out_of_order_prob,
+                                                packet_loss, tcpOverlap)
         tsRule = tsRule.strip()
         self.assertEqual(tsRule[-1], '>')
         tsFormat = tsRule.split(' ')
@@ -111,8 +113,8 @@ class TestPetabiRuleWriter(unittest.TestCase):
     def test_background_rule_format(self):
         background_percentage = '50'
         protocol_dist = ['20', '20', '20', '20', '20']
-        background_format = formatBackgroundTrafficRule(background_percentage,
-                                                        protocol_dist)
+        background_format = writer.formatBackgroundTrafficRule(background_percentage,
+                                                               protocol_dist)
         # Add ending tag for test purpose
         background_format += "    </traffic_stream>"
         root = ET.fromstring(background_format)
@@ -142,7 +144,7 @@ class TestPetabiRuleWriter(unittest.TestCase):
     def test_rule_format(self):
         # Check if number or regex matches number of rules
         regexList = ["/abc/", "/def/", "/ghi/"]
-        ruleSet = formatRule(regexList)
+        ruleSet = writer.formatRule(regexList)
         self.assertEqual(len(ruleSet), 3)
 
         # Check the order of rule
@@ -180,13 +182,13 @@ class TestPetabiRuleWriter(unittest.TestCase):
         bg_traffic_percentage = '50'
         protocol_dist = ['10', '10', '10', '*', '10']
 
-        rule = formatRule(regexList, ruleName, proto, src, dst, dport, sport,
-                          out_of_order, out_of_order_prob, packet_loss,
-                          tcpOverlap, count, fragment, flow, split, ttl,
-                          ttlExpiry, pktAck, tsAck, bg_traffic_percentage,
-                          protocol_dist)
+        rule = writer.formatRule(regexList, ruleName, proto, src, dst, dport, sport,
+                                 out_of_order, out_of_order_prob, packet_loss,
+                                 tcpOverlap, count, fragment, flow, split, ttl,
+                                 ttlExpiry, pktAck, tsAck, bg_traffic_percentage,
+                                 protocol_dist)
 
-        printRule(rule, filename)
+        writer.printRule(rule, filename)
         parser = PetabiRuleParser()
         parser.parseRuleFile(filename)
         os.remove(filename)

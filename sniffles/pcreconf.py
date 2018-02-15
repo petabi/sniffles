@@ -164,7 +164,7 @@ OP_ASSERT_ACCEPT = 159
 OP_CLOSE = 160
 OP_SKIPZERO = 161
 
-PCRE_OPLEN = [
+OPLEN = [
     1,
     1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1,

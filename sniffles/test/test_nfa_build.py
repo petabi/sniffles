@@ -1,5 +1,5 @@
 import unittest
-from sniffles.nfa import *
+from sniffles.nfa import NFA, pcre2nfa
 
 
 class TestNFABuild(unittest.TestCase):

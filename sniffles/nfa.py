@@ -1,5 +1,6 @@
 import sniffles.pcrecomp
-from sniffles.pcreconf import *
+import sniffles.pcreconf as pcre
+
 WITH_STATS = False  # Compile nfa with stats or not.
 E = 256  # epsilon
 NSYMBOLS = 256
@@ -287,112 +288,112 @@ class NFABuilder:
         """Add states to convert the current instruction.
         """
         opcode = self.code[self.cp]
-        if opcode == OP_ANY or opcode == OP_ALLANY:
-            sp = self.op_any(sp)
-        elif opcode == OP_BRA or opcode == OP_CBRA or opcode == OP_SCBRA:
-            sp = self.op_bra(sp)
-        elif opcode == OP_BRAZERO or opcode == OP_BRAMINZERO:
-            sp = self.op_brazero(sp)
-        elif opcode == OP_CHAR or opcode == OP_CHARI:
-            sp = self.op_char(sp)
-        elif opcode == OP_CIRC or opcode == OP_CIRCM:
-            sp = self.op_circ(sp)
-        elif opcode == OP_CLASS:
-            sp = self.op_class(sp)
-        elif opcode == OP_DIGIT:
-            sp = self.op_digit(sp)
-        elif opcode == OP_EXACT or opcode == OP_EXACTI:
-            sp = self.op_exact(sp)
-        elif opcode == OP_NCLASS:
-            sp = self.op_class(sp)
-        elif opcode == OP_NOT or opcode == OP_NOTI:
-            sp = self.op_not(sp)
-        elif opcode == OP_NOT_DIGIT:
-            sp = self.op_not_digit(sp)
-        elif opcode == OP_NOTEXACT or opcode == OP_NOTEXACTI:
-            sp = self.op_notexact(sp)
+        if opcode == pcre.OP_ANY or opcode == pcre.OP_ALLANY:
+            sp = self.OP_any(sp)
+        elif opcode == pcre.OP_BRA or opcode == pcre.OP_CBRA or opcode == pcre.OP_SCBRA:
+            sp = self.OP_bra(sp)
+        elif opcode == pcre.OP_BRAZERO or opcode == pcre.OP_BRAMINZERO:
+            sp = self.OP_brazero(sp)
+        elif opcode == pcre.OP_CHAR or opcode == pcre.OP_CHARI:
+            sp = self.OP_char(sp)
+        elif opcode == pcre.OP_CIRC or opcode == pcre.OP_CIRCM:
+            sp = self.OP_circ(sp)
+        elif opcode == pcre.OP_CLASS:
+            sp = self.OP_class(sp)
+        elif opcode == pcre.OP_DIGIT:
+            sp = self.OP_digit(sp)
+        elif opcode == pcre.OP_EXACT or opcode == pcre.OP_EXACTI:
+            sp = self.OP_exact(sp)
+        elif opcode == pcre.OP_NCLASS:
+            sp = self.OP_class(sp)
+        elif opcode == pcre.OP_NOT or opcode == pcre.OP_NOTI:
+            sp = self.OP_not(sp)
+        elif opcode == pcre.OP_NOT_DIGIT:
+            sp = self.OP_not_digit(sp)
+        elif opcode == pcre.OP_NOTEXACT or opcode == pcre.OP_NOTEXACTI:
+            sp = self.OP_notexact(sp)
         elif (
-            opcode == OP_NOTPLUS or opcode == OP_NOTMINPLUS or
-            opcode == OP_NOTPOSPLUS or opcode == OP_NOTPLUSI or
-            opcode == OP_NOTMINPLUSI or opcode == OP_NOTPOSPLUSI
+            opcode == pcre.OP_NOTPLUS or opcode == pcre.OP_NOTMINPLUS or
+            opcode == pcre.OP_NOTPOSPLUS or opcode == pcre.OP_NOTPLUSI or
+            opcode == pcre.OP_NOTMINPLUSI or opcode == pcre.OP_NOTPOSPLUSI
         ):
-            sp = self.op_notplus(sp)
+            sp = self.OP_notplus(sp)
         elif (
-            opcode == OP_NOTSTAR or opcode == OP_NOTMINSTAR or
-            opcode == OP_NOTPOSSTAR or opcode == OP_NOTSTARI or
-            opcode == OP_NOTMINSTARI or opcode == OP_NOTPOSSTARI
+            opcode == pcre.OP_NOTSTAR or opcode == pcre.OP_NOTMINSTAR or
+            opcode == pcre.OP_NOTPOSSTAR or opcode == pcre.OP_NOTSTARI or
+            opcode == pcre.OP_NOTMINSTARI or opcode == pcre.OP_NOTPOSSTARI
         ):
-            sp = self.op_notstar(sp)
+            sp = self.OP_notstar(sp)
         elif (
-            opcode == OP_NOTUPTO or opcode == OP_NOTMINUPTO or
-            opcode == OP_NOTPOSUPTO or opcode == OP_NOTUPTOI or
-            opcode == OP_NOTMINUPTOI or opcode == OP_NOTPOSUPTOI
+            opcode == pcre.OP_NOTUPTO or opcode == pcre.OP_NOTMINUPTO or
+            opcode == pcre.OP_NOTPOSUPTO or opcode == pcre.OP_NOTUPTOI or
+            opcode == pcre.OP_NOTMINUPTOI or opcode == pcre.OP_NOTPOSUPTOI
         ):
-            sp = self.op_notupto(sp)
-        elif opcode == OP_NOT_WHITESPACE:
-            sp = self.op_not_whitespace(sp)
-        elif opcode == OP_NOT_WORDCHAR:
-            sp = self.op_not_wordchar(sp)
+            sp = self.OP_notupto(sp)
+        elif opcode == pcre.OP_NOT_WHITESPACE:
+            sp = self.OP_not_whitespace(sp)
+        elif opcode == pcre.OP_NOT_WORDCHAR:
+            sp = self.OP_not_wordchar(sp)
         elif (
-            opcode == OP_PLUS or opcode == OP_PLUSI or
-            opcode == OP_POSPLUS or opcode == OP_POSPLUSI or
-            opcode == OP_MINPLUSI or opcode == OP_MINPLUS
+            opcode == pcre.OP_PLUS or opcode == pcre.OP_PLUSI or
+            opcode == pcre.OP_POSPLUS or opcode == pcre.OP_POSPLUSI or
+            opcode == pcre.OP_MINPLUSI or opcode == pcre.OP_MINPLUS
         ):
-            sp = self.op_plus(sp)
+            sp = self.OP_plus(sp)
         elif (
-            opcode == OP_QUERY or opcode == OP_QUERYI or
-            opcode == OP_POSQUERY or opcode == OP_POSQUERYI or
-            opcode == OP_MINQUERYI or opcode == OP_MINQUERY
+            opcode == pcre.OP_QUERY or opcode == pcre.OP_QUERYI or
+            opcode == pcre.OP_POSQUERY or opcode == pcre.OP_POSQUERYI or
+            opcode == pcre.OP_MINQUERYI or opcode == pcre.OP_MINQUERY
         ):
-            sp = self.op_query(sp)
+            sp = self.OP_query(sp)
         elif (
-            opcode == OP_NOTQUERY or opcode == OP_NOTQUERYI or
-            opcode == OP_NOTPOSQUERY or opcode == OP_NOTPOSQUERYI or
-            opcode == OP_NOTMINQUERYI or opcode == OP_NOTMINQUERY
+            opcode == pcre.OP_NOTQUERY or opcode == pcre.OP_NOTQUERYI or
+            opcode == pcre.OP_NOTPOSQUERY or opcode == pcre.OP_NOTPOSQUERYI or
+            opcode == pcre.OP_NOTMINQUERYI or opcode == pcre.OP_NOTMINQUERY
         ):
-            sp = self.op_not_query(sp)
+            sp = self.OP_not_query(sp)
         elif (
-            opcode == OP_STAR or opcode == OP_STARI or
-            opcode == OP_POSSTAR or opcode == OP_POSSTARI or
-            opcode == OP_MINSTAR or opcode == OP_MINSTARI
+            opcode == pcre.OP_STAR or opcode == pcre.OP_STARI or
+            opcode == pcre.OP_POSSTAR or opcode == pcre.OP_POSSTARI or
+            opcode == pcre.OP_MINSTAR or opcode == pcre.OP_MINSTARI
         ):
-            sp = self.op_star(sp)
-        elif opcode == OP_TYPEEXACT:
-            sp = self.op_typeexact(sp)
+            sp = self.OP_star(sp)
+        elif opcode == pcre.OP_TYPEEXACT:
+            sp = self.OP_typeexact(sp)
         elif (
-            opcode == OP_TYPEMINPLUS or opcode == OP_TYPEPLUS or
-            opcode == OP_TYPEPOSPLUS
+            opcode == pcre.OP_TYPEMINPLUS or opcode == pcre.OP_TYPEPLUS or
+            opcode == pcre.OP_TYPEPOSPLUS
         ):
-            sp = self.op_typeplus(sp)
+            sp = self.OP_typeplus(sp)
         elif (
-            opcode == OP_TYPESTAR or opcode == OP_TYPEPOSSTAR or
-            opcode == OP_TYPEMINSTAR
+            opcode == pcre.OP_TYPESTAR or opcode == pcre.OP_TYPEPOSSTAR or
+            opcode == pcre.OP_TYPEMINSTAR
         ):
-            sp = self.op_typestar(sp)
-        elif opcode == OP_TYPEUPTO or opcode == OP_TYPEPOSUPTO:
-            sp = self.op_typeupto(sp)
-        elif opcode == OP_TYPEQUERY or opcode == OP_TYPEPOSQUERY:
-            sp = self.op_typequery(sp)
+            sp = self.OP_typestar(sp)
+        elif opcode == pcre.OP_TYPEUPTO or opcode == pcre.OP_TYPEPOSUPTO:
+            sp = self.OP_typeupto(sp)
+        elif opcode == pcre.OP_TYPEQUERY or opcode == pcre.OP_TYPEPOSQUERY:
+            sp = self.OP_typequery(sp)
         elif (
-            opcode == OP_UPTO or opcode == OP_UPTOI or
-            opcode == OP_POSUPTO or opcode == OP_POSUPTOI or
-            opcode == OP_MINUPTOI or opcode == OP_MINUPTO
+            opcode == pcre.OP_UPTO or opcode == pcre.OP_UPTOI or
+            opcode == pcre.OP_POSUPTO or opcode == pcre.OP_POSUPTOI or
+            opcode == pcre.OP_MINUPTOI or opcode == pcre.OP_MINUPTO
         ):
-            sp = self.op_upto(sp)
-        elif opcode == OP_WHITESPACE:
-            sp = self.op_whitespace(sp)
-        elif opcode == OP_WORDCHAR:
-            sp = self.op_wordchar(sp)
+            sp = self.OP_upto(sp)
+        elif opcode == pcre.OP_WHITESPACE:
+            sp = self.OP_whitespace(sp)
+        elif opcode == pcre.OP_WORDCHAR:
+            sp = self.OP_wordchar(sp)
         elif (
-            opcode == OP_DOLL or opcode == OP_WORD_BOUNDARY or
-            opcode == OP_DOLLM
+            opcode == pcre.OP_DOLL or opcode == pcre.OP_WORD_BOUNDARY or
+            opcode == pcre.OP_DOLLM
         ):
             self.cp += 1
         else:
             raise Exception('Unknown opcode: {}'.format(opcode))
         return sp
 
-    def op_any(self, sp):
+    def OP_any(self, sp):
         self.cp += 1
         prev = sp
         sp = get_nfa_state()
@@ -402,44 +403,45 @@ class NFABuilder:
             prev.add_tx(i, sp)
         return sp
 
-    def op_bra(self, sp):
+    def OP_bra(self, sp):
         self.bra_state.append(sp)
         last_states = []
         while True:
             np = self.cp + self.get2(1)
-            self.cp += PCRE_OPLEN[self.code[self.cp]]
+            self.cp += pcre.OPLEN[self.code[self.cp]]
             if self.cp < np:
                 subsp = get_nfa_state()
                 sp.add_tx(E, subsp)
                 while self.cp < np:
                     subsp = self.op(subsp)
                 last_states.append(subsp)
-            if self.code[self.cp] != OP_ALT:
+            if self.code[self.cp] != pcre.OP_ALT:
                 break
-        if self.code[self.cp] != OP_KET and self.code[self.cp] != OP_KETRMAX:
-            raise Exception('Wrong OP_CODE: {}'.format(self.code[self.cp]))
+        if self.code[self.cp] != pcre.OP_KET and self.code[self.cp] != pcre.OP_KETRMAX:
+            raise Exception(
+                'Wrong pcre.OP_CODE: {}'.format(self.code[self.cp]))
         if last_states:
             sp = get_nfa_state()
             for s in last_states:
                 s.add_tx(E, sp)
-        if self.code[self.cp] == OP_KETRMAX:
+        if self.code[self.cp] == pcre.OP_KETRMAX:
             sp.add_tx(E, self.bra_state[-1])
-        self.cp += PCRE_OPLEN[self.code[self.cp]]
+        self.cp += pcre.OPLEN[self.code[self.cp]]
         self.bra_state.pop()
         return sp
 
-    def op_brazero(self, sp):
+    def OP_brazero(self, sp):
         self.bra_state.append(sp)
         self.cp += 1
         opcode = self.code[self.cp]
-        if opcode == OP_BRA or opcode == OP_CBRA or opcode == OP_SCBRA:
-            sp = self.op_bra(sp)
+        if opcode == pcre.OP_BRA or opcode == pcre.OP_CBRA or opcode == pcre.OP_SCBRA:
+            sp = self.OP_bra(sp)
         else:
             raise Exception("Unknown opcode: {}".format(opcode))
         self.bra_state.pop().add_tx(E, sp)
         return sp
 
-    def op_char(self, sp):
+    def OP_char(self, sp):
         self.cp += 1
         prev = sp
         sp = get_nfa_state()
@@ -453,29 +455,29 @@ class NFABuilder:
         self.cp += 1
         return sp
 
-    def op_circ(self, sp):
+    def OP_circ(self, sp):
         self.cp += 1
         self.nfa.start.clear_tx()
         return sp
 
-    def op_class(self, sp):
+    def OP_class(self, sp):
         bmp = self.cp + 1
         self.cp += 33
         opcode = self.code[self.cp]
-        if opcode == OP_CRMINPLUS or opcode == OP_CRPLUS or \
-           opcode == OP_CRPOSPLUS:
+        if opcode == pcre.OP_CRMINPLUS or opcode == pcre.OP_CRPLUS or \
+           opcode == pcre.OP_CRPOSPLUS:
             prev = sp
             sp = get_nfa_state()
             prev.add_txs(self.code[bmp: bmp + 32], sp)
             sp.add_txs(self.code[bmp: bmp + 32], sp)
-            self.cp += PCRE_OPLEN[opcode]
-        elif opcode == OP_CRQUERY or opcode == OP_CRPOSQUERY:
+            self.cp += pcre.OPLEN[opcode]
+        elif opcode == pcre.OP_CRQUERY or opcode == pcre.OP_CRPOSQUERY:
             prev = sp
             sp = get_nfa_state()
             prev.add_txs(self.code[bmp: bmp + 32], sp)
             prev.add_tx(E, sp)
-            self.cp += PCRE_OPLEN[opcode]
-        elif opcode == OP_CRRANGE or opcode == OP_CRPOSRANGE:
+            self.cp += pcre.OPLEN[opcode]
+        elif opcode == pcre.OP_CRRANGE or opcode == pcre.OP_CRPOSRANGE:
             prev = None
             min = self.get2(1)
             max = self.get2(3)
@@ -483,7 +485,7 @@ class NFABuilder:
                 prev = sp
                 sp = get_nfa_state()
                 prev.add_txs(self.code[bmp: bmp + 32], sp)
-            self.cp += PCRE_OPLEN[self.code[self.cp]]
+            self.cp += pcre.OPLEN[self.code[self.cp]]
             if not prev:
                 prev = sp
                 sp = get_nfa_state()
@@ -496,21 +498,21 @@ class NFABuilder:
                 prev = mid
                 prev.add_txs(self.code[bmp: bmp + 32], sp)
         elif (
-            opcode == OP_CRSTAR or opcode == OP_CRMINSTAR or
-            opcode == OP_CRPOSSTAR
+            opcode == pcre.OP_CRSTAR or opcode == pcre.OP_CRMINSTAR or
+            opcode == pcre.OP_CRPOSSTAR
         ):
             prev = sp
             sp = get_nfa_state()
             prev.add_tx(E, sp)
             sp.add_txs(self.code[bmp: bmp + 32], sp)
-            self.cp += PCRE_OPLEN[opcode]
+            self.cp += pcre.OPLEN[opcode]
         else:
             prev = sp
             sp = get_nfa_state()
             prev.add_txs(self.code[bmp: bmp + 32], sp)
         return sp
 
-    def op_digit(self, sp):
+    def OP_digit(self, sp):
         self.cp += 1
         prev = sp
         sp = get_nfa_state()
@@ -518,7 +520,7 @@ class NFABuilder:
             prev.add_tx(i, sp)
         return sp
 
-    def op_exact(self, sp):
+    def OP_exact(self, sp):
         self.cp += 1
         n = self.get2()
         self.cp += 2
@@ -535,7 +537,7 @@ class NFABuilder:
                 prev.add_tx(ord(chr(sym).swapcase()), sp)
         return sp
 
-    def op_not(self, sp):
+    def OP_not(self, sp):
         self.cp += 1
         sym = self.code[self.cp]
         prev = sp
@@ -552,7 +554,7 @@ class NFABuilder:
         self.cp += 1
         return sp
 
-    def op_not_digit(self, sp):
+    def OP_not_digit(self, sp):
         self.cp += 1
         prev = sp
         sp = get_nfa_state()
@@ -561,7 +563,7 @@ class NFABuilder:
                 prev.add_tx(i, sp)
         return sp
 
-    def op_notexact(self, sp):
+    def OP_notexact(self, sp):
         self.cp += 1
         n = self.get2()
         self.cp += 2
@@ -581,7 +583,7 @@ class NFABuilder:
                 prev.add_tx(j, sp)
         return sp
 
-    def op_notplus(self, sp):
+    def OP_notplus(self, sp):
         self.cp += 1
         sym = self.code[self.cp]
         prev = sp
@@ -599,7 +601,7 @@ class NFABuilder:
         self.cp += 1
         return sp
 
-    def op_notstar(self, sp):
+    def OP_notstar(self, sp):
         self.cp += 1
         sym = self.code[self.cp]
         prev = sp
@@ -617,7 +619,7 @@ class NFABuilder:
         self.cp += 1
         return sp
 
-    def op_notupto(self, sp):
+    def OP_notupto(self, sp):
         self.cp += 1
         ubound = self.get2()
         self.cp += 2
@@ -644,7 +646,7 @@ class NFABuilder:
             prev = mid
         return sp
 
-    def op_not_whitespace(self, sp):
+    def OP_not_whitespace(self, sp):
         self.cp += 1
         prev = sp
         sp = get_nfa_state()
@@ -653,7 +655,7 @@ class NFABuilder:
                 prev.add_tx(i, sp)
         return sp
 
-    def op_not_wordchar(self, sp):
+    def OP_not_wordchar(self, sp):
         self.cp += 1
         prev = sp
         sp = get_nfa_state()
@@ -662,7 +664,7 @@ class NFABuilder:
                 prev.add_tx(i, sp)
         return sp
 
-    def op_plus(self, sp):
+    def OP_plus(self, sp):
         self.cp += 1
         sym = self.code[self.cp]
         self.cp += 1
@@ -675,7 +677,7 @@ class NFABuilder:
             sp.add_tx(ord(chr(sym).swapcase()), sp)
         return sp
 
-    def op_query(self, sp):
+    def OP_query(self, sp):
         self.cp += 1
         sym = self.code[self.cp]
         self.cp += 1
@@ -687,7 +689,7 @@ class NFABuilder:
             prev.add_tx(ord(chr(sym).swapcase()), sp)
         return sp
 
-    def op_not_query(self, sp):
+    def OP_not_query(self, sp):
         self.cp += 1
         sym = self.code[self.cp]
         self.cp += 1
@@ -705,7 +707,7 @@ class NFABuilder:
             prev.add_tx(j, sp)
         return sp
 
-    def op_star(self, sp):
+    def OP_star(self, sp):
         self.cp += 1
         sym = self.code[self.cp]
         self.cp += 1
@@ -717,7 +719,7 @@ class NFABuilder:
             prev.add_tx(ord(chr(sym).swapcase()), sp)
         return sp
 
-    def op_typeexact(self, sp):
+    def OP_typeexact(self, sp):
         self.cp += 1
         num = self.get2()
         self.cp += 2
@@ -725,31 +727,31 @@ class NFABuilder:
         for i in range(num):
             prev = sp
             sp = get_nfa_state()
-            if opcode == OP_ANY or opcode == OP_ALLANY:
+            if opcode == pcre.OP_ANY or opcode == pcre.OP_ALLANY:
                 for j in range(NSYMBOLS):
                     if PCRE_DOTALL not in self.options and j == LF:
                         continue
                     prev.add_tx(j, sp)
-            elif opcode == OP_DIGIT:
+            elif opcode == pcre.OP_DIGIT:
                 for j in DIGIT:
                     prev.add_tx(j, sp)
-            elif opcode == OP_NOT_DIGIT:
+            elif opcode == pcre.OP_NOT_DIGIT:
                 for j in range(NSYMBOLS):
                     if j in DIGIT:
                         continue
                     prev.add_tx(j, sp)
-            elif opcode == OP_WHITESPACE:
+            elif opcode == pcre.OP_WHITESPACE:
                 for j in WHITESPACE:
                     prev.add_tx(j, sp)
-            elif opcode == OP_NOT_WHITESPACE:
+            elif opcode == pcre.OP_NOT_WHITESPACE:
                 for j in range(NSYMBOLS):
                     if j in WHITESPACE:
                         continue
                     prev.add_tx(j, sp)
-            elif opcode == OP_WORDCHAR:
+            elif opcode == pcre.OP_WORDCHAR:
                 for j in WORDCHAR:
                     prev.add_tx(j, sp)
-            elif opcode == OP_NOT_WORDCHAR:
+            elif opcode == pcre.OP_NOT_WORDCHAR:
                 for j in range(NSYMBOLS):
                     if j in WORDCHAR:
                         continue
@@ -759,42 +761,42 @@ class NFABuilder:
         self.cp += 1
         return sp
 
-    def op_typeplus(self, sp):
+    def OP_typeplus(self, sp):
         self.cp += 1
         opcode = self.code[self.cp]
         prev = sp
         sp = get_nfa_state()
-        if opcode == OP_ANY or opcode == OP_ALLANY:
+        if opcode == pcre.OP_ANY or opcode == pcre.OP_ALLANY:
             for i in range(NSYMBOLS):
                 if PCRE_DOTALL not in self.options and i == LF:
                     continue
                 prev.add_tx(i, sp)
                 sp.add_tx(i, sp)
-        elif opcode == OP_DIGIT:
+        elif opcode == pcre.OP_DIGIT:
             for i in DIGIT:
                 prev.add_tx(i, sp)
                 sp.add_tx(i, sp)
-        elif opcode == OP_NOT_DIGIT:
+        elif opcode == pcre.OP_NOT_DIGIT:
             for i in range(NSYMBOLS):
                 if i in DIGIT:
                     continue
                 prev.add_tx(i, sp)
                 sp.add_tx(i, sp)
-        elif opcode == OP_WHITESPACE:
+        elif opcode == pcre.OP_WHITESPACE:
             for i in WHITESPACE:
                 prev.add_tx(i, sp)
                 sp.add_tx(i, sp)
-        elif opcode == OP_NOT_WHITESPACE:
+        elif opcode == pcre.OP_NOT_WHITESPACE:
             for i in range(NSYMBOLS):
                 if i in WHITESPACE:
                     continue
                 prev.add_tx(i, sp)
                 sp.add_tx(i, sp)
-        elif opcode == OP_WORDCHAR:
+        elif opcode == pcre.OP_WORDCHAR:
             for i in WORDCHAR:
                 prev.add_tx(i, sp)
                 sp.add_tx(i, sp)
-        elif opcode == OP_NOT_WORDCHAR:
+        elif opcode == pcre.OP_NOT_WORDCHAR:
             for i in range(NSYMBOLS):
                 if i in WORDCHAR:
                     continue
@@ -805,38 +807,38 @@ class NFABuilder:
         self.cp += 1
         return sp
 
-    def op_typequery(self, sp):
+    def OP_typequery(self, sp):
         self.cp += 1
         opcode = self.code[self.cp]
         self.cp += 1
         prev = sp
         sp = get_nfa_state()
         prev.add_tx(E, sp)
-        if opcode == OP_ANY or opcode == OP_ALLANY:
+        if opcode == pcre.OP_ANY or opcode == pcre.OP_ALLANY:
             for i in range(NSYMBOLS):
                 if PCRE_DOTALL not in self.options and i == LF:
                     continue
                 prev.add_tx(i, sp)
-        elif opcode == OP_DIGIT:
+        elif opcode == pcre.OP_DIGIT:
             for i in DIGIT:
                 prev.add_tx(i, sp)
-        elif opcode == OP_NOT_DIGIT:
+        elif opcode == pcre.OP_NOT_DIGIT:
             for i in range(NSYMBOLS):
                 if i in DIGIT:
                     continue
                 prev.add_tx(i, sp)
-        elif opcode == OP_WHITESPACE:
+        elif opcode == pcre.OP_WHITESPACE:
             for i in WHITESPACE:
                 prev.add_tx(i, sp)
-        elif opcode == OP_NOT_WHITESPACE:
+        elif opcode == pcre.OP_NOT_WHITESPACE:
             for i in range(NSYMBOLS):
                 if i in WHITESPACE:
                     continue
                 prev.add_tx(i, sp)
-        elif opcode == OP_WORDCHAR:
+        elif opcode == pcre.OP_WORDCHAR:
             for i in WORDCHAR:
                 prev.add_tx(i, sp)
-        elif opcode == OP_NOT_WORDCHAR:
+        elif opcode == pcre.OP_NOT_WORDCHAR:
             for i in range(NSYMBOLS):
                 if i in WORDCHAR:
                     continue
@@ -845,42 +847,42 @@ class NFABuilder:
             raise Exception("Unknown opcode: {}".format(opcode))
         return sp
 
-    def op_typestar(self, sp):
+    def OP_typestar(self, sp):
         self.cp += 1
         opcode = self.code[self.cp]
         prev = sp
         sp = get_nfa_state()
-        if opcode == OP_ANY or opcode == OP_ALLANY:
+        if opcode == pcre.OP_ANY or opcode == pcre.OP_ALLANY:
             for i in range(NSYMBOLS):
                 if PCRE_DOTALL not in self.options and i == LF:
                     continue
                 prev.add_tx(E, sp)
                 sp.add_tx(i, sp)
-        elif opcode == OP_DIGIT:
+        elif opcode == pcre.OP_DIGIT:
             for i in DIGIT:
                 prev.add_tx(E, sp)
                 sp.add_tx(i, sp)
-        elif opcode == OP_NOT_DIGIT:
+        elif opcode == pcre.OP_NOT_DIGIT:
             for i in range(NSYMBOLS):
                 if i in DIGIT:
                     continue
                 prev.add_tx(E, sp)
                 sp.add_tx(i, sp)
-        elif opcode == OP_WHITESPACE:
+        elif opcode == pcre.OP_WHITESPACE:
             for i in WHITESPACE:
                 prev.add_tx(E, sp)
                 sp.add_tx(i, sp)
-        elif opcode == OP_NOT_WHITESPACE:
+        elif opcode == pcre.OP_NOT_WHITESPACE:
             for i in range(NSYMBOLS):
                 if i in WHITESPACE:
                     continue
                 prev.add_tx(E, sp)
                 sp.add_tx(i, sp)
-        elif opcode == OP_WORDCHAR:
+        elif opcode == pcre.OP_WORDCHAR:
             for i in WORDCHAR:
                 prev.add_tx(E, sp)
                 sp.add_tx(i, sp)
-        elif opcode == OP_NOT_WORDCHAR:
+        elif opcode == pcre.OP_NOT_WORDCHAR:
             for i in range(NSYMBOLS):
                 if i in WORDCHAR:
                     continue
@@ -891,7 +893,7 @@ class NFABuilder:
         self.cp += 1
         return sp
 
-    def op_typeupto(self, sp):
+    def OP_typeupto(self, sp):
         self.cp += 1
         ubound = self.get2()
         self.cp += 2
@@ -904,31 +906,31 @@ class NFABuilder:
         prev.add_tx(E, sp)
         for i in range(ubound):
             mid = get_nfa_state()
-            if opcode == OP_ANY or opcode == OP_ALLANY:
+            if opcode == pcre.OP_ANY or opcode == pcre.OP_ALLANY:
                 for j in range(NSYMBOLS):
                     if PCRE_DOTALL not in self.options and j == LF:
                         continue
                     prev.add_tx(j, mid)
-            elif opcode == OP_DIGIT:
+            elif opcode == pcre.OP_DIGIT:
                 for j in DIGIT:
                     prev.add_tx(j, mid)
-            elif opcode == OP_NOT_DIGIT:
+            elif opcode == pcre.OP_NOT_DIGIT:
                 for j in range(NSYMBOLS):
                     if j in DIGIT:
                         continue
                     prev.add_tx(j, mid)
-            elif opcode == OP_WHITESPACE:
+            elif opcode == pcre.OP_WHITESPACE:
                 for j in WHITESPACE:
                     prev.add_tx(j, mid)
-            elif opcode == OP_NOT_WHITESPACE:
+            elif opcode == pcre.OP_NOT_WHITESPACE:
                 for j in range(NSYMBOLS):
                     if j in WHITESPACE:
                         continue
                     prev.add_tx(j, mid)
-            elif opcode == OP_WORDCHAR:
+            elif opcode == pcre.OP_WORDCHAR:
                 for j in WORDCHAR:
                     prev.add_tx(j, mid)
-            elif opcode == OP_NOT_WORDCHAR:
+            elif opcode == pcre.OP_NOT_WORDCHAR:
                 for j in range(NSYMBOLS):
                     if j in WORDCHAR:
                         continue
@@ -939,7 +941,7 @@ class NFABuilder:
             prev = mid
         return sp
 
-    def op_upto(self, sp):
+    def OP_upto(self, sp):
         self.cp += 1
         ubound = self.get2()
         self.cp += 2
@@ -960,7 +962,7 @@ class NFABuilder:
         self.cp += 1
         return sp
 
-    def op_whitespace(self, sp):
+    def OP_whitespace(self, sp):
         self.cp += 1
         prev = sp
         sp = get_nfa_state()
@@ -968,7 +970,7 @@ class NFABuilder:
             prev.add_tx(i, sp)
         return sp
 
-    def op_wordchar(self, sp):
+    def OP_wordchar(self, sp):
         self.cp += 1
         prev = sp
         sp = get_nfa_state()

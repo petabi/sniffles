@@ -1,8 +1,9 @@
 import argparse
-import sys
-import re
 import random
+import re
+import sys
 from collections import OrderedDict
+
 import sniffles.pcrecomp
 from sniffles.nfa import PCRE_OPT
 

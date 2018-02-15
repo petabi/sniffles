@@ -1,18 +1,19 @@
 import unittest
-from sniffles.rulereader import *
+
+import sniffles.rulereader as reader
 
 
 class TestRuleReader(unittest.TestCase):
 
     def test_background_traffic_rule(self):
 
-        myrule = BackgroundTrafficRule()
+        myrule = reader.BackgroundTrafficRule()
         protocols = myrule.getProtocolList()
 
         # Asserts for rule settings
         self.assertEqual(myrule.getProto(), 'tcp')
         for protocolType in protocols:
-            myrule = BackgroundTrafficRule()
+            myrule = reader.BackgroundTrafficRule()
             myrule.updateContent(protocolType)
             flow = myrule.getFlowOptions()
             if flow == 'to client':
@@ -50,7 +51,7 @@ class TestRuleReader(unittest.TestCase):
         self.assertEqual(content[0].getName(), 'Basic Regex Rule Content')
 
     def test_scan_attack_rule(self):
-        myrule = ScanAttackRule(1, 2, 3, 4, 5, 6, 7, 8)
+        myrule = reader.ScanAttackRule(1, 2, 3, 4, 5, 6, 7, 8)
 
         self.assertEqual(myrule.getScanType(), 1)
         myrule.setScanType(-1)
@@ -85,12 +86,13 @@ class TestRuleReader(unittest.TestCase):
         self.assertEqual(myrule.getReplyChance(), -8)
 
     def test_ttl_expiry_value(self):
-        myprule = Rule('Petabi')
-        mytsrule1 = TrafficStreamRule('udp')
-        mytsrule1.addPktRule(RulePkt("to server", "/xyz/i", ttl_expiry=15))
-        mytsrule1.addPktRule(RulePkt("to server", "/abc/i", ttl_expiry=23,
-                                     ttl=9))
-        mytsrule1.addPktRule(RulePkt("to server", "/def/i"))
+        myprule = reader.Rule('Petabi')
+        mytsrule1 = reader.TrafficStreamRule('udp')
+        mytsrule1.addPktRule(reader.RulePkt(
+            "to server", "/xyz/i", ttl_expiry=15))
+        mytsrule1.addPktRule(reader.RulePkt("to server", "/abc/i", ttl_expiry=23,
+                                            ttl=9))
+        mytsrule1.addPktRule(reader.RulePkt("to server", "/def/i"))
         myprule.addTS(mytsrule1)
         self.assertEqual(myprule.getRuleName(), 'Petabi')
         mytslist = myprule.getTS()
@@ -110,7 +112,7 @@ class TestRuleReader(unittest.TestCase):
         self.assertEqual(myp[2].getTTL(), 114)
 
     def test_parse_snort_rule_full(self):
-        mysrp = SnortRuleParser()
+        mysrp = reader.SnortRuleParser()
 
         # test if snort rule recognize http_cookie
         textrule = 'alert tcp $EXTERNAL_NET any -> $HOME_NET 445 ' \
@@ -238,7 +240,7 @@ class TestRuleReader(unittest.TestCase):
                    'content:"|00 00|"; within:2; distance:-10; ' \
                    'metadata:ruleset community, service netbios-ssn; ' \
                    'classtype:protocol-command-decode; sid:3046; rev:5;)'
-        mysrp = SnortRuleParser()
+        mysrp = reader.SnortRuleParser()
         mysrp.parseRule(textrule)
         myrule = mysrp.getRules()[0]
         self.assertEqual('Snort-0', myrule.getRuleName())
@@ -257,7 +259,7 @@ class TestRuleReader(unittest.TestCase):
     def test_rule_normalization(self):
         textrule = 'alert udp $HOME_NET 1 -> $EXTERNAL_NET 2 ' \
                    '(msg:"test"; pcre:"abc\;\(\)def"; rev:1)'
-        mysrp = SnortRuleParser()
+        mysrp = reader.SnortRuleParser()
         mysrp.parseRule(textrule)
         myrule = mysrp.getRules()[0]
         myts = myrule.getTS()[0]
@@ -265,7 +267,7 @@ class TestRuleReader(unittest.TestCase):
         self.assertEqual(mycontent.getContentString(), R"abc\x3b\x28\x29def")
 
         textrule = R"/abc\(xyz\)\\q/"
-        myrp = RuleParser()
+        myrp = reader.RuleParser()
         myrp.parseRule(textrule)
         myrule = myrp.getRules()[0]
         myts = myrule.getTS()[0]
@@ -274,7 +276,7 @@ class TestRuleReader(unittest.TestCase):
 
     def test_parse_re_rule(self):
         textrule = 'abcdef'
-        myrep = RuleParser()
+        myrep = reader.RuleParser()
         myrep.parseRule(textrule)
         myrule = myrep.getRules()[0]
         self.assertEqual(myrule.getRuleName(), 'Rule-0')
@@ -292,7 +294,8 @@ class TestRuleReader(unittest.TestCase):
         self.assertEqual(p.getContent()[0].getContentString(), 'abcdef')
 
     def test_rule_pkt(self):
-        myrpkt = RulePkt("to client", "/abcdef/i", 3, 5, 500, True, True)
+        myrpkt = reader.RulePkt(
+            "to client", "/abcdef/i", 3, 5, 500, True, True)
         self.assertEqual(myrpkt.ackThis(), True)
         self.assertEqual(myrpkt.getDir(), "to client")
         mycontent = myrpkt.getContent()[0]
@@ -304,11 +307,11 @@ class TestRuleReader(unittest.TestCase):
         self.assertEqual(myrpkt.getLength(), 500)
 
     def test_traffic_stream_rule(self):
-        mytsrule = TrafficStreamRule('tcp', '1100:0011', '2200:0022',
-                                     '[100:200]', '[10,20,30,40,50]', -1, 6,
-                                     False, True, True)
-        mytsrule.addPktRule(RulePkt("to server", "/xyz/i"))
-        mytsrule.addPktRule(RulePkt("to client", "/123/"))
+        mytsrule = reader.TrafficStreamRule('tcp', '1100:0011', '2200:0022',
+                                            '[100:200]', '[10,20,30,40,50]', -1, 6,
+                                            False, True, True)
+        mytsrule.addPktRule(reader.RulePkt("to server", "/xyz/i"))
+        mytsrule.addPktRule(reader.RulePkt("to client", "/123/"))
         self.assertEqual(mytsrule.getSynch(), False)
         self.assertEqual(mytsrule.getTeardown(), True)
         self.assertEqual(mytsrule.getHandshake(), True)
@@ -322,13 +325,13 @@ class TestRuleReader(unittest.TestCase):
         self.assertEqual(mypkts[1].getContent()[0].getContentString(), "/123/")
 
     def test_petabi_rule(self):
-        myprule = Rule('Petabi')
-        mytsrule1 = TrafficStreamRule('udp')
-        mytsrule1.addPktRule(RulePkt("to server", "/xyz/i"))
-        mytsrule1.addPktRule(RulePkt("to client", "/123/"))
-        mytsrule2 = TrafficStreamRule('tcp')
-        mytsrule2.addPktRule(RulePkt("to client", "/abc/i"))
-        mytsrule2.addPktRule(RulePkt("to server", "/def/"))
+        myprule = reader.Rule('Petabi')
+        mytsrule1 = reader.TrafficStreamRule('udp')
+        mytsrule1.addPktRule(reader.RulePkt("to server", "/xyz/i"))
+        mytsrule1.addPktRule(reader.RulePkt("to client", "/123/"))
+        mytsrule2 = reader.TrafficStreamRule('tcp')
+        mytsrule2.addPktRule(reader.RulePkt("to client", "/abc/i"))
+        mytsrule2.addPktRule(reader.RulePkt("to server", "/def/"))
         myprule.addTS(mytsrule1)
         myprule.addTS(mytsrule2)
         self.assertEqual(myprule.getRuleName(), 'Petabi')
@@ -351,19 +354,19 @@ class TestRuleReader(unittest.TestCase):
                    'ace size dos attempt"; flow:stateless; pcre:"/abcdef/"; ' \
                    'metadata:ruleset community, service netbios-ssn; ' \
                    'classtype:protocol-command-decode; sid:3046; rev:5;)'
-        mysrp = SnortRuleParser()
+        mysrp = reader.SnortRuleParser()
         mysrp.parseRule(textrule)
         myconrules.append(mysrp.getRules()[0])
         textrule = '/zyxwv/i'
-        myrep = RuleParser()
+        myrep = reader.RuleParser()
         myrep.parseRule(textrule)
         myconrules.append(myrep.getRules()[0])
-        mytsrule = TrafficStreamRule('tcp', '1.1.1', '2.2.2', '[100:200]',
-                                     '[10,20,30,40,50]', False, True, True,
-                                     6, True, 50)
-        mytsrule.addPktRule(RulePkt("to server", "/xyz/i"))
-        mytsrule.addPktRule(RulePkt("to client", "/123/"))
-        myprule = Rule('Petabi')
+        mytsrule = reader.TrafficStreamRule('tcp', '1.1.1', '2.2.2', '[100:200]',
+                                            '[10,20,30,40,50]', False, True, True,
+                                            6, True, 50)
+        mytsrule.addPktRule(reader.RulePkt("to server", "/xyz/i"))
+        mytsrule.addPktRule(reader.RulePkt("to client", "/123/"))
+        myprule = reader.Rule('Petabi')
         myprule.addTS(mytsrule)
         myconrules.append(myprule)
         self.assertEqual(len(myconrules), 3)
@@ -387,7 +390,7 @@ class TestRuleReader(unittest.TestCase):
             myts.getPkts()[1].getContent()[0].getContentString(), '/123/')
 
     def test_read_single_file(self):
-        myrulelist = RuleList()
+        myrulelist = reader.RuleList()
         myrulelist.readRuleFile(
             'sniffles/test/data_files/rules/test_rules2.rules')
         rules = myrulelist.getParsedRules()
@@ -403,13 +406,13 @@ class TestRuleReader(unittest.TestCase):
         self.assertEqual(conrule1.getTS()[0].getDport(), '8080')
 
     def test_read_multiple_files(self):
-        myrulelist = RuleList()
+        myrulelist = reader.RuleList()
         myrulelist.readRuleFiles('sniffles/test/data_files/rules/')
         rules = myrulelist.getParsedRules()
         self.assertEqual(len(rules), 19)
 
     def test_read_petabi_rule_file(self):
-        myrulelist = RuleList()
+        myrulelist = reader.RuleList()
         myrulelist.readRuleFile('sniffles/test/data_files/test_all.xml')
         rules = myrulelist.getParsedRules()
         self.assertEqual(len(rules), 1)
@@ -431,13 +434,13 @@ class TestRuleReader(unittest.TestCase):
         self.assertEqual(tsrules[5].getSport(), '9005')
 
     def test_test_for_rule_file(self):
-        myp = SnortRuleParser()
+        myp = reader.SnortRuleParser()
         self.assertTrue(myp.testForRuleFile(
                         'sniffles/test/data_files/rules/test_rules2.rules'))
         self.assertFalse(myp.testForRuleFile(
                          'sniffles/test/data_files/test_all.xml'))
-        myp = PetabiRuleParser()
+        myp = reader.PetabiRuleParser()
         self.assertFalse(myp.testForRuleFile(
-                        'sniffles/test/data_files/rules/test_rules2.rules'))
+            'sniffles/test/data_files/rules/test_rules2.rules'))
         self.assertTrue(myp.testForRuleFile(
-                         'sniffles/test/data_files/test_all.xml'))
+            'sniffles/test/data_files/test_all.xml'))

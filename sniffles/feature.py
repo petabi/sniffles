@@ -1,7 +1,7 @@
 import random
 import sys
 
-from sniffles.regex_generator import *
+from sniffles.regex_generator import generate_regex
 
 
 class AmbiguousNotation:
