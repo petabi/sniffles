@@ -430,7 +430,7 @@ class SnifflesConfig:
         try:
             fd = open(cfg_file, 'r')
         except:
-            print("Error: Could not open provided config file: ", filename)
+            print("Error: Could not open provided config file: ", cfg_file)
             sys.exit(1)
         line = fd.readline()
 
