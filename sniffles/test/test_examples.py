@@ -75,7 +75,6 @@ class TestExamples(unittest.TestCase):
             mypkt = myts.getNextPacket()
             if mypkt.network_hdr.get_frag_id() != myfragid:
                 myfragid = mypkt.network_hdr.get_frag_id()
-                mylastid = -1
             if mylastoff > -1:
                 if abs((mypkt.network_hdr.get_frag_offset() & 0xFF) -
                        mylastoff) > 11:
@@ -146,7 +145,6 @@ class TestExamples(unittest.TestCase):
 
         myts = TrafficStream(mytsrule, myConfig)
 
-        mycount = 0
         mypkt = myts.getNextPacket()
         myseq = mypkt.transport_hdr.get_seq_num()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
@@ -180,13 +178,11 @@ class TestExamples(unittest.TestCase):
 
         myts = TrafficStream(mytsrule, myConfig)
 
-        mycount = 0
         mypkt = myts.getNextPacket()
-        myseq = mypkt.transport_hdr.get_seq_num()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
         mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN + ACK)
-        for i in range(0, 12):
+        for _ in range(0, 12):
             mypkt = myts.getNextPacket()
             self.assertNotEqual(mypkt.network_hdr.get_frag_id(), 0)
             self.assertIn(mypkt.network_hdr.get_frag_offset(),
@@ -215,21 +211,19 @@ class TestExamples(unittest.TestCase):
         myts = TrafficStream(mytsrule, myConfig)
 
         mypkt = myts.getNextPacket()
-        myseq = mypkt.transport_hdr.get_seq_num()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN)
         mypkt = myts.getNextPacket()
         self.assertEqual(mypkt.transport_hdr.get_flags(), SYN + ACK)
         myfragid = 0
         mylastoff = -1
         ooo = False
-        for i in range(0, 12):
+        for _ in range(0, 12):
             mypkt = myts.getNextPacket()
             self.assertNotEqual(mypkt.network_hdr.get_frag_id(), 0)
             self.assertIn(mypkt.network_hdr.get_frag_offset(),
                           [8192, 8197, 8202, 8207, 15])
             if mypkt.network_hdr.get_frag_id() != myfragid:
                 myfragid = mypkt.network_hdr.get_frag_id()
-                mylastid = -1
             if mylastoff > -1:
                 if abs((mypkt.network_hdr.get_frag_offset() & 0xFF) -
                        mylastoff) > 5:
