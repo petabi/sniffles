@@ -2428,10 +2428,9 @@ class TransportLayer:
         objects to TCP.
     """
 
-    def __init__(self, proto=None, sport=None, dport=None):
-        if proto is None:
-            proto = 'tcp'
+    def __init__(self, proto, size, sport=None, dport=None):
         self.proto = proto
+        self.size = size
         if sport and type(sport) == Port:
             self.sport = sport
         elif sport and type(sport) != Port:
@@ -2506,7 +2505,7 @@ class TransportLayer:
 class ICMP(TransportLayer):
 
     def __init__(self, type, code=None, roh=None):
-        self.proto = "icmp"
+        super().__init__("icmp", 8)
         self.type = int(type)
         if code:
             self.code = int(code)
@@ -2517,7 +2516,6 @@ class ICMP(TransportLayer):
         else:
             self.rest_of_header = 0
         self.checksum = 0
-        self.size = 8
 
     def get_transport_header(self):
         icmp_bin = struct.pack('!BBHI', self.type, self.code,
@@ -2528,7 +2526,7 @@ class ICMP(TransportLayer):
 class TCP(TransportLayer):
 
     def __init__(self, sport=None, dport=None, seq=None, ack=None):
-        super().__init__("tcp", sport, dport)
+        super().__init__("tcp", 20, sport, dport)
         self.ack = ack
         self.seq = seq
         if self.seq is None:
@@ -2540,7 +2538,6 @@ class TCP(TransportLayer):
         self.window = 65000
         self.urg = 0
         self.checksum = 0
-        self.size = 20
 
     def get_transport_header(self):
         flags_n_offset = (self.offset << 12) + self.flags
@@ -2573,10 +2570,9 @@ class TCP(TransportLayer):
 class UDP(TransportLayer):
 
     def __init__(self, sport=None, dport=None):
-        super().__init__("udp", sport, dport)
+        super().__init__("udp", 8, sport, dport)
         self.length = 0
         self.checksum = 0
-        self.size = 8
 
     def get_transport_header(self):
         udp_hdr = struct.pack('!HHHH', self.sport.get_port_value(),
