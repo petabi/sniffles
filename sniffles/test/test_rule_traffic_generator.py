@@ -578,7 +578,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
 
     def test_content_gen_zero_data(self):
         with warnings.catch_warnings(record=True) as w:
-            for _ in range(0, 1000):
+            for _ in range(0, 200):
                 mypkt = RulePkt("to client", "/a*/", 1)
                 cg = rtgen.ContentGenerator(mypkt)
                 mycon = cg.get_next_published_content()
