@@ -576,11 +576,19 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         self.assertEqual(mycon.get_size(), 10)
 
     def test_content_gen_zero_data(self):
-        mypkt = RulePkt("to client", "/a*/", 1)
-        cg = rtgen.ContentGenerator(mypkt)
-        mycon = cg.get_next_published_content()
-        self.assertEqual(mycon.get_size(), 1)
-        self.assertEqual(mycon.get_data(), b'a')
+        for _ in range(0, 1000):
+            mypkt = RulePkt("to client", "/a*/", 1)
+            cg = rtgen.ContentGenerator(mypkt)
+            mycon = cg.get_next_published_content()
+            if mycon.get_size() > 0:
+                self.assertEqual(mycon.get_size(), 1)
+                self.assertEqual(mycon.get_data(), b'a')
+            mypkt2 = RulePkt("to client", "/b?/", 1)
+            cg2 = rtgen.ContentGenerator(mypkt2)
+            mycon2 = cg2.get_next_published_content()
+            if mycon2.get_size() > 0:
+                self.assertEqual(mycon2.get_size(), 1)
+                self.assertEqual(mycon2.get_data(), b'b')
 
     def test_packet(self):
         myrpkt = RulePkt("to server", "/12345/")
