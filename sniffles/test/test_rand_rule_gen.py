@@ -60,7 +60,7 @@ class TestRandRuleGen(unittest.TestCase):
         self.assertTrue("/" not in value)
         values = value.split(".")
         self.assertEqual(len(values), 4)
-        for i in range(0, 4):
+        for _ in range(0, 4):
             val = int(values[0])
             self.assertTrue(val >= 0 and val <= 255)
 
@@ -71,7 +71,7 @@ class TestRandRuleGen(unittest.TestCase):
         tmp = value.split("/")
         values = tmp[0].split(".")
         self.assertEqual(len(values), 4)
-        for i in range(0, 4):
+        for _ in range(0, 4):
             val = int(values[0])
             self.assertTrue(val >= 0 and val <= 255)
         val = int(tmp[1])
@@ -83,7 +83,7 @@ class TestRandRuleGen(unittest.TestCase):
         self.assertTrue("/" not in value)
         values = value.split(":")
         self.assertEqual(len(values), 8)
-        for i in range(0, 8):
+        for _ in range(0, 8):
             val = int(values[0], 16)
             self.assertTrue(val >= 0 and val <= 65535)
 
@@ -94,7 +94,7 @@ class TestRandRuleGen(unittest.TestCase):
         tmp = value.split("/")
         values = tmp[0].split(":")
         self.assertEqual(len(values), 8)
-        for i in range(0, 4):
+        for _ in range(0, 4):
             val = int(values[0], 16)
             self.assertTrue(val >= 0 and val <= 65535)
 

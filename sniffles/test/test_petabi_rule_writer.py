@@ -160,13 +160,11 @@ class TestPetabiRuleWriter(unittest.TestCase):
         filename = "sniffles/test/data_files/test_petabi_rule.xml"
         regexList = ["/abc/", "/def/", "/ghi/"]
         ruleName = None
-        percentage = '50'
         proto = 'tcp'
         src = 'any'
         dst = 'any'
         sport = 'any'
         dport = 'any'
-        ack = True
         out_of_order = True
         out_of_order_prob = '50'
         packet_loss = '50'

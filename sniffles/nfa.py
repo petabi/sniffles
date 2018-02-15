@@ -107,10 +107,6 @@ class NFA:
             visited.append(s)
             targets = {}
             for i in range(NSYMBOLS + 1):
-                if i == NSYMBOLS:
-                    sym = 'e'
-                else:
-                    sym = i
                 for t in s.tx[i]:
                     if t in targets:
                         targets[t].append(i)
@@ -481,7 +477,7 @@ class NFABuilder:
             prev = None
             min = self.get2(1)
             max = self.get2(3)
-            for i in range(min):
+            for _ in range(min):
                 prev = sp
                 sp = get_nfa_state()
                 prev.add_txs(self.code[bmp: bmp + 32], sp)
@@ -492,7 +488,7 @@ class NFABuilder:
                 prev.add_tx(E, sp)
                 prev.add_txs(self.code[bmp: bmp + 32], sp)
                 min += 1
-            for i in range(max - min):
+            for _ in range(max - min):
                 mid = get_nfa_state()
                 prev.add_txs(self.code[bmp: bmp + 32], mid)
                 prev = mid
@@ -526,7 +522,7 @@ class NFABuilder:
         self.cp += 2
         sym = self.code[self.cp]
         self.cp += 1
-        for i in range(n):
+        for _ in range(n):
             prev = sp
             sp = get_nfa_state()
             prev.add_tx(sym, sp)
@@ -574,7 +570,7 @@ class NFABuilder:
         else:
             notsym = [sym]
         self.cp += 1
-        for i in range(n):
+        for _ in range(n):
             prev = sp
             sp = get_nfa_state()
             for j in range(NSYMBOLS):
@@ -636,7 +632,7 @@ class NFABuilder:
         else:
             notsym = [sym]
 
-        for i in range(ubound):
+        for _ in range(ubound):
             mid = get_nfa_state()
             for j in range(NSYMBOLS):
                 if j in notsym:
@@ -724,7 +720,7 @@ class NFABuilder:
         num = self.get2()
         self.cp += 2
         opcode = self.code[self.cp]
-        for i in range(num):
+        for _ in range(num):
             prev = sp
             sp = get_nfa_state()
             if opcode == pcre.OP_ANY or opcode == pcre.OP_ALLANY:
@@ -904,7 +900,7 @@ class NFABuilder:
         prev = sp
         sp = get_nfa_state()
         prev.add_tx(E, sp)
-        for i in range(ubound):
+        for _ in range(ubound):
             mid = get_nfa_state()
             if opcode == pcre.OP_ANY or opcode == pcre.OP_ALLANY:
                 for j in range(NSYMBOLS):
@@ -951,7 +947,7 @@ class NFABuilder:
         sp = get_nfa_state()
         prev.add_tx(self.code[self.cp], sp)
         prev.add_tx(E, sp)
-        for i in range(ubound):
+        for _ in range(ubound):
             mid = get_nfa_state()
             prev.add_tx(self.code[self.cp], mid)
             char = chr(self.code[self.cp])

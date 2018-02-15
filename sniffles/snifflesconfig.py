@@ -412,7 +412,7 @@ class SnifflesConfig:
                       "mM:o:O:p:P:q:rRs:S:tTvwW:x:Z:?"
         long_options = ["resultfile="]
         try:
-            options, args = getopt.getopt(cmd, cmd_options, long_options)
+            options, _args = getopt.getopt(cmd, cmd_options, long_options)
         except getopt.GetoptError as err:
             print("Error reading command line: ", err)
             self.usage()

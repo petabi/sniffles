@@ -13,11 +13,11 @@ class TestPcreComp(unittest.TestCase):
         sniffles.pcrecomp.compile('pattern')
 
     def test_empty(self):
-        a = sniffles.pcrecomp.compile('')
+        sniffles.pcrecomp.compile('')
 
     def test_delimiter(self):
         a = sniffles.nfa.pcre2nfa('/hello/')
         self.assertTrue(a.match('zzhellozz'))
 
     def test_option(self):
-        a = sniffles.nfa.pcre2nfa('/hello/i')
+        sniffles.nfa.pcre2nfa('/hello/i')

@@ -566,7 +566,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         # regex is not anchored and thus can begin with an arbitrary
         # character, or directly with the start of the expression.
         self.assertEqual(cg.get_number_of_published_content(), 4)
-        for i in range(0, 3):
+        for _ in range(0, 3):
             cg.get_next_published_content()
         self.assertEqual(cg.get_number_of_published_content(), 1)
 
@@ -588,7 +588,6 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         mypkt = rtgen.Packet('udp', '10.11.12.13', '13.12.11.10', 4, '1234', '4321',
                              rtgen.ACK, 0, 0, rtgen.ETHERNET_HDR_GEN_RANDOM, None,
                              cg.get_next_published_content())
-        ip_gen = rtgen.IPV4()
         self.assertEqual(mypkt.get_src_ip(), '10.11.12.13')
         self.assertEqual(mypkt.get_dst_ip(), '13.12.11.10')
         self.assertEqual(mypkt.get_size(), 47)
@@ -640,7 +639,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         self.assertEqual(mypkt.get_src_ip(), '192.168.1.1')
         mypkt = scanner.getNextPacket()
         self.assertEqual(scanner.getPacketsRemaining(), 99)
-        for i in range(0, 197):
+        for _ in range(0, 197):
             scanner.getNextPacket()
         self.assertEqual(scanner.getPacketsRemaining(), 1)
 
@@ -652,7 +651,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         scanner = rtgen.ScanAttack(rule, None)
 
         self.assertEqual(scanner.getPacketsRemaining(), 100)
-        for i in range(0, 299):
+        for _ in range(0, 299):
             scanner.getNextPacket()
         self.assertEqual(scanner.getPacketsRemaining(), 1)
 
