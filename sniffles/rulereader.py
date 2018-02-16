@@ -204,7 +204,14 @@ class RuleContent:
         self.setContentString(content)
 
     def __str__(self):
-        return self.toString()
+        mystr = self.name + "\n"
+        mystr += "Type: " + self.type + "\n"
+        mystr += "Content: "
+        if self.content is None:
+            mystr += "None\n"
+        else:
+            mystr += self.content + "\n"
+        return mystr
 
     def getContentString(self):
         return self.content
@@ -220,16 +227,6 @@ class RuleContent:
 
     def setType(self, type=None):
         self.type = type
-
-    def toString(self):
-        mystr = self.name + "\n"
-        mystr += "Type: " + self.type + "\n"
-        mystr += "Content: "
-        if self.content is None:
-            mystr += "None\n"
-        else:
-            mystr += self.content + "\n"
-        return mystr
 
 
 class RulePkt:

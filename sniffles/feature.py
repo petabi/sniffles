@@ -10,15 +10,12 @@ class AmbiguousNotation:
         self.notation = notation
 
     def __str__(self):
-        return self.toString()
-
-    def toString(self):
         return self.notation
 
 
 class SetNotation(AmbiguousNotation):
     # Set notation should be expressed as {x1,x2,x3...}
-    # toString will return a subset of x(i) with
+    # __str__() will return a subset of x(i) with
     # the length of subset should be at least 1
     # requirement: length of set should be at least 1
     # for example: {5,6,9}
@@ -30,9 +27,6 @@ class SetNotation(AmbiguousNotation):
         self.max_list_size = len(self.values)
 
     def __str__(self):
-        return self.toString()
-
-    def toString(self):
         num_elements = random.randint(1, self.max_list_size)
         return '[' + ','.join(random.sample(self.values, num_elements)) + ']'
 
@@ -57,9 +51,6 @@ class RangeNotation(AmbiguousNotation):
             sys.exit(0)
 
     def __str__(self):
-        return self.toString()
-
-    def toString(self):
         mylower = random.randint(self.lower_bound, self.upper_bound - 1)
         myupper = random.randint(mylower + 1, self.upper_bound)
         mystring = self.prefix + str(mylower) + self.separator + \
@@ -92,9 +83,6 @@ class ListNotation(AmbiguousNotation):
             self.lower_bound = self.upper_bound - 1
 
     def __str__(self):
-        return self.toString()
-
-    def toString(self):
         num_elements = random.randint(2, self.max_list_size)
         num_elements = min(num_elements,
                            self.upper_bound - self.lower_bound + 1
@@ -152,9 +140,6 @@ class Feature:
             self.lower_bound = self.upper_bound - 1
 
     def __str__(self):
-        return self.toString()
-
-    def toString(self):
         complex = False
         mystring = self.feature_name + "="
         if self.complexity_prob > 0 and self.ambiguity_list is \
@@ -193,9 +178,6 @@ class ContentFeature(Feature):
         self.min_regex_length = min_regex_length
 
     def __str__(self):
-        return self.toString()
-
-    def toString(self):
         mystring = self.feature_name + "="
         complex = False
         if self.complexity_prob > 0:
@@ -247,9 +229,6 @@ class ProtocolFeature(Feature):
         self.proto_list = proto_list
 
     def __str__(self):
-        return self.toString()
-
-    def toString(self):
         complex = False
         if self.complexity_prob > 0 and self.ambiguity_list is not None:
             pick = random.randint(0, 100)
@@ -286,9 +265,6 @@ class IPFeature(Feature):
         self.version = version
 
     def __str__(self):
-        return self.toString()
-
-    def toString(self):
         mystring = self.feature_name + "="
         myip = []
         complex = False

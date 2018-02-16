@@ -5,9 +5,6 @@ class RuleFormat:
         print(self)
 
     def __str__(self):
-        return self.toString()
-
-    def toString(self):
         return self.rule
 
 
@@ -15,7 +12,7 @@ class RegexFormat(RuleFormat):
     def __init__(self, rule=None):
         self.rule = rule
 
-    def toString(self):
+    def __str__(self):
         if not self.rule:
             return ""
 
@@ -38,7 +35,7 @@ class PetabiPacketClassifierFormat(RuleFormat):
     def __init__(self, rule=None):
         self.rule = rule
 
-    def toString(self):
+    def __str__(self):
         if not self.rule:
             return ""
 
@@ -79,12 +76,6 @@ class SnortRuleFormat(RuleFormat):
         self.setSid(sid)
 
     def __str__(self):
-        return self.toString()
-
-    def setSid(self, sid=None):
-        self.sid = sid
-
-    def toString(self):
         if self.rule is None:
             return ""
 
@@ -135,3 +126,6 @@ class SnortRuleFormat(RuleFormat):
             myopt += " sid:" + str(self.sid) + ";"
         myopt += ")"
         return myheader + myopt
+
+    def setSid(self, sid=None):
+        self.sid = sid
