@@ -1647,7 +1647,6 @@ class ContentGenerator:
             return data
 
     def generate_http_content(self, rules):
-        http_directive_map = {}
         # HTTP/1.1
         http_text = [72, 84, 84, 80, 47, 49, 46, 49]
         # GET
@@ -1770,7 +1769,7 @@ class ContentGenerator:
     def generate_from_regex_wrapper(self, pcre=None):
         generated = []
         if len(generated) < 1:
-            for i in range(0, 10):
+            for _ in range(0, 10):
                 generated = self.generate_from_regex(pcre)
                 if len(generated) > 0:
                     break
@@ -1802,7 +1801,6 @@ class ContentGenerator:
                 next_symbol = ""
                 visited.append(state)
                 possible_symbols = []
-                depth = state.get_depth()
                 next_states = []
                 loop_symbols = []
                 for sym in range(0, NSYMBOLS):
@@ -2097,7 +2095,7 @@ class EthernetFrame:
     def get_random_octets(self, prefix):
         random_octets = list(prefix)
         start = len(random_octets)
-        for o in range(start, 6):
+        for _ in range(start, 6):
             random_octets.append(random.randint(0, 255))
         return random_octets
 
@@ -2267,7 +2265,7 @@ class IPV4(IP):
                 if b:
                     myip.append(int(b))
             start = len(myip)
-        for i in range(start, 4):
+        for _ in range(start, 4):
             myip.append(random.randint(0, 255))
         return '.'.join(['%d' % byte for byte in myip])
 
@@ -2328,7 +2326,7 @@ class IPV6(IP):
                 if b:
                     myip.append(int(b, 16))
             start = len(myip)
-        for i in range(start, 8):
+        for _ in range(start, 8):
             myip.append(random.randint(0, 65535))
         return ':'.join(['%04x' % byte for byte in myip])
 
