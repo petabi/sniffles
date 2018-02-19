@@ -7,13 +7,13 @@ import sniffles.feature as feature
 class TestFeature(unittest.TestCase):
     def test_ambigous_notation_class(self):
         ambigous = feature.AmbiguousNotation("[5,3,8]")
-        self.assertEqual(ambigous.toString(), "[5,3,8]")
+        self.assertEqual(str(ambigous), "[5,3,8]")
 
     def test_set_notation_class(self):
         test = feature.SetNotation("{mon,tues,wed,thurs,fri,sat,sun}")
         testList = ["mon", "tues", "wed", "thurs", "fri", "sat", "sun"]
         for _ in range(0, 10):
-            values = (test.toString()[1:-1]).split(",")
+            values = (str(test)[1:-1]).split(",")
             for value in values:
                 self.assertTrue(value in testList)
 
@@ -23,7 +23,7 @@ class TestFeature(unittest.TestCase):
             upper = random.randint(21, 25)
             test = feature.RangeNotation("[" + str(lower) + ":" +
                                          str(upper) + "]")
-            result = test.toString()
+            result = str(test)
             myrange = result[1:-1]
             bounds = myrange.split(":")
             lower = int(bounds[0])
@@ -34,7 +34,7 @@ class TestFeature(unittest.TestCase):
 
     def test_list_notation_class_distribution(self):
         test = feature.ListNotation("[5,1500000]")
-        mySplit = test.toString()[1:-1]
+        mySplit = str(test)[1:-1]
         values = mySplit.split(",")
         for value in values:
             iVal = int(value)
@@ -42,7 +42,7 @@ class TestFeature(unittest.TestCase):
             self.assertTrue(iVal <= 1500000)
 
         test = feature.ListNotation("[0, 4294967295]")
-        mySplit = test.toString()[1:-1]
+        mySplit = str(test)[1:-1]
         values = mySplit.split(",")
         for value in values:
             iVal = int(value)
@@ -57,7 +57,7 @@ class TestFeature(unittest.TestCase):
         # # every value in the list should be in
         # # range [5, 150]
         test2 = feature.ListNotation("[5,150]")
-        mySplit = test2.toString()[1:-1]
+        mySplit = str(test2)[1:-1]
         values = mySplit.split(",")
         for value in values:
             iVal = int(value)
@@ -67,7 +67,7 @@ class TestFeature(unittest.TestCase):
     def test_feature_class(self):
         # no ambiguity list
         myfeature = feature.Feature("f1", 20, 30, 0)
-        self.assertEqual(myfeature.toString()[0:2], "f1")
+        self.assertEqual(str(myfeature)[0:2], "f1")
 
         # [mozart,[5,6]]
         ambiguity_list = []
@@ -76,7 +76,7 @@ class TestFeature(unittest.TestCase):
         ambiguity_list.append(feature.RangeNotation("[9:15]"))
         myfeature = feature.Feature("f1", 20, 30, 100, ambiguity_list)
         for _ in range(0, 5):
-            myresult = myfeature.toString()
+            myresult = str(myfeature)
             self.assertEqual(myresult[0:2], "f1")
             if "," in myresult:
                 mySplit = myresult[4:-1]
@@ -97,7 +97,7 @@ class TestFeature(unittest.TestCase):
                 self.assertEqual(myresult[3:], "mozart")
 
         myfeature = feature.Feature("f1", 20, 30, -1)
-        myresult = myfeature.toString()
+        myresult = str(myfeature)
         value = int(myresult[3:])
         self.assertTrue(value >= 20)
         self.assertTrue(value <= 30)
@@ -108,7 +108,7 @@ class TestFeature(unittest.TestCase):
 
     def test_protocolfeature_class(self):
         protocolFea = feature.ProtocolFeature("p1", ["IP", "TCP"], -1)
-        myresult = protocolFea.toString()
+        myresult = str(protocolFea)
         for _ in range(0, 10):
             if "I" in myresult:
                 self.assertEqual(myresult, "p1=IP")
@@ -118,7 +118,7 @@ class TestFeature(unittest.TestCase):
     def test_ipfeature_class(self):
         ip = feature.IPFeature("i1", 4, -1)
         for _ in range(0, 100):
-            myresult = ip.toString()[3:]
+            myresult = str(ip)[3:]
             values = myresult.split(".")
             mytest = ""
             for j, value in enumerate(values):
@@ -132,7 +132,7 @@ class TestFeature(unittest.TestCase):
 
         ip = feature.IPFeature("i1", 4, 100)
         for _ in range(0, 100):
-            myresult = ip.toString()[3:]
+            myresult = str(ip)[3:]
             self.assertTrue("/" in myresult)
             removeBackSpash = myresult.split("/")
             values = removeBackSpash[0].split(".")
@@ -148,7 +148,7 @@ class TestFeature(unittest.TestCase):
 
         ip = feature.IPFeature("i1", 6, -1)
         for _ in range(0, 100):
-            myresult = ip.toString()[3:]
+            myresult = str(ip)[3:]
             values = myresult.split(":")
             self.assertEqual(len(values), 8)
             for value in values:
@@ -156,7 +156,7 @@ class TestFeature(unittest.TestCase):
 
         ip = feature.IPFeature("i1", 6, 100)
         for _ in range(0, 100):
-            myresult = ip.toString()[3:]
+            myresult = str(ip)[3:]
             self.assertTrue("/" in myresult)
             removeBackSpash = myresult.split("/")
             values = removeBackSpash[0].split(":")
@@ -300,6 +300,6 @@ class TestFeature(unittest.TestCase):
             self.assertTrue(isinstance(test[i], feature.SetNotation))
             testList = ["mon", "wed", "fri"]
             for _ in range(0, 10):
-                values = (test[i].toString()[1:-1]).split(",")
+                values = str(test[i])[1:-1].split(",")
                 for value in values:
                     self.assertTrue(value in testList)
