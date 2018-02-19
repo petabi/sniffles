@@ -51,7 +51,7 @@ class SnifflesConfig:
         self.mix_count = 0
         self.eval = False
         self.full_eval = False
-        self.full_match = False
+        self.full_match = True
         self.intensity = 1
         self.proto = 'any'
         self.ipv4_home = None
@@ -568,8 +568,8 @@ class SnifflesConfig:
 
         # By default, packets almost match content of rules.
         # This switch makes them match.
-        elif opt == "-m":
-            self.full_match = True
+        elif opt == "-n":
+            self.full_match = False
 
         # Provide a MAC address distribution file for generating
         # MAC addresses with specific values.
@@ -679,7 +679,7 @@ class SnifflesConfig:
         print(" [-l pkt_length] [-L time lapse] [-M mac_addr_def file]")
         print(" [-o output_file] [-O scan start offset] [-p pkts_per_stream]")
         print(" [-P scan port(s)] [-s scan target(s)] [-S scan type]")
-        print(" [-W scan window] [-Z Reply %] [-abeEmrRtTvw]")
+        print(" [-W scan window] [-Z Reply %] [-abeEnrRtTvw]")
         print("")
         print("-a TCP Ack: Send a TCP acknowledgment for every data packet")
         print("   sent.  Off by default.")
@@ -754,9 +754,6 @@ class SnifflesConfig:
         print("-L Latency: Average latency for streams (microsecs). Default")
         print("   is a random value between 1 and 200 microseconds for each.")
         print("   stream.  The average will be different for each stream.")
-        print("-m Full match: Fully match rules.  By default, generated")
-        print("   content will only partially match rules, thus alerts")
-        print("   should not be generated (not guaranteed though).")
         print("-M Allows the use of a MAC distribution to have a custom MAC")
         print("   addresses in the traffic.  By default, MAC addresses are")
         print("   randomly generated. More information about the MAC")
@@ -773,6 +770,11 @@ class SnifflesConfig:
         print("   mark (?) to designate one or the other as random as in:")
         print("   '?:path2' to have random source MACs but use the file for.")
         print("   destination MACs.")
+        print("-n Not Full Match.  Content will only partially match ")
+        print("   rules, thus alerts should not be generated (not guaranteed ")
+        print("   though).  By default, all traffic generated from rules ")
+        print("   will match (unless the packet is truncated by the -l option.")
+        print("   Has no affect on random traffic.")
         print("-o output file: designate the name of the output file.")
         print("   by default, the file is named: sniffles.pcap.")
         print("-O Offset: Offset before starting a scan attack.")
