@@ -226,10 +226,6 @@ Command Line Options:
      stream.  Thus, the packets for a given stream will have an average
      latency amount of time between each packet in the flow.
 
-  - -m Full match: Fully match rules.  By default, generated content
-     will only partially match rules, thus alerts should not be
-     generated (not guaranteed though).
-
   - -M Allows the use of a MAC distribution to have a custom MAC
        addresses in the traffic.  By default, MAC addresses are
        randomly generated. More information about the MAC
@@ -246,6 +242,10 @@ Command Line Options:
        mark (?) to designate one or the other as random as in:
        '?:path2' to have random source MACs but use the file for.
 
+  - -n Not Match Completely.  Sets Content generated from a
+         rule to not match completely (i.e. will automatically truncate
+         the final few characters).  Default behavior is to match rule
+         content completely.
   - -o output file: designate the name of the output file.  By default,
      the file is named: sniffles.pcap.
 
