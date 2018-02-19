@@ -566,15 +566,15 @@ class SnifflesConfig:
             if int(arg) > 1:
                 self.latency = int(arg)
 
-        # By default, packets almost match content of rules.
-        # This switch makes them match.
-        elif opt == "-n":
-            self.full_match = False
-
         # Provide a MAC address distribution file for generating
         # MAC addresses with specific values.
         elif opt == "-M":
             self.mac_addr_def = arg
+
+        # Set Packets to not match to rules completely.  Default is
+        # to match to provided rules.
+        elif opt == "-n":
+            self.full_match = False
 
         # Set output file name, default is sniffles.pcap.
         elif opt == "-o":
