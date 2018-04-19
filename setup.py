@@ -12,7 +12,7 @@ setup(
     long_description='Packet capture generator for IDS evaluation',
     maintainer='Victor C. Valgenti',
     maintainer_email='vvalgenti@petabi.com',
-    url='http://petabi.com',
+    url='https://github.com/petabi/sniffles',
     packages=find_packages(),
     entry_points={
         'console_scripts': [
