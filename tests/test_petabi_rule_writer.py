@@ -157,7 +157,7 @@ class TestPetabiRuleWriter(unittest.TestCase):
 
     # Checks if output file is compatible with rulereader.py
     def test_print_rule(self):
-        filename = "sniffles/test/data_files/test_petabi_rule.xml"
+        filename = "tests/data_files/test_petabi_rule.xml"
         regexList = ["/abc/", "/def/", "/ghi/"]
         ruleName = None
         proto = 'tcp'

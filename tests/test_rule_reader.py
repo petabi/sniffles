@@ -392,7 +392,7 @@ class TestRuleReader(unittest.TestCase):
     def test_read_single_file(self):
         myrulelist = reader.RuleList()
         myrulelist.readRuleFile(
-            'sniffles/test/data_files/rules/test_rules2.rules')
+            'tests/data_files/rules/test_rules2.rules')
         rules = myrulelist.getParsedRules()
         self.assertEqual(len(rules), 9)
         conrule1 = rules[0]
@@ -407,13 +407,13 @@ class TestRuleReader(unittest.TestCase):
 
     def test_read_multiple_files(self):
         myrulelist = reader.RuleList()
-        myrulelist.readRuleFiles('sniffles/test/data_files/rules/')
+        myrulelist.readRuleFiles('tests/data_files/rules/')
         rules = myrulelist.getParsedRules()
         self.assertEqual(len(rules), 19)
 
     def test_read_petabi_rule_file(self):
         myrulelist = reader.RuleList()
-        myrulelist.readRuleFile('sniffles/test/data_files/test_all.xml')
+        myrulelist.readRuleFile('tests/data_files/test_all.xml')
         rules = myrulelist.getParsedRules()
         self.assertEqual(len(rules), 1)
         conrule = rules[0]
@@ -436,11 +436,11 @@ class TestRuleReader(unittest.TestCase):
     def test_test_for_rule_file(self):
         myp = reader.SnortRuleParser()
         self.assertTrue(myp.testForRuleFile(
-                        'sniffles/test/data_files/rules/test_rules2.rules'))
+                        'tests/data_files/rules/test_rules2.rules'))
         self.assertFalse(myp.testForRuleFile(
-                         'sniffles/test/data_files/test_all.xml'))
+                         'tests/data_files/test_all.xml'))
         myp = reader.PetabiRuleParser()
         self.assertFalse(myp.testForRuleFile(
-            'sniffles/test/data_files/rules/test_rules2.rules'))
+            'tests/data_files/rules/test_rules2.rules'))
         self.assertTrue(myp.testForRuleFile(
-            'sniffles/test/data_files/test_all.xml'))
+            'tests/data_files/test_all.xml'))
