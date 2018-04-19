@@ -14,7 +14,7 @@ from sniffles.vendor_mac_list import VENDOR_MAC_OUI
 class TestRuleTrafficGenerator(unittest.TestCase):
     def test_tcp_overlap(self):
         myurl = RuleList()
-        myurl.readRuleFile('sniffles/test/data_files/test_tcp_overlap.xml')
+        myurl.readRuleFile('tests/data_files/test_tcp_overlap.xml')
         rules = myurl.getParsedRules()
         self.assertEqual(len(rules), 1)
         rules = myurl.getParsedRules()
@@ -76,7 +76,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         # source is 0800, destination is 0800
         myehdr = rtgen.EthernetFrame('10.2.2.2', '10.3.3.3',
                                      rtgen.ETHERNET_HDR_GEN_DISTRIBUTION,
-                                     'sniffles/test/data_files/'
+                                     'tests/data_files/'
                                      'mac_definition_file.txt')
         self.assertEqual(''.join(['%02x' % i
                                   for i in myehdr.get_d_mac()[0:2]]),
@@ -88,13 +88,13 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         mystr1 = str(myehdr)
         myehdr = rtgen.EthernetFrame('10.2.2.2', '10.3.3.3',
                                      rtgen.ETHERNET_HDR_GEN_DISTRIBUTION,
-                                     'sniffles/test/data_files/'
+                                     'tests/data_files/'
                                      'mac_definition_file.txt')
         self.assertEqual(mystr1, str(myehdr))
         myehdr.clear_globals()
         myehdr = rtgen.EthernetFrame('10.2.2.2', '10.3.3.3',
                                      rtgen.ETHERNET_HDR_GEN_DISTRIBUTION,
-                                     'sniffles/test/data_files/'
+                                     'tests/data_files/'
                                      'mac_definition_file.txt')
         self.assertNotEqual(mystr1, str(myehdr))
 
@@ -103,9 +103,9 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         # source is 0070, destination is 0080
         myehdr = rtgen.EthernetFrame('10.2.2.2', '10.3.3.3',
                                      rtgen.ETHERNET_HDR_GEN_DISTRIBUTION,
-                                     'sniffles/test/data_files/'
+                                     'tests/data_files/'
                                      'mac_definition_file.txt:'
-                                     'sniffles/test/data_files/'
+                                     'tests/data_files/'
                                      'mac_definition_file1.txt')
 
         self.assertEqual(''.join(['%02x' % i
@@ -121,7 +121,7 @@ class TestRuleTrafficGenerator(unittest.TestCase):
         myehdr = rtgen.EthernetFrame('10.2.2.2', '10.3.3.3',
                                      rtgen.ETHERNET_HDR_GEN_DISTRIBUTION,
                                      '?:'
-                                     'sniffles/test/data_files/'
+                                     'tests/data_files/'
                                      'mac_definition_file1.txt')
 
         self.assertTrue(''.join(['%02x' % i
