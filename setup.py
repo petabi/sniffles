@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from glob import glob
 
 from setuptools import Extension
 from setuptools import find_packages
@@ -13,7 +14,8 @@ setup(
     maintainer='Victor C. Valgenti',
     maintainer_email='vvalgenti@petabi.com',
     url='https://github.com/petabi/sniffles',
-    packages=find_packages(),
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
     entry_points={
         'console_scripts': [
             'sniffles = sniffles.sniffles:main',
@@ -38,17 +40,8 @@ setup(
     ext_modules=[
         Extension(
             'sniffles.pcrecomp',
-            sources=[
-                'sniffles/pcrecomp.c',
-                'sniffles/pcre_chartables.c',
-                'sniffles/pcre_compile.c',
-                'sniffles/pcre_globals.c',
-                'sniffles/pcre_newline.c',
-                'sniffles/pcre_tables.c'],
-            depends=[
-                'sniffles/pcre_internal.h',
-                'sniffles/ucp.h',
-                'sniffles/pcre.h'],
+            sources=glob('src/sniffles/*.c'),
+            depends=glob('src/sniffles/*.h'),
             extra_compile_args=[
                 '-DLINK_SIZE=2',
                 '-DPARENS_NEST_LIMIT=250',
