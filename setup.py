@@ -50,4 +50,7 @@ setup(
                 '-DMAX_NAME_SIZE=32'])],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
+    install_requires=[
+        'sortedcontainers',
+    ],
 )
