@@ -1,4 +1,5 @@
 import unittest
+
 import sniffles.rulereader as reader
 
 

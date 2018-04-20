@@ -1,4 +1,5 @@
 import unittest
+
 from sniffles.nfa import NFA, pcre2nfa
 
 
