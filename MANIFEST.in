@@ -1,3 +1,5 @@
+graft tests
+
 include examples/example1.xml
 include examples/example2.xml
 include examples/hdr_features_complex.txt
