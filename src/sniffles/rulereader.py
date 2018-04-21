@@ -69,14 +69,9 @@ class Rule:
                 ts.setRule(self, 0)
 
     def __str__(self):
-        mystr = "Rule-Name: "
-        if self.name:
-            mystr += self.name + "\n"
-        else:
-            mystr += "None\n"
-        for t in self.ts:
-            mystr += str(t)
-        return mystr
+        return (
+            "Rule-Name: {}\n"
+            "{}").format(self.name, ''.join(str(t) for t in self.ts))
 
     def addTS(self, stream=None):
         if stream:
@@ -204,14 +199,10 @@ class RuleContent:
         self.setContentString(content)
 
     def __str__(self):
-        mystr = self.name + "\n"
-        mystr += "Type: " + self.type + "\n"
-        mystr += "Content: "
-        if self.content is None:
-            mystr += "None\n"
-        else:
-            mystr += self.content + "\n"
-        return mystr
+        return (
+            "{}\n"
+            "Type: {}\n"
+            "Content: {}\n").format(self.name, self.type, self.content)
 
     def getContentString(self):
         return self.content
@@ -294,32 +285,15 @@ class RulePkt:
             self.ooo = True
 
     def __str__(self):
-        mystr = "Pkt--Dir: "
-        mystr += self.dir
-        mystr += "\nContent: "
-        if self.content:
-            for c in self.content:
-                mystr += "  " + str(c)
-        else:
-            mystr += "  None"
-        mystr += "\nFragments: "
-        mystr += str(self.fragment)
-        mystr += ", Times: "
-        mystr += str(self.times)
-        mystr += ", Time to live: "
-        mystr += str(self.ttl)
-        mystr += ", Length: "
-        mystr += str(self.length)
-        mystr += ", Ack This: "
-        mystr += str(self.ack_this)
-        mystr += ", OOO: "
-        mystr += str(self.ooo)
-        mystr += ", Split: "
-        mystr += str(self.split)
-        mystr += ", TTL Expiry: "
-        mystr += str(self.ttl_expiry)
-        mystr += "\n"
-        return mystr
+        return (
+            "Pkt--Dir: {}\n"
+            "Content: {}\n"
+            "Fragments: {}, Times: {}, Times to live: {}, Length: {}, "
+            "Ack This: {}, OOO: {}, Split: {}, TTL Expiry: {}\n").format(
+                self.dir, ''.join(str(c) for c in self.content),
+                str(self.fragment), str(self.times), str(self.ttl),
+                str(self.length), str(self.ack_this), str(self.ooo),
+                str(self.split), str(self.ttl_expiry))
 
     # accessors
     def ackThis(self):
