@@ -345,7 +345,7 @@ def write_packets(queue, traffic_writer, sconf, fd_result):
         half_threshold = int(len(queue) / 2)
     num_packets = 0
     while queue and len(queue) > half_threshold:
-        _, con_list = queue.popitem(last=False)
+        _, con_list = queue.popitem(index=0)
         for current_conversation in con_list:
             if current_conversation.hasPackets():
                 # write that packet
