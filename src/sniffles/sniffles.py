@@ -183,14 +183,17 @@ def start_generation(sconf):
     # for recording how packets are generated
     fd_result = open(sconf.getResultFile(), 'w')
 
+    temp_allrules = None
     while current < end:
         myrule = None
+        if not temp_allrules:
+            temp_allrules = copy.deepcopy(allrules)
         if sconf.getMixMode() and mix_count >= 0:
             if mix_count > 0 and allrules:
-                myrule = copy.deepcopy(random.choice(allrules))
+                myrule = temp_allrules.pop(random.randrange(len(temp_allrules)))
                 mix_count = mix_count - 1
         elif allrules:
-            myrule = copy.deepcopy(random.choice(allrules))
+            myrule = temp_allrules.pop(random.randrange(len(temp_allrules)))
         if sconf.getVerbosity():
             print(myrule)
 
