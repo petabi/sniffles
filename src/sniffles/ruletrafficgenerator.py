@@ -127,7 +127,7 @@ class Conversation:
         while tsrules:
             myrule = tsrules.pop(0)
             if myrule:
-                if myrule.testTypeRule("Background"):
+                if myrule.testTypeRule("BackgroundTraffic"):
                     myts = BackgroundTraffic(myrule, sconf, sec, usec)
                 elif myrule.testTypeRule("ScanAttack"):
                     myts = ScanAttack(myrule, sconf, sec, usec)
