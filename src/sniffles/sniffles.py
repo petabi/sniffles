@@ -217,11 +217,11 @@ def start_generation(sconf):
             else:
                 conversation = Conversation(myrule, sconf, current_sec,
                                             current_usec + flow_start_offset)
-                rule_cursor = (rule_cursor + 1) % len(allrules)
+                rule_cursor = (rule_cursor + 1) % len(allrules) if allrules else 0
         else:
             conversation = Conversation(myrule, sconf, current_sec,
                                         current_usec + flow_start_offset)
-            rule_cursor = (rule_cursor + 1) % len(allrules)
+            rule_cursor = (rule_cursor + 1) % len(allrules) if allrules else 0
 
         sec, usec = conversation.getNextTimeStamp()
         timekey = timekey = sec + (usec / 1000000)
