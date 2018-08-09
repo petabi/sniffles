@@ -183,7 +183,7 @@ def start_generation(sconf):
     # for recording how packets are generated
     fd_result = open(sconf.getResultFile(), 'w')
 
-     if allrules:
+    if allrules:
         rule_cursor = random.randrange(len(allrules))
     while current < end:
         myrule = None
