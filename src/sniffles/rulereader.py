@@ -145,12 +145,9 @@ class RuleParser:
         basic_rule = Rule("basic")
         ts = TrafficStreamRule()
         mypkt = RulePkt()
-        replace_semi = R"\x3b"
-        replace_lparen = R"\x28"
-        replace_rparen = R"\x29"
-        line = re.sub(R"\\;", replace_semi, line)
-        line = re.sub(R"\\\(", replace_lparen, line)
-        line = re.sub(R"\\\)", replace_rparen, line)
+        line = line.replace(r'\;', r'\x3b')
+        line = line.replace(r'\(', r'\x28')
+        line = line.replace(r'\)', r'\x29')
         mycon = RuleContent('pcre', line)
         mypkt.addContent(mycon)
         ts.addPktRule(mypkt)
@@ -1202,12 +1199,9 @@ class SnortRuleParser(RuleParser):
         if rule:
             snort_rule = Rule("Snort")
             snort_ts = TrafficStreamRule()
-            replace_semi = R"\x3b"
-            replace_lparen = R"\x28"
-            replace_rparen = R"\x29"
-            rule = re.sub(R"\\;", replace_semi, rule)
-            rule = re.sub(R"\\\(", replace_lparen, rule)
-            rule = re.sub(R"\\\)", replace_rparen, rule)
+            rule = rule.replace(r'\;', r'\x3b')
+            rule = rule.replace(r'\(', r'\x28')
+            rule = rule.replace(r'\)', r'\x29')
             self.parseHeader(rule, snort_ts)
             self.parseOptions(rule, snort_ts)
             snort_rule.addTS(snort_ts)
