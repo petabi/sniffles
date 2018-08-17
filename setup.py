@@ -5,7 +5,7 @@ from setuptools import Extension, find_packages, setup
 
 setup(
     name='sniffles',
-    version='3.4.1',
+    version='3.4.2',
     description='Sniffles pcap generator',
     long_description='Packet capture generator for IDS evaluation',
     maintainer='Victor C. Valgenti',
