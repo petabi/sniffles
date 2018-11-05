@@ -90,8 +90,8 @@ class TestRuleReader(unittest.TestCase):
         mytsrule1 = reader.TrafficStreamRule('udp')
         mytsrule1.addPktRule(reader.RulePkt(
             "to server", "/xyz/i", ttl_expiry=15))
-        mytsrule1.addPktRule(reader.RulePkt("to server", "/abc/i", ttl_expiry=23,
-                                            ttl=9))
+        mytsrule1.addPktRule(reader.RulePkt("to server", "/abc/i",
+                                            ttl_expiry=23, ttl=9))
         mytsrule1.addPktRule(reader.RulePkt("to server", "/def/i"))
         myprule.addTS(mytsrule1)
         self.assertEqual(myprule.getRuleName(), 'Petabi')
@@ -257,8 +257,8 @@ class TestRuleReader(unittest.TestCase):
             self.assertIn(p.getContent()[0].getType(), ['content', 'pcre'])
 
     def test_rule_normalization(self):
-        textrule = 'alert udp $HOME_NET 1 -> $EXTERNAL_NET 2 ' \
-                   '(msg:"test"; pcre:"abc\;\(\)def"; rev:1)'
+        textrule = r'alert udp $HOME_NET 1 -> $EXTERNAL_NET 2 ' \
+                   r'(msg:"test"; pcre:"abc\;\(\)def"; rev:1)'
         mysrp = reader.SnortRuleParser()
         mysrp.parseRule(textrule)
         myrule = mysrp.getRules()[0]
@@ -308,8 +308,8 @@ class TestRuleReader(unittest.TestCase):
 
     def test_traffic_stream_rule(self):
         mytsrule = reader.TrafficStreamRule('tcp', '1100:0011', '2200:0022',
-                                            '[100:200]', '[10,20,30,40,50]', -1, 6,
-                                            False, True, True)
+                                            '[100:200]', '[10,20,30,40,50]',
+                                            -1, 6, False, True, True)
         mytsrule.addPktRule(reader.RulePkt("to server", "/xyz/i"))
         mytsrule.addPktRule(reader.RulePkt("to client", "/123/"))
         self.assertEqual(mytsrule.getSynch(), False)
@@ -361,9 +361,9 @@ class TestRuleReader(unittest.TestCase):
         myrep = reader.RuleParser()
         myrep.parseRule(textrule)
         myconrules.append(myrep.getRules()[0])
-        mytsrule = reader.TrafficStreamRule('tcp', '1.1.1', '2.2.2', '[100:200]',
-                                            '[10,20,30,40,50]', False, True, True,
-                                            6, True, 50)
+        mytsrule = reader.TrafficStreamRule('tcp', '1.1.1', '2.2.2',
+                                            '[100:200]', '[10,20,30,40,50]',
+                                            False, True, True, 6, True, 50)
         mytsrule.addPktRule(reader.RulePkt("to server", "/xyz/i"))
         mytsrule.addPktRule(reader.RulePkt("to client", "/123/"))
         myprule = reader.Rule('Petabi')
@@ -409,7 +409,7 @@ class TestRuleReader(unittest.TestCase):
         myrulelist = reader.RuleList()
         myrulelist.readRuleFiles('tests/data_files/rules/')
         rules = myrulelist.getParsedRules()
-        self.assertEqual(len(rules), 19)
+        self.assertEqual(len(rules), 21)
 
     def test_read_petabi_rule_file(self):
         myrulelist = reader.RuleList()
@@ -444,3 +444,35 @@ class TestRuleReader(unittest.TestCase):
             'tests/data_files/rules/test_rules2.rules'))
         self.assertTrue(myp.testForRuleFile(
             'tests/data_files/test_all.xml'))
+
+    def test_raw_ip_in_snort_rule(self):
+        textrule = 'alert tcp 1.2.3.4 any -> 5.6.7.8 445 ' \
+                   '(msg:\"Test me; pcre:\"/abcdef/\"; sid:3046; rev:5;)'
+        mysrp = reader.SnortRuleParser()
+        mysrp.parseRule(textrule)
+        myrule = mysrp.getRules()[0].getTS()[0]
+        assert myrule.getSrcIp() == '1.2.3.4'
+        assert myrule.getDstIp() == '5.6.7.8'
+
+    def test_raw_ip_in_snort_rule_file(self):
+        myp = reader.SnortRuleParser()
+        myrulelist = reader.RuleList()
+        raw_ip_snort_rule = 'tests/data_files/rules/rule_with_raw_ip.rules'
+        myrulelist.readRuleFile(raw_ip_snort_rule)
+        self.assertTrue(myp.testForRuleFile(raw_ip_snort_rule))
+        rules = myrulelist.getParsedRules()
+        self.assertEqual(len(rules), 2)
+        myrule = rules[0].getTS()[0]
+        assert myrule.getSrcIp() == '1.2.3.4'
+        assert myrule.getDstIp() == '5.6.7.8'
+        assert myrule.getSport() == '5555'
+        assert myrule.getDport() == '7777'
+        mycon = myrule.getPkts()[0].getContent()[0]
+        assert mycon.getContentString() == 'testing1'
+        myrule = rules[1].getTS()[0]
+        assert myrule.getSrcIp() == '1.2.3.5'
+        assert myrule.getDstIp() == '5.6.7.8'
+        assert myrule.getSport() == '[3333:3334]'
+        assert myrule.getDport() == '[7777,8888]'
+        mycon = myrule.getPkts()[0].getContent()[0]
+        assert mycon.getContentString() == 'testing2'
