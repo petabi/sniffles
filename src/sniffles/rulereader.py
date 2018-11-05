@@ -1222,7 +1222,8 @@ class SnortRuleParser(RuleParser):
         is_snort_rule_file = False
         snort_rule_sig = re.compile(
             r'\s*(alert|log|pass|activate|dynamic|reject|drop|sdrop)'
-            r'\s+\w+\s+[\w$]+\s+[\w$]+\s+<?->\s+[\w$]+\s+[\w$]+\s*\([^)]+\)')
+            r'\s+\w+\s+[\w.$]+\s+\[?[\w:,$]+\]?\s+<?->\s+[\w.$]+\s+'
+            r'\[?[\w:,$]+\]?\s*\([^)]+\)')
         if self.openSnortFile(filename):
             line = self.fd.readline()
             while line:
